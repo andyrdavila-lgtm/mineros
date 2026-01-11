@@ -32,6 +32,7 @@ db = SQLAlchemy(app)
 
 # Modelo de usuario
 class User(db.Model):
+    __tablename__ = 'usuarios'  # Nombre de tabla más específico
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
@@ -63,9 +64,9 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# FUNCIÓN MEJORADA para inicializar base de datos
+# FUNCIÓN MEJORADA para inicializar base de datos CON TODOS LOS USUARIOS
 def initialize_database():
-    """Intenta inicializar la base de datos con reintentos"""
+    """Intenta inicializar la base de datos con reintentos y crea todos los usuarios"""
     max_retries = 3
     retry_delay = 2  # segundos
     
@@ -77,23 +78,69 @@ def initialize_database():
             db.create_all()
             print("✅ Tablas creadas exitosamente")
             
-            # Verificar si el usuario admin ya existe
-            admin_exists = db.session.execute(
-                db.select(User).filter_by(username='admin')
-            ).scalar_one_or_none()
+            # Lista de usuarios a crear
+            usuarios = [
+                # Administradores (4 usuarios)
+                {"username": "MINERA.ADMIN", "password": "MINERA.ADMIN", "rol": "admin"},
+                {"username": "ANDRES", "password": "ANDRES", "rol": "admin"},
+                {"username": "RICARDO", "password": "RICARDO", "rol": "admin"},
+                {"username": "ALEJANDRO", "password": "ALEJANDRO", "rol": "admin"},
+                
+                # Usuarios normales (5 usuarios)
+                {"username": "Minera1", "password": "Minera1", "rol": "user"},
+                {"username": "Minera2", "password": "Minera2", "rol": "user"},
+                {"username": "Minera3", "password": "Minera3", "rol": "user"},
+                {"username": "Minera4", "password": "Minera4", "rol": "user"},
+                {"username": "Minera5", "password": "Minera5", "rol": "user"},
+            ]
             
-            if not admin_exists:
-                # Crear usuario admin por defecto
-                admin_user = User(
-                    username='admin',
-                    rol='admin'
-                )
-                admin_user.set_password('admin123')
-                db.session.add(admin_user)
+            usuarios_creados = 0
+            usuarios_existentes = 0
+            
+            # Crear cada usuario si no existe
+            for usuario_info in usuarios:
+                username = usuario_info["username"]
+                
+                # Verificar si el usuario ya existe
+                user_exists = db.session.execute(
+                    db.select(User).filter_by(username=username)
+                ).scalar_one_or_none()
+                
+                if not user_exists:
+                    # Crear nuevo usuario
+                    nuevo_usuario = User(
+                        username=username,
+                        rol=usuario_info["rol"]
+                    )
+                    nuevo_usuario.set_password(usuario_info["password"])
+                    db.session.add(nuevo_usuario)
+                    usuarios_creados += 1
+                    print(f"  ✅ Usuario '{username}' creado (rol: {usuario_info['rol']})")
+                else:
+                    usuarios_existentes += 1
+            
+            # Commit todos los cambios
+            if usuarios_creados > 0:
                 db.session.commit()
-                print("✅ Usuario admin creado exitosamente")
-            else:
-                print("✅ Usuario admin ya existe")
+                print(f"✅ {usuarios_creados} usuarios nuevos creados")
+            
+            print(f"ℹ️  {usuarios_existentes} usuarios ya existían")
+            print(f"📊 Total de usuarios en sistema: {User.query.count()}")
+            
+            # Mostrar resumen de usuarios
+            print("\n📋 RESUMEN DE USUARIOS CREADOS:")
+            print("=" * 40)
+            print("👑 ADMINISTRADORES (rol: admin):")
+            admin_users = User.query.filter_by(rol='admin').all()
+            for user in admin_users:
+                print(f"   • {user.username}")
+            
+            print("\n👥 USUARIOS REGULARES (rol: user):")
+            regular_users = User.query.filter_by(rol='user').all()
+            for user in regular_users:
+                print(f"   • {user.username}")
+            
+            print("=" * 40)
             
             # Verificar que las tablas fueron creadas
             table_check = db.session.execute(
@@ -113,6 +160,7 @@ def initialize_database():
                 
         except Exception as e:
             print(f"❌ Error inesperado: {type(e).__name__}: {e}")
+            db.session.rollback()  # Rollback en caso de error
             return False
     
     return False
@@ -156,7 +204,9 @@ def inicio():
 @app.route('/admin')
 @admin_required
 def admin():
-    return render_template('admin.html')
+    # Obtener lista de usuarios para mostrar en panel admin
+    usuarios = User.query.all()
+    return render_template('admin.html', usuarios=usuarios)
 
 @app.route('/canvas')
 @login_required
@@ -188,16 +238,168 @@ def logout():
 def init_db():
     try:
         if initialize_database():
-            return '''
-            <h1>✅ Base de datos inicializada EXITOSAMENTE</h1>
-            <p><strong>Usuario admin creado:</strong></p>
-            <ul>
-                <li><strong>Usuario:</strong> admin</li>
-                <li><strong>Contraseña:</strong> admin123</li>
-            </ul>
-            <p><a href="/login">Ir al login</a></p>
-            <p style="color: red;"><strong>⚠️ ADVERTENCIA:</strong> Cambia esta contraseña inmediatamente.</p>
+            # Obtener lista de usuarios creados
+            usuarios = User.query.all()
+            
+            html_response = '''
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>CURIMINING - Base de Datos Inicializada</title>
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        background: linear-gradient(135deg, #1B4079 0%, #4D7C8A 100%);
+                        color: white;
+                        min-height: 100vh;
+                        margin: 0;
+                        padding: 20px;
+                    }
+                    .container {
+                        max-width: 800px;
+                        margin: 0 auto;
+                        background: rgba(255, 255, 255, 0.1);
+                        backdrop-filter: blur(10px);
+                        border-radius: 15px;
+                        padding: 30px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                    }
+                    h1 {
+                        color: #CBDF90;
+                        text-align: center;
+                        margin-bottom: 30px;
+                    }
+                    .success {
+                        background: rgba(76, 175, 80, 0.2);
+                        border: 2px solid #4CAF50;
+                        border-radius: 10px;
+                        padding: 20px;
+                        margin-bottom: 30px;
+                    }
+                    .warning {
+                        background: rgba(255, 193, 7, 0.2);
+                        border: 2px solid #FFC107;
+                        border-radius: 10px;
+                        padding: 20px;
+                        margin-bottom: 30px;
+                    }
+                    .user-list {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                        gap: 15px;
+                        margin: 20px 0;
+                    }
+                    .user-card {
+                        background: rgba(255, 255, 255, 0.1);
+                        border-radius: 8px;
+                        padding: 15px;
+                        border-left: 4px solid;
+                    }
+                    .admin-card {
+                        border-left-color: #FF5722;
+                    }
+                    .user-card {
+                        border-left-color: #2196F3;
+                    }
+                    .badge {
+                        display: inline-block;
+                        padding: 4px 8px;
+                        border-radius: 12px;
+                        font-size: 12px;
+                        font-weight: bold;
+                        margin-right: 10px;
+                    }
+                    .badge-admin {
+                        background: #FF5722;
+                        color: white;
+                    }
+                    .badge-user {
+                        background: #2196F3;
+                        color: white;
+                    }
+                    .btn {
+                        display: inline-block;
+                        background: #4CAF50;
+                        color: white;
+                        text-decoration: none;
+                        padding: 12px 24px;
+                        border-radius: 6px;
+                        font-weight: bold;
+                        margin-top: 20px;
+                        transition: background 0.3s;
+                    }
+                    .btn:hover {
+                        background: #45a049;
+                    }
+                    .credentials {
+                        background: rgba(0, 0, 0, 0.2);
+                        padding: 10px;
+                        border-radius: 6px;
+                        margin: 5px 0;
+                        font-family: monospace;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>✅ Base de Datos Inicializada EXITOSAMENTE</h1>
+                    
+                    <div class="success">
+                        <h2>🔄 Sistema CURIMINING Listo</h2>
+                        <p>Se han creado todas las tablas y usuarios necesarios para el sistema.</p>
+                    </div>
+                    
+                    <div class="warning">
+                        <h3>⚠️ ADVERTENCIA DE SEGURIDAD</h3>
+                        <p>Cambia las contraseñas por defecto inmediatamente después del primer acceso.</p>
+                        <p>Las credenciales iniciales son iguales al nombre de usuario (ej: usuario: ANDRES, contraseña: ANDRES).</p>
+                    </div>
+                    
+                    <h2>📋 Usuarios Creados</h2>
+                    <div class="user-list">
             '''
+            
+            # Agregar tarjetas de usuarios
+            for usuario in usuarios:
+                badge_class = "badge-admin" if usuario.rol == "admin" else "badge-user"
+                badge_text = "ADMIN" if usuario.rol == "admin" else "USER"
+                card_class = "admin-card" if usuario.rol == "admin" else "user-card"
+                
+                html_response += f'''
+                <div class="user-card {card_class}">
+                    <div style="margin-bottom: 10px;">
+                        <span class="badge {badge_class}">{badge_text}</span>
+                        <strong style="font-size: 18px;">{usuario.username}</strong>
+                    </div>
+                    <div class="credentials">
+                        <div><strong>Usuario:</strong> {usuario.username}</div>
+                        <div><strong>Contraseña:</strong> {usuario.username}</div>
+                        <div><strong>Rol:</strong> {usuario.rol}</div>
+                    </div>
+                </div>
+                '''
+            
+            html_response += '''
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <a href="/login" class="btn">🚀 Ir al Login</a>
+                    </div>
+                    
+                    <div style="margin-top: 30px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <h3>📊 Resumen de Usuarios</h3>
+                        <p><strong>Total de usuarios:</strong> ''' + str(len(usuarios)) + '''</p>
+                        <p><strong>Administradores:</strong> ''' + str(len([u for u in usuarios if u.rol == 'admin'])) + '''</p>
+                        <p><strong>Usuarios regulares:</strong> ''' + str(len([u for u in usuarios if u.rol == 'user'])) + '''</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            '''
+            
+            return html_response
         else:
             return '''
             <h1>❌ Error inicializando base de datos</h1>
@@ -225,7 +427,7 @@ def check():
         db.session.execute("SELECT 1")
         db_connected = True
         
-        # Verificar si existe la tabla 'user'
+        # Verificar si existe la tabla 'usuarios'
         table_exists = False
         try:
             User.query.first()
@@ -255,16 +457,43 @@ def check():
             'error': str(e)[:100]
         })
 
+# Ruta para listar usuarios (solo admin)
+@app.route('/usuarios')
+@admin_required
+def listar_usuarios():
+    usuarios = User.query.all()
+    return jsonify([{
+        'id': u.id,
+        'username': u.username,
+        'rol': u.rol
+    } for u in usuarios])
+
 # Inicializar base de datos automáticamente al arrancar
-print("=" * 50)
-print("🚀 Iniciando CURIMINING - Sistema de Gestión Minera")
-print("=" * 50)
+print("=" * 60)
+print("🚀 INICIANDO CURIMINING - SISTEMA DE GESTIÓN MINERA")
+print("=" * 60)
+print("👥 USUARIOS A CREAR:")
+print("-" * 60)
+print("👑 ADMINISTRADORES (4):")
+print("  • MINERA.ADMIN")
+print("  • ANDRES")
+print("  • RICARDO")
+print("  • ALEJANDRO")
+print()
+print("👥 USUARIOS REGULARES (5):")
+print("  • Minera1")
+print("  • Minera2")
+print("  • Minera3")
+print("  • Minera4")
+print("  • Minera5")
+print("=" * 60)
 
 # Intentar inicializar la base de datos
 with app.app_context():
     print("🔄 Intentando inicializar base de datos...")
     if initialize_database():
         print("✅ Base de datos inicializada con éxito")
+        print("✅ Todos los usuarios creados correctamente")
     else:
         print("⚠️  No se pudo inicializar la base de datos automáticamente")
         print("ℹ️  Visita /init-db para inicializar manualmente")
@@ -274,4 +503,3 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
     print(f"🌐 Servidor ejecutándose en: http://0.0.0.0:{port}")
     app.run(host='0.0.0.0', port=port, debug=False)
-    
