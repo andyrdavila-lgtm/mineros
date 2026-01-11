@@ -2,10 +2,13 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
+import sys
 from functools import wraps
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-this')
+
+# Configuración
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
 
 # Configuración de base de datos - Versión robusta
 def get_database_url():
@@ -13,12 +16,13 @@ def get_database_url():
     for env_var in ['DATABASE_URL', 'POSTGRESQL_URL', 'PG_URL', 'POSTGRES_URL']:
         db_url = os.environ.get(env_var)
         if db_url:
+            print(f"📦 Encontrada variable {env_var}: {db_url[:50]}...")
             if db_url.startswith('postgres://'):
                 db_url = db_url.replace('postgres://', 'postgresql://', 1)
             return db_url
     
     # Fallback para desarrollo
-    print("ADVERTENCIA: Usando SQLite local (modo desarrollo)")
+    print("⚠️  ADVERTENCIA: No se encontró DATABASE_URL. Usando SQLite.")
     return 'sqlite:///app.db'
 
 app.config['SQLALCHEMY_DATABASE_URI'] = get_database_url()
@@ -59,18 +63,10 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# Ruta de prueba simple
+# Ruta principal - Muestra el login
 @app.route('/')
 def index():
-    port = os.environ.get('PORT', 'No configurado')
-    db_url = app.config['SQLALCHEMY_DATABASE_URI']
-    return f'''
-    <h1>Aplicación Flask en Railway</h1>
-    <p>Puerto: {port}</p>
-    <p>Base de datos: {db_url[:50]}...</p>
-    <p><a href="/login">Ir al login</a></p>
-    <p><a href="/init-db">Inicializar BD</a></p>
-    '''
+    return redirect(url_for('login'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -78,19 +74,23 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
         
-        user = User.query.filter_by(username=username).first()
-        
-        if user and user.check_password(password):
-            session['user_id'] = user.id
-            session['username'] = user.username
-            session['rol'] = user.rol
+        try:
+            user = User.query.filter_by(username=username).first()
             
-            if user.rol == 'admin':
-                return redirect(url_for('admin'))
+            if user and user.check_password(password):
+                session['user_id'] = user.id
+                session['username'] = user.username
+                session['rol'] = user.rol
+                
+                if user.rol == 'admin':
+                    return redirect(url_for('admin'))
+                else:
+                    return redirect(url_for('inicio'))
             else:
-                return redirect(url_for('inicio'))
-        else:
-            return render_template('inicio.html', error='Usuario o contraseña incorrectos')
+                return render_template('inicio.html', error='Usuario o contraseña incorrectos')
+        except Exception as e:
+            print(f"Error en login: {e}")
+            return render_template('inicio.html', error='Error de conexión a la base de datos')
     
     return render_template('inicio.html')
 
@@ -142,34 +142,66 @@ def init_db():
             db.session.add(admin_user)
             db.session.commit()
             return '''
-            <h1>Base de datos inicializada</h1>
-            <p>Usuario admin creado:</p>
-            <p><strong>Usuario:</strong> admin</p>
-            <p><strong>Contraseña:</strong> admin123</p>
+            <h1>✅ Base de datos inicializada</h1>
+            <p><strong>Usuario admin creado:</strong></p>
+            <ul>
+                <li><strong>Usuario:</strong> admin</li>
+                <li><strong>Contraseña:</strong> admin123</li>
+            </ul>
             <p><a href="/login">Ir al login</a></p>
-            <p><strong>ADVERTENCIA:</strong> Cambia esta contraseña inmediatamente.</p>
+            <p style="color: red;"><strong>⚠️ ADVERTENCIA:</strong> Cambia esta contraseña inmediatamente.</p>
             '''
-        return 'Base de datos ya inicializada. <a href="/login">Ir al login</a>'
+        return '✅ Base de datos ya inicializada. <a href="/login">Ir al login</a>'
     except Exception as e:
-        return f'Error: {str(e)}'
+        return f'❌ Error: {str(e)}'
 
-# Inicializar base de datos al inicio
-@app.before_first_request
-def initialize_database():
+# Ruta para verificar estado
+@app.route('/check')
+def check():
     try:
-        db.create_all()
-        # Crear admin si no existe
-        if not User.query.filter_by(username='admin').first():
-            admin_user = User(username='admin', rol='admin')
-            admin_user.set_password('admin123')
-            db.session.add(admin_user)
-            db.session.commit()
-            print("Base de datos inicializada - admin creado")
+        # Intentar consultar la base de datos
+        user_count = User.query.count()
+        return jsonify({
+            'status': 'ok',
+            'port': os.environ.get('PORT', 'No configurado'),
+            'python_version': sys.version,
+            'database': 'conectada',
+            'user_count': user_count
+        })
     except Exception as e:
-        print(f"Error inicializando BD: {e}")
+        return jsonify({
+            'status': 'error',
+            'port': os.environ.get('PORT', 'No configurado'),
+            'python_version': sys.version,
+            'database': 'error',
+            'error': str(e)
+        })
 
+# Inicializar base de datos cuando se inicia la aplicación
+def init_database():
+    try:
+        with app.app_context():
+            db.create_all()
+            # Crear admin si no existe
+            if not User.query.filter_by(username='admin').first():
+                admin_user = User(username='admin', rol='admin')
+                admin_user.set_password('admin123')
+                db.session.add(admin_user)
+                db.session.commit()
+                print("✅ Base de datos inicializada - admin creado")
+    except Exception as e:
+        print(f"❌ Error inicializando BD: {e}")
+
+# Solo para ejecución local
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    print(f"🚀 Iniciando aplicación en puerto {port}")
-    print(f"🔗 URL de BD: {app.config['SQLALCHEMY_DATABASE_URI'][:50]}...")
+    port = int(os.environ.get('PORT', 3000))
+    print("=" * 50)
+    print(f"🚀 Iniciando aplicación Flask")
+    print(f"📊 Puerto: {port}")
+    print(f"🐍 Python: {sys.version}")
+    print("=" * 50)
+    
+    # Inicializar base de datos
+    init_database()
+    
     app.run(host='0.0.0.0', port=port, debug=False)
