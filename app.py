@@ -7,7 +7,7 @@ import sys
 import time
 from functools import wraps
 from sqlalchemy.exc import OperationalError, ProgrammingError
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 app = Flask(__name__)
 
@@ -308,7 +308,16 @@ def eliminar_aspecto(id):
 @login_required
 def api_aspectos():
     """API para obtener aspectos en formato JSON"""
-    aspectos = AspectoAmbiental.query.all()
+    # Filtrar por fuente si se especifica
+    fuente = request.args.get('fuente')
+    
+    query = AspectoAmbiental.query
+    
+    if fuente:
+        query = query.filter_by(fuente=fuente)
+    
+    aspectos = query.order_by(AspectoAmbiental.created_at.desc()).all()
+    
     return jsonify([{
         'id': a.id,
         'actividad': a.actividad,
@@ -417,6 +426,63 @@ def guardar_foda_ext():
         print(f"Error al guardar actividad fodaext: {e}")
         return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
 
+@app.route('/guardar_matriz_foda', methods=['POST'])
+@login_required
+def guardar_matriz_foda():
+    """Guardar actividades arrastradas desde CANVA a la matriz FODA"""
+    try:
+        if not request.is_json:
+            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
+        
+        data = request.get_json()
+        actividades = data.get('actividades', [])
+        
+        if not actividades:
+            return jsonify({'success': False, 'message': 'No hay actividades para guardar'}), 400
+        
+        actividades_guardadas = 0
+        
+        for actividad_data in actividades:
+            # Validar campos requeridos
+            if not actividad_data.get('actividad'):
+                continue
+            
+            if not actividad_data.get('tipo') or actividad_data.get('tipo') not in ['Positivo', 'Negativo']:
+                continue
+            
+            if not actividad_data.get('aspecto_nuevo') or actividad_data.get('aspecto_nuevo') not in [
+                'POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL'
+            ]:
+                continue
+            
+            # Crear nuevo registro en la tabla de AspectoAmbiental
+            nueva_actividad = AspectoAmbiental(
+                actividad=actividad_data['actividad'],
+                tipo=actividad_data['tipo'],
+                aspecto=actividad_data['aspecto_nuevo'],
+                fuente='foda_ext',
+                created_by=session['user_id']
+            )
+            db.session.add(nueva_actividad)
+            actividades_guardadas += 1
+        
+        if actividades_guardadas > 0:
+            db.session.commit()
+            return jsonify({
+                'success': True, 
+                'message': f'✅ {actividades_guardadas} actividades guardadas en la matriz FODA'
+            })
+        else:
+            return jsonify({
+                'success': False, 
+                'message': 'No se pudo guardar ninguna actividad (datos inválidos)'
+            }), 400
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al guardar matriz FODA: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
+
 @app.route('/eliminar_foda_ext/<int:id>', methods=['POST'])
 @login_required
 def eliminar_foda_ext(id):
@@ -517,46 +583,73 @@ def canvas():
 @app.route('/guardar_actividad_canva', methods=['POST'])
 @login_required
 def guardar_actividad_canva():
-    if request.is_json:
+    """Guardar una actividad del CANVA"""
+    try:
+        if not request.is_json:
+            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
+        
         data = request.get_json()
+        
+        # Validar campos requeridos
+        if not data.get('actividad'):
+            return jsonify({'success': False, 'message': 'La actividad es obligatoria'}), 400
+        
+        if not data.get('tipo'):
+            return jsonify({'success': False, 'message': 'El tipo de bloque es obligatorio'}), 400
+        
+        if not data.get('aspecto'):
+            return jsonify({'success': False, 'message': 'El aspecto (Positivo/Negativo) es obligatorio'}), 400
         
         # Crear nuevo aspecto ambiental específico para CANVA
         nuevo_aspecto = AspectoAmbiental(
-            actividad=data['actividad'],
+            actividad=data['actividad'].strip(),
             tipo=data['tipo'],  # Este será el bloque CANVA (ej: "Mapeo de Actores...")
             aspecto=data['aspecto'],  # Este será "Positivo: ..." o "Negativo: ..."
             fuente='canva',  # Marcamos que viene del CANVA
-            created_by=session['user_id']  # Usamos el ID del usuario en sesión
+            created_by=session['user_id']
         )
         
-        try:
-            db.session.add(nuevo_aspecto)
-            db.session.commit()
-            return jsonify({
-                'success': True,
-                'message': 'Actividad guardada correctamente',
-                'id': nuevo_aspecto.id
-            })
-        except Exception as e:
-            db.session.rollback()
-            return jsonify({'success': False, 'message': str(e)}), 500
-    
-    return jsonify({'success': False, 'message': 'Solicitud inválida'}), 400
+        db.session.add(nuevo_aspecto)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '✅ Actividad CANVA guardada correctamente',
+            'data': {
+                'id': nuevo_aspecto.id,
+                'actividad': nuevo_aspecto.actividad,
+                'tipo': nuevo_aspecto.tipo,
+                'aspecto': nuevo_aspecto.aspecto,
+                'fuente': nuevo_aspecto.fuente,
+                'created_at': nuevo_aspecto.created_at.strftime('%d/%m/%Y %H:%M')
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al guardar actividad canva: {e}")
+        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
 
 @app.route('/limpiar_canva', methods=['POST'])
 @login_required
 def limpiar_canva():
+    """Limpiar todas las actividades del CANVA (solo administradores)"""
     # Solo administradores pueden limpiar el CANVA
     if session.get('rol') != 'admin':
         return jsonify({'success': False, 'message': 'No autorizado. Solo administradores pueden limpiar el CANVA.'}), 403
     
     try:
         # Eliminar todas las actividades con fuente='canva'
+        num_eliminadas = AspectoAmbiental.query.filter_by(fuente='canva').count()
         AspectoAmbiental.query.filter_by(fuente='canva').delete()
         db.session.commit()
-        return jsonify({'success': True, 'message': 'CANVA limpiado correctamente'})
+        return jsonify({
+            'success': True, 
+            'message': f'✅ CANVA limpiado correctamente ({num_eliminadas} actividades eliminadas)'
+        })
     except Exception as e:
         db.session.rollback()
+        print(f"Error al limpiar canva: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
 # ==================== RUTAS ADICIONALES ====================
@@ -808,26 +901,6 @@ def check():
     })
 
 # ==================== MANEJO DE ERRORES ====================
-
-# Ruta para guardar actividades arrastradas desde CANVA
-@app.route('/guardar_matriz_foda', methods=['POST'])
-def guardar_matriz_foda():
-    data = request.json
-    actividades = data.get('actividades', [])
-    
-    for actividad in actividades:
-        # Crear nuevo registro en la tabla de FODA externo
-        nueva_actividad = FODAExterno(
-            actividad=actividad['actividad'],
-            tipo=actividad['tipo'],
-            aspecto=actividad['aspecto_nuevo'],  # El nuevo aspecto asignado
-            fuente='foda_ext',  # Siempre como FODA externo
-            empresa_id=current_user.empresa_id
-        )
-        db.session.add(nueva_actividad)
-    
-    db.session.commit()
-    return jsonify({'success': True, 'message': 'Actividades guardadas en la matriz FODA'})
 
 @app.errorhandler(404)
 def page_not_found(e):
