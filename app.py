@@ -66,6 +66,25 @@ class AspectoAmbiental(db.Model):
     # Relación
     creador = db.relationship('User', backref=db.backref('aspectos', lazy=True))
 
+# Tabla: Estrategias FODA Cruzado
+class EstrategiaFodaCruzado(db.Model):
+    __tablename__ = 'estrategias_foda_cruzado'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    tipo_cruce = db.Column(db.String(10), nullable=False)  # FO, DO, FA, DA
+    elemento_interno_id = db.Column(db.Integer, nullable=False)
+    elemento_interno_tipo = db.Column(db.String(20), nullable=False)  # fortaleza, debilidad
+    elemento_interno_texto = db.Column(db.String(500), nullable=False)
+    elemento_externo_id = db.Column(db.Integer, nullable=False)
+    elemento_externo_tipo = db.Column(db.String(20), nullable=False)  # oportunidad, amenaza
+    elemento_externo_texto = db.Column(db.String(500), nullable=False)
+    estrategia = db.Column(db.Text, nullable=False)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    creador_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    
+    # Relación
+    creador = db.relationship('User', backref=db.backref('estrategias_foda', lazy=True))
+
 # ==================== DECORADORES DE AUTENTICACIÓN ====================
 
 def login_required(f):
@@ -138,15 +157,15 @@ def initialize_database():
                 else:
                     usuarios_existentes += 1
             
-            # NO crear datos de ejemplo - la BD se alimentará desde la aplicación
-            
             # Commit todos los cambios
             if usuarios_creados > 0:
                 db.session.commit()
                 print(f"✅ {usuarios_creados} usuarios nuevos creados")
             
+            # Verificar que todas las tablas existen
             print(f"📊 Total de usuarios en sistema: {User.query.count()}")
             print(f"📊 Total de aspectos en sistema: {AspectoAmbiental.query.count()}")
+            print(f"📊 Total de estrategias FODA cruzado: {EstrategiaFodaCruzado.query.count()}")
             
             return True
             
@@ -627,19 +646,143 @@ def eliminar_foda_ext(id):
         print(f"Error al eliminar fodaext: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
+# ==================== RUTAS PARA ESTRATEGIAS FODA CRUZADO ====================
+
+@app.route('/guardar_estrategia_foda', methods=['POST'])
+@login_required
+def guardar_estrategia_foda():
+    """Guardar una estrategia FODA cruzado"""
+    try:
+        if not request.is_json:
+            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
+        
+        data = request.get_json()
+        
+        # Validar campos requeridos
+        campos_requeridos = [
+            'tipo_cruce', 'elemento_interno_id', 'elemento_interno_tipo',
+            'elemento_interno_texto', 'elemento_externo_id', 'elemento_externo_tipo',
+            'elemento_externo_texto', 'estrategia'
+        ]
+        
+        for campo in campos_requeridos:
+            if not data.get(campo):
+                return jsonify({'success': False, 'message': f'Campo {campo} es obligatorio'}), 400
+        
+        # Validar tipo de cruce
+        if data.get('tipo_cruce') not in ['FO', 'DO', 'FA', 'DA']:
+            return jsonify({'success': False, 'message': 'Tipo de cruce inválido'}), 400
+        
+        # Crear nueva estrategia
+        nueva_estrategia = EstrategiaFodaCruzado(
+            tipo_cruce=data['tipo_cruce'],
+            elemento_interno_id=data['elemento_interno_id'],
+            elemento_interno_tipo=data['elemento_interno_tipo'],
+            elemento_interno_texto=data['elemento_interno_texto'],
+            elemento_externo_id=data['elemento_externo_id'],
+            elemento_externo_tipo=data['elemento_externo_tipo'],
+            elemento_externo_texto=data['elemento_externo_texto'],
+            estrategia=data['estrategia'],
+            creador_id=session['user_id']
+        )
+        
+        db.session.add(nueva_estrategia)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '✅ Estrategia FODA cruzado guardada correctamente',
+            'data': {
+                'id': nueva_estrategia.id,
+                'tipo_cruce': nueva_estrategia.tipo_cruce,
+                'estrategia': nueva_estrategia.estrategia,
+                'fecha_creacion': nueva_estrategia.fecha_creacion.strftime('%d/%m/%Y %H:%M')
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al guardar estrategia FODA cruzado: {e}")
+        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
+
+@app.route('/api/estrategias_foda')
+@login_required
+def api_estrategias_foda():
+    """API para obtener estrategias FODA cruzado"""
+    try:
+        estrategias = EstrategiaFodaCruzado.query.order_by(
+            EstrategiaFodaCruzado.fecha_creacion.desc()
+        ).all()
+        
+        estrategias_data = []
+        for e in estrategias:
+            estrategias_data.append({
+                'tipo_cruce': e.tipo_cruce,
+                'elemento_interno_id': e.elemento_interno_id,
+                'elemento_interno_tipo': e.elemento_interno_tipo,
+                'elemento_interno_texto': e.elemento_interno_texto,
+                'elemento_externo_id': e.elemento_externo_id,
+                'elemento_externo_tipo': e.elemento_externo_tipo,
+                'elemento_externo_texto': e.elemento_externo_texto,
+                'estrategia': e.estrategia,
+                'fecha': e.fecha_creacion.isoformat() if e.fecha_creacion else None,
+                'creador': e.creador.username if e.creador else None
+            })
+        
+        return jsonify({'success': True, 'estrategias': estrategias_data})
+        
+    except Exception as e:
+        print(f"Error en api_estrategias_foda: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/eliminar_estrategia_foda/<int:id>', methods=['POST'])
+@login_required
+def eliminar_estrategia_foda(id):
+    """Eliminar una estrategia FODA cruzado"""
+    try:
+        # Verificar que el usuario es admin o el creador del registro
+        estrategia = EstrategiaFodaCruzado.query.get_or_404(id)
+        
+        if session.get('rol') != 'admin' and estrategia.creador_id != session.get('user_id'):
+            return jsonify({'success': False, 'message': 'No autorizado'}), 403
+        
+        db.session.delete(estrategia)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Estrategia eliminada correctamente'})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al eliminar estrategia FODA: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 # ==================== RUTAS ESPECÍFICAS PARA FODA CRUZADO ====================
 
 @app.route('/cruzado')
 @login_required
 def cruzado():
     """Página para análisis FODA Cruzado"""
-    # Aquí podríamos combinar datos de foda_int y foda_ext
-    aspectos_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').all()
-    aspectos_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').all()
-    
-    return render_template('cruzado.html', 
-                         aspectos_foda_ext=aspectos_foda_ext,
-                         aspectos_foda_int=aspectos_foda_int)
+    try:
+        # Obtener aspectos para FODA Externo e Interno
+        aspectos_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').all()
+        aspectos_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').all()
+        
+        # Obtener estrategias existentes
+        estrategias = EstrategiaFodaCruzado.query.order_by(
+            EstrategiaFodaCruzado.fecha_creacion.desc()
+        ).all()
+        
+        return render_template('cruzado.html', 
+                             aspectos_foda_ext=aspectos_foda_ext,
+                             aspectos_foda_int=aspectos_foda_int,
+                             estrategias=estrategias)
+        
+    except Exception as e:
+        print(f"Error en cruzado: {e}")
+        return render_template('cruzado.html',
+                             aspectos_foda_ext=[],
+                             aspectos_foda_int=[],
+                             estrategias=[])
 
 # ==================== RUTAS ESPECÍFICAS PARA CANVA ====================
 
@@ -773,6 +916,7 @@ def init_db():
         if initialize_database():
             usuarios = User.query.all()
             aspectos = AspectoAmbiental.query.all()
+            estrategias = EstrategiaFodaCruzado.query.all()
             
             html_response = '''
             <!DOCTYPE html>
@@ -925,6 +1069,7 @@ def init_db():
                     <div class="success">
                         <h2 style="margin-bottom: 10px;">Sistema CURIMINING Listo</h2>
                         <p>La base de datos ha sido inicializada exitosamente.</p>
+                        <p>Tablas creadas: usuarios, aspectos_ambientales, estrategias_foda_cruzado</p>
                     </div>
                     
                     <div class="stats-grid">
@@ -935,6 +1080,10 @@ def init_db():
                         <div class="stat-card">
                             <span class="stat-number">''' + str(len(aspectos)) + '''</span>
                             <span class="stat-label">📊 Aspectos</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number">''' + str(len(estrategias)) + '''</span>
+                            <span class="stat-label">♟️ Estrategias FODA</span>
                         </div>
                     </div>
                     
@@ -983,6 +1132,7 @@ def check():
         aspecto_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').count()
         aspecto_canva = AspectoAmbiental.query.filter_by(fuente='canva').count()
         aspecto_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').count()
+        estrategias_count = EstrategiaFodaCruzado.query.count()
         
     except Exception as e:
         db_status = f'error: {str(e)[:100]}'
@@ -991,6 +1141,7 @@ def check():
         aspecto_foda_ext = 0
         aspecto_canva = 0
         aspecto_foda_int = 0
+        estrategias_count = 0
     
     return jsonify({
         'status': 'ok',
@@ -1001,6 +1152,7 @@ def check():
         'aspectos_foda_ext': aspecto_foda_ext,
         'aspectos_canva': aspecto_canva,
         'aspectos_foda_int': aspecto_foda_int,
+        'estrategias_foda': estrategias_count,
         'port': os.environ.get('PORT', '3000'),
         'python_version': sys.version.split()[0]
     })
@@ -1031,6 +1183,9 @@ def api_admin_estadisticas():
             AspectoAmbiental.created_at >= fecha_limite
         ).count()
         
+        # Contar estrategias FODA cruzado
+        estrategias_count = EstrategiaFodaCruzado.query.count()
+        
         return jsonify({
             'success': True,
             'estadisticas': {
@@ -1038,6 +1193,7 @@ def api_admin_estadisticas():
                 'actividades_canva': total_actividades_canva,
                 'actividades_foda_ext': total_actividades_foda_ext,
                 'actividades_foda_int': total_actividades_foda_int,
+                'estrategias_foda_cruzado': estrategias_count,
                 'positivas_canva': AspectoAmbiental.query.filter_by(fuente='canva', tipo='Positivo').count(),
                 'negativas_canva': AspectoAmbiental.query.filter_by(fuente='canva', tipo='Negativo').count(),
                 'positivas_foda_ext': AspectoAmbiental.query.filter_by(fuente='foda_ext', tipo='Positivo').count(),
@@ -1276,6 +1432,9 @@ def admin_dashboard():
     actividades_positivas = AspectoAmbiental.query.filter_by(tipo='Positivo').count()
     actividades_negativas = AspectoAmbiental.query.filter_by(tipo='Negativo').count()
     
+    # Contar estrategias FODA cruzado
+    estrategias_count = EstrategiaFodaCruzado.query.count()
+    
     # Definir bloques CANVA para los filtros
     bloques_canva = [
         {'nombre': 'Mapeo de Actores y Comunidades Afectadas', 'icono': 'fas fa-users'},
@@ -1295,6 +1454,7 @@ def admin_dashboard():
                          total_actividades_canva=total_actividades_canva,
                          total_actividades_foda_ext=total_actividades_foda_ext,
                          total_actividades_foda_int=total_actividades_foda_int,
+                         estrategias_count=estrategias_count,
                          actividades_positivas=actividades_positivas,
                          actividades_negativas=actividades_negativas,
                          bloques_canva=bloques_canva)
@@ -1448,13 +1608,15 @@ def favicon():
 print("=" * 60)
 print("🚀 INICIANDO SISTEMA DE GESTIÓN AMBIENTAL MINERA - CURIMINING")
 print("=" * 60)
-print("📊 Versión: 2.1 (Responsive + Historial Mixto)")
+print("📊 Versión: 2.2 (FODA Cruzado Completo)")
 print("📅 Fecha: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 print("=" * 60)
 print("📱 Características:")
+print("  ✅ FODA Cruzado completo con base de datos")
+print("  ✅ 4 tipos de cruces: FO, DO, FA, DA")
+print("  ✅ Persistencia de estrategias")
+print("  ✅ Tabla automática de estrategias_foda_cruzado")
 print("  ✅ Responsive total (mobile, tablet, desktop)")
-print("  ✅ Historial mixto (foda_ext + canvas)")
-print("  ✅ Orden por aspecto: POLITICO, ECONOMICO, SOCIAL, TECNOLOGICO, ECOLOGICO, LEGAL")
 print("  ✅ 9 usuarios pre-creados")
 print("=" * 60)
 
@@ -1464,7 +1626,7 @@ with app.app_context():
         print("🔄 Inicializando base de datos...")
         if initialize_database():
             print("✅ Base de datos inicializada correctamente")
-            print("✅ Sistema optimizado para todos los dispositivos")
+            print("✅ Tablas creadas: usuarios, aspectos_ambientales, estrategias_foda_cruzado")
         else:
             print("⚠️  Advertencia: Problemas con la inicialización de BD")
         print("✅ Sistema listo para recibir conexiones")
@@ -1478,8 +1640,7 @@ print("=" * 60)
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3000))
     print(f"🌐 Servidor ejecutándose en: http://0.0.0.0:{port}")
-    print(f"📱 Modo: Responsive Completo")
-    print(f"📏 Soporte: Mobile (320px+) | Tablet (768px+) | Desktop (1024px+)")
+    print(f"📱 Modo: FODA Cruzado Completo")
     print("=" * 60)
     
     # Configurar para producción
