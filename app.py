@@ -48,13 +48,13 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
-# Nueva tabla: Aspectos Ambientales
+# Tabla: Aspectos Ambientales
 class AspectoAmbiental(db.Model):
     __tablename__ = 'aspectos_ambientales'
     id = db.Column(db.Integer, primary_key=True)
-    actividad = db.Column(db.String(200), nullable=False)
-    tipo = db.Column(db.String(100), nullable=False)
-    aspecto = db.Column(db.Text, nullable=False)
+    actividad = db.Column(db.String(500), nullable=False)
+    tipo = db.Column(db.String(200), nullable=False)  # Para CANVA: Nombre del bloque
+    aspecto = db.Column(db.String(500), nullable=False)  # Para CANVA: "Positivo: ..." o "Negativo: ..."
     fuente = db.Column(db.String(200), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -99,7 +99,7 @@ def initialize_database():
             db.create_all()
             print("✅ Tablas creadas exitosamente")
             
-            # Lista de usuarios a crear
+            # Lista de usuarios a crear (solo usuarios básicos)
             usuarios = [
                 # Administradores (4 usuarios)
                 {"username": "MINERA.ADMIN", "password": "MINERA.ADMIN", "rol": "admin"},
@@ -135,56 +135,15 @@ def initialize_database():
                 else:
                     usuarios_existentes += 1
             
-            # Datos de ejemplo para aspectos ambientales
-            aspectos_ejemplo = [
-                {
-                    "actividad": "Perforación de roca",
-                    "tipo": "Emisión atmosférica",
-                    "aspecto": "Generación de polvo en suspensión",
-                    "fuente": "Perforadora, voladura"
-                },
-                {
-                    "actividad": "Transporte de material",
-                    "tipo": "Consumo de recursos",
-                    "aspecto": "Consumo de combustible diesel",
-                    "fuente": "Camiones, maquinaria"
-                },
-                {
-                    "actividad": "Procesamiento de mineral",
-                    "tipo": "Generación de residuos",
-                    "aspecto": "Producción de relaves",
-                    "fuente": "Planta concentradora"
-                },
-                {
-                    "actividad": "Manejo de químicos",
-                    "tipo": "Riesgo de contaminación",
-                    "aspecto": "Derrames de reactivos químicos",
-                    "fuente": "Área de almacenamiento"
-                }
-            ]
-            
-            # Crear aspectos ambientales de ejemplo si no existen
-            for aspecto_info in aspectos_ejemplo:
-                aspecto_existe = AspectoAmbiental.query.filter_by(
-                    actividad=aspecto_info["actividad"],
-                    aspecto=aspecto_info["aspecto"]
-                ).first()
-                
-                if not aspecto_existe:
-                    nuevo_aspecto = AspectoAmbiental(**aspecto_info)
-                    db.session.add(nuevo_aspecto)
-                    print(f"  ✅ Aspecto '{aspecto_info['actividad']}' creado")
+            # NO crear datos de ejemplo - la BD se alimentará desde la aplicación
             
             # Commit todos los cambios
             if usuarios_creados > 0:
                 db.session.commit()
                 print(f"✅ {usuarios_creados} usuarios nuevos creados")
             
-            db.session.commit()
-            print("✅ Datos de ejemplo creados")
-            
-            print(f"📊 Total de usuarios: {User.query.count()}")
-            print(f"📊 Total de aspectos: {AspectoAmbiental.query.count()}")
+            print(f"📊 Total de usuarios en sistema: {User.query.count()}")
+            print(f"📊 Total de aspectos en sistema: {AspectoAmbiental.query.count()}")
             
             return True
             
@@ -244,20 +203,33 @@ def inicio():
         AspectoAmbiental.created_at.desc()
     ).limit(5).all()
     
+    # Obtener actividades del CANVA recientes
+    aspectos_canva = AspectoAmbiental.query.filter_by(fuente='canva').order_by(
+        AspectoAmbiental.created_at.desc()
+    ).limit(5).all()
+    
     return render_template('inicio.html', 
                          total_aspectos=total_aspectos,
-                         aspectos_recientes=aspectos_recientes)
+                         aspectos_recientes=aspectos_recientes,
+                         aspectos_canva=aspectos_canva)
 
 @app.route('/admin')
 @admin_required
 def admin():
     usuarios = User.query.all()
-    aspectos = AspectoAmbiental.query.all()
+    aspectos = AspectoAmbiental.query.order_by(AspectoAmbiental.created_at.desc()).all()
+    
+    # Estadísticas detalladas
+    total_actividades_canva = AspectoAmbiental.query.filter_by(fuente='canva').count()
+    total_actividades_foda = AspectoAmbiental.query.filter(AspectoAmbiental.fuente != 'canva').count()
+    
     return render_template('admin.html', 
                          usuarios=usuarios, 
                          aspectos=aspectos,
                          total_usuarios=len(usuarios),
-                         total_aspectos=len(aspectos))
+                         total_aspectos=len(aspectos),
+                         total_canva=total_actividades_canva,
+                         total_foda=total_actividades_foda)
 
 # ==================== RUTAS PARA ASPECTOS AMBIENTALES ====================
 
@@ -265,7 +237,7 @@ def admin():
 @login_required
 def listar_aspectos():
     """Lista todos los aspectos ambientales"""
-    aspectos = AspectoAmbiental.query.order_by(AspectoAmbiental.actividad).all()
+    aspectos = AspectoAmbiental.query.order_by(AspectoAmbiental.created_at.desc()).all()
     return render_template('aspectos.html', aspectos=aspectos)
 
 @app.route('/aspectos/crear', methods=['GET', 'POST'])
@@ -338,22 +310,143 @@ def api_aspectos():
         'updated_at': a.updated_at.isoformat() if a.updated_at else None
     } for a in aspectos])
 
-# ==================== RUTAS EXISTENTES ====================
+# ==================== RUTAS ESPECÍFICAS PARA FODA ====================
+
+@app.route('/fodaext')
+@login_required
+def fodaext():
+    """Página para análisis FODA Externo"""
+    # Obtener aspectos para FODA Externo (fuente no es 'canva')
+    aspectos_lista = AspectoAmbiental.query.filter(
+        AspectoAmbiental.fuente != 'canva'
+    ).order_by(AspectoAmbiental.created_at.desc()).all()
+    
+    return render_template('fodaext.html', aspectos_lista=aspectos_lista)
+
+@app.route('/guardar_foda_ext', methods=['POST'])
+@login_required
+def guardar_foda_ext():
+    """Guardar un aspecto para FODA Externo"""
+    if request.is_json:
+        data = request.get_json()
+        
+        nuevo_aspecto = AspectoAmbiental(
+            actividad=data['actividad'],
+            tipo=data['tipo'],  # 'Positivo' o 'Negativo'
+            aspecto=data['aspecto'],  # POLITICO, ECONOMICO, etc.
+            fuente='foda_ext',
+            created_by=session['user_id']
+        )
+        
+        try:
+            db.session.add(nuevo_aspecto)
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'message': 'Aspecto FODA guardado correctamente',
+                'id': nuevo_aspecto.id
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
+    
+    return jsonify({'success': False, 'message': 'Solicitud inválida'}), 400
+
+# ==================== RUTAS ESPECÍFICAS PARA CANVA ====================
 
 @app.route('/canvas')
 @login_required
 def canvas():
-    return render_template('canvas.html')
+    # Definir los bloques del CANVA
+    bloques_canva = [
+        {'nombre': 'Mapeo de Actores y Comunidades Afectadas', 'icono': 'fas fa-users'},
+        {'nombre': 'Propuesta de Valor', 'icono': 'fas fa-gem'},
+        {'nombre': 'Canales', 'icono': 'fas fa-broadcast-tower'},
+        {'nombre': 'Relación con Actores', 'icono': 'fas fa-handshake'},
+        {'nombre': 'Fuentes de Ingreso', 'icono': 'fas fa-money-bill-wave'},
+        {'nombre': 'Recursos Clave', 'icono': 'fas fa-tools'},
+        {'nombre': 'Actividades Clave', 'icono': 'fas fa-tasks'},
+        {'nombre': 'Socios Clave', 'icono': 'fas fa-handshake'},
+        {'nombre': 'Estructura de Costes', 'icono': 'fas fa-calculator'}
+    ]
+    
+    # Obtener actividades con fuente='canva'
+    aspectos_canva = AspectoAmbiental.query.filter_by(fuente='canva').order_by(
+        AspectoAmbiental.created_at.desc()
+    ).all()
+    
+    # Obtener estadísticas
+    total_actividades = AspectoAmbiental.query.filter_by(fuente='canva').count()
+    
+    # Contar positivas y negativas basado en el campo "aspecto"
+    positivas = AspectoAmbiental.query.filter(
+        AspectoAmbiental.fuente == 'canva',
+        AspectoAmbiental.aspecto.like('Positivo:%')
+    ).count()
+    
+    negativas = AspectoAmbiental.query.filter(
+        AspectoAmbiental.fuente == 'canva',
+        AspectoAmbiental.aspecto.like('Negativo:%')
+    ).count()
+    
+    return render_template('canvas.html',
+                         bloques_canva=bloques_canva,
+                         aspectos_canva=aspectos_canva,
+                         total_actividades=total_actividades,
+                         positivas=positivas,
+                         negativas=negativas)
+
+@app.route('/guardar_actividad_canva', methods=['POST'])
+@login_required
+def guardar_actividad_canva():
+    if request.is_json:
+        data = request.get_json()
+        
+        # Crear nuevo aspecto ambiental específico para CANVA
+        nuevo_aspecto = AspectoAmbiental(
+            actividad=data['actividad'],
+            tipo=data['tipo'],  # Este será el bloque CANVA (ej: "Mapeo de Actores...")
+            aspecto=data['aspecto'],  # Este será "Positivo: ..." o "Negativo: ..."
+            fuente='canva',  # Marcamos que viene del CANVA
+            created_by=session['user_id']  # Usamos el ID del usuario en sesión
+        )
+        
+        try:
+            db.session.add(nuevo_aspecto)
+            db.session.commit()
+            return jsonify({
+                'success': True,
+                'message': 'Actividad guardada correctamente',
+                'id': nuevo_aspecto.id
+            })
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({'success': False, 'message': str(e)}), 500
+    
+    return jsonify({'success': False, 'message': 'Solicitud inválida'}), 400
+
+@app.route('/limpiar_canva', methods=['POST'])
+@login_required
+def limpiar_canva():
+    # Solo administradores pueden limpiar el CANVA
+    if session.get('rol') != 'admin':
+        return jsonify({'success': False, 'message': 'No autorizado. Solo administradores pueden limpiar el CANVA.'}), 403
+    
+    try:
+        # Eliminar todas las actividades con fuente='canva'
+        AspectoAmbiental.query.filter_by(fuente='canva').delete()
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'CANVA limpiado correctamente'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# ==================== RUTAS EXISTENTES ====================
 
 @app.route('/cruzado')
 @login_required
 def cruzado():
     return render_template('cruzado.html')
-
-@app.route('/fodaext')
-@login_required
-def fodaext():
-    return render_template('fodaext.html')
 
 @app.route('/fodaint')
 @login_required
@@ -381,8 +474,9 @@ def init_db():
             <head><title>Base de Datos Inicializada</title></head>
             <body>
                 <h1>✅ Base de Datos Inicializada</h1>
-                <p>Usuarios creados: {len(usuarios)}</p>
-                <p>Aspectos ambientales creados: {len(aspectos)}</p>
+                <p>Usuarios en sistema: {len(usuarios)}</p>
+                <p>Aspectos ambientales en sistema: {len(aspectos)}</p>
+                <p><strong>NOTA:</strong> No se han creado datos de ejemplo. Los datos se alimentarán desde la aplicación.</p>
                 <p><a href="/login">Ir al Login</a></p>
             </body>
             </html>
@@ -399,16 +493,19 @@ def check():
         db_status = 'conectada'
         user_count = User.query.count()
         aspecto_count = AspectoAmbiental.query.count()
+        aspecto_canva_count = AspectoAmbiental.query.filter_by(fuente='canva').count()
     except:
         db_status = 'error'
         user_count = 0
         aspecto_count = 0
+        aspecto_canva_count = 0
     
     return jsonify({
         'status': 'ok',
         'database': db_status,
         'users': user_count,
         'aspectos': aspecto_count,
+        'aspectos_canva': aspecto_canva_count,
         'port': os.environ.get('PORT', '3000')
     })
 
