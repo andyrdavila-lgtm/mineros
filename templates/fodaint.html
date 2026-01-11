@@ -1,0 +1,1338 @@
+{% extends "inicio.html" %}
+
+{% block content %}
+<div class="fodaint-container">
+    <h1 class="content-title">FODA Interno - Análisis Organizacional</h1>
+    
+    <div class="columns-container">
+        <!-- Columna Izquierda - Historial de Actividades CANVA -->
+        <div class="column left-column">
+            <div class="form-section">
+                <h2><i class="fas fa-project-diagram"></i> Historial CANVA</h2>
+                <div class="historial-info">
+                    <p><i class="fas fa-info-circle"></i> Actividades disponibles para arrastrar a la matriz FODA Interno</p>
+                </div>
+                
+                <div class="historial-container" id="historial-canva">
+                    {% if historial_actividades %}
+                        {% for actividad in historial_actividades %}
+                            {% if actividad.fuente == 'canva' %}
+                            <div class="historial-item draggable-item" 
+                                 draggable="true"
+                                 data-id="{{ actividad.id }}"
+                                 data-actividad="{{ actividad.actividad|replace('"', '&quot;')|replace("'", "&#39;") }}"
+                                 data-tipo="{{ 'Positivo' if actividad.aspecto.startswith('Positivo') else 'Negativo' }}"
+                                 data-aspecto="{{ actividad.aspecto }}">
+                                <div class="historial-header">
+                                    <div class="historial-source-badge fuente-canva">
+                                        <i class="fas fa-project-diagram"></i> CANVA
+                                    </div>
+                                    <small class="historial-fecha">{{ actividad.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                                </div>
+                                
+                                <div class="historial-actividad {{ 'texto-positivo' if actividad.aspecto.startswith('Positivo') else 'texto-negativo' }}">
+                                    {{ actividad.actividad }}
+                                </div>
+                                
+                                <div class="historial-footer">
+                                    <div>
+                                        <span class="historial-aspecto">
+                                            {{ actividad.tipo }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="historial-tipo {{ 'tipo-positivo' if actividad.aspecto.startswith('Positivo') else 'tipo-negativo' }}">
+                                            {% if actividad.aspecto.startswith('Positivo') %}
+                                                <i class="fas fa-thumbs-up"></i> Positivo
+                                            {% else %}
+                                                <i class="fas fa-thumbs-down"></i> Negativo
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+                        {% if not historial_actividades|selectattr('fuente', 'equalto', 'canva')|list %}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No hay actividades CANVA</h3>
+                            <p>Las actividades de CANVA aparecerán aquí.</p>
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No hay actividades registradas</h3>
+                            <p>Las actividades de CANVA aparecerán aquí.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Columna Central - Matriz FODA Interno -->
+        <div class="column middle-column">
+            <div class="table-section">
+                <h2><i class="fas fa-th-large"></i> Matriz FODA Interno</h2>
+                <div class="matriz-header">
+                    <div class="matriz-stats">
+                        <span class="stat-badge total">{{ estadisticas.total }} total</span>
+                        <span class="stat-badge positivo">{{ estadisticas.positivos }} positivos</span>
+                        <span class="stat-badge negativo">{{ estadisticas.negativos }} negativos</span>
+                    </div>
+                </div>
+                
+                <div class="matriz-container">
+                    {% set aspectos_internos = [
+                        'ADMINISTRACIÓN Y GERENCIA',
+                        'MARKETING Y VENTAS', 
+                        'OPERACIONES Y LOGÍSTICA',
+                        'FINANZAS Y CONTABILIDAD',
+                        'RECURSOS HUMANOS',
+                        'SISTEMAS DE INFORMACIÓN',
+                        'TECNOLOGÍA'
+                    ] %}
+                    
+                    {% set actividades_por_aspecto = {} %}
+                    {% for aspecto in aspectos_internos %}
+                        {% set _ = actividades_por_aspecto.update({aspecto: []}) %}
+                    {% endfor %}
+                    
+                    {% if aspectos_lista %}
+                        {% for actividad in aspectos_lista %}
+                            {% if actividad.aspecto in actividades_por_aspecto %}
+                                {% set _ = actividades_por_aspecto[actividad.aspecto].append(actividad) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% for aspecto in aspectos_internos %}
+                        {% set actividades_aspecto = actividades_por_aspecto[aspecto] %}
+                        <div class="aspecto-group drop-zone" 
+                             data-aspecto="{{ aspecto }}"
+                             id="dropzone-{{ aspecto }}">
+                            <h3 class="aspecto-title">
+                                <i class="fas fa-folder"></i> {{ aspecto }}
+                                <span class="aspecto-count">{{ actividades_aspecto|length }}</span>
+                            </h3>
+                            
+                            {% if actividades_aspecto %}
+                                <div class="actividades-list">
+                                    {% for actividad in actividades_aspecto %}
+                                    <div class="actividad-item {{ 'actividad-positiva' if actividad.tipo == 'Positivo' else 'actividad-negativa' }}">
+                                        <div class="actividad-texto" style="color: {{ 'green' if actividad.tipo == 'Positivo' else '#8B0000' }};">
+                                            <i class="fas fa-circle" style="font-size: 8px; margin-right: 8px;"></i>
+                                            {{ actividad.actividad }}
+                                        </div>
+                                        <div class="actividad-tipo">
+                                            {% if actividad.tipo == 'Positivo' %}
+                                                <span class="tipo-indicador positivo">
+                                                    <i class="fas fa-plus-circle"></i> Positivo
+                                                </span>
+                                            {% else %}
+                                                <span class="tipo-indicador negativo">
+                                                    <i class="fas fa-minus-circle"></i> Negativo
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="empty-aspecto" id="empty-{{ aspecto }}">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p>Arrastre actividades CANVA aquí</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="matriz-actions">
+                    <button class="save-btn" onclick="guardarMatrizFodaInt()" id="btn-guardar-matriz" disabled>
+                        <i class="fas fa-save"></i> Guardar Matriz
+                    </button>
+                    <div id="matriz-message" class="mensaje-carga"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Columna Derecha - Ingresar Actividades FODA Interno -->
+        <div class="column right-column">
+            <div class="quick-input-section">
+                <h2><i class="fas fa-edit"></i> Ingresar Actividades FODA Interno</h2>
+                
+                <div class="input-box">
+                    <h3><i class="fas fa-tasks"></i> ACTIVIDAD</h3>
+                    <textarea id="quick-actividad" 
+                              placeholder="Describa la actividad aquí..."
+                              rows="4"
+                              class="quick-textarea"></textarea>
+                    <div class="char-counter">
+                        <span id="char-count">0</span>/500 caracteres
+                    </div>
+                </div>
+                
+                <div class="input-box">
+                    <h3><i class="fas fa-balance-scale"></i> TIPO</h3>
+                    <div class="tipo-options">
+                        <button id="btn-positivo" class="tipo-option positivo-option selected" 
+                                onclick="seleccionarTipo('Positivo')">
+                            <i class="fas fa-thumbs-up"></i> Positivo
+                        </button>
+                        <button id="btn-negativo" class="tipo-option negativo-option" 
+                                onclick="seleccionarTipo('Negativo')">
+                            <i class="fas fa-thumbs-down"></i> Negativo
+                        </button>
+                    </div>
+                    <input type="hidden" id="quick-tipo" value="Positivo">
+                </div>
+                
+                <div class="input-box">
+                    <h3><i class="fas fa-layer-group"></i> ASPECTO</h3>
+                    <div class="aspecto-options">
+                        {% set aspectos_internos = [
+                            'ADMINISTRACIÓN Y GERENCIA',
+                            'MARKETING Y VENTAS', 
+                            'OPERACIONES Y LOGÍSTICA',
+                            'FINANZAS Y CONTABILIDAD',
+                            'RECURSOS HUMANOS',
+                            'SISTEMAS DE INFORMACIÓN',
+                            'TECNOLOGÍA'
+                        ] %}
+                        {% for aspecto in aspectos_internos %}
+                        <button class="aspecto-option {% if aspecto == 'ADMINISTRACIÓN Y GERENCIA' %}selected{% endif %}" 
+                                onclick="seleccionarAspecto('{{ aspecto }}')"
+                                data-aspecto="{{ aspecto }}">
+                            {{ aspecto }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" id="quick-aspecto" value="ADMINISTRACIÓN Y GERENCIA">
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="guardarActividadFodaInt()">
+                        <i class="fas fa-upload"></i> Cargar
+                    </button>
+                    <button class="quick-action-btn secondary" onclick="limpiarEntradaRapida()">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </button>
+                </div>
+                
+                <div id="mensaje-carga" class="mensaje-carga"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ===== VARIABLES Y ESTILOS BASE ===== */
+    :root {
+        --color1: #1B4079;
+        --color2: #4D7C8A;
+        --color3: #7F9C96;
+        --color4: #8FAD88;
+        --color5: #CBDF90;
+        --success-color: #4CAF50;
+        --error-color: #f44336;
+        --warning-color: #FF9800;
+        --info-color: #2196F3;
+    }
+    
+    .fodaint-container {
+        padding: 15px;
+        width: 100%;
+        overflow-x: hidden;
+    }
+    
+    .content-title {
+        color: var(--color1);
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+        text-align: center;
+        padding-bottom: 15px;
+        border-bottom: 2px solid var(--color4);
+    }
+    
+    .columns-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .column {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .column:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    
+    /* ===== HISTORIAL DE ACTIVIDADES CANVA ===== */
+    .historial-info {
+        background: rgba(203, 223, 144, 0.2);
+        border: 1px solid var(--color5);
+        border-radius: 8px;
+        padding: 10px 15px;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+    }
+    
+    .historial-container {
+        max-height: 500px;
+        overflow-y: auto;
+        padding-right: 10px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color2) #f1f1f1;
+    }
+    
+    .historial-container::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .historial-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    .historial-container::-webkit-scrollbar-thumb {
+        background: var(--color2);
+        border-radius: 10px;
+    }
+    
+    .historial-item {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+        cursor: grab;
+        user-select: none;
+    }
+    
+    .historial-item:hover {
+        background: #f0f7ff;
+        border-color: var(--color2);
+        transform: translateY(-2px);
+    }
+    
+    .historial-item:active {
+        cursor: grabbing;
+        transform: scale(0.98);
+    }
+    
+    .historial-item.dragging {
+        opacity: 0.5;
+    }
+    
+    .historial-item.transferida {
+        opacity: 0.6;
+        background: #f0f0f0;
+        cursor: not-allowed;
+    }
+    
+    .historial-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .historial-source-badge {
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .fuente-canva {
+        background-color: rgba(203, 223, 144, 0.2);
+        color: #5a6c2a;
+        border: 1px solid var(--color5);
+    }
+    
+    .transferida-badge {
+        background-color: #6c757d;
+        color: white;
+        border: 1px solid #6c757d;
+    }
+    
+    .historial-fecha {
+        color: #666;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .historial-actividad {
+        margin: 12px 0;
+        line-height: 1.5;
+        font-size: 0.95rem;
+        padding: 10px;
+        background: white;
+        border-radius: 6px;
+        border-left: 4px solid;
+    }
+    
+    .texto-positivo {
+        border-left-color: var(--success-color) !important;
+        color: #2e7d32 !important;
+    }
+    
+    .texto-negativo {
+        border-left-color: var(--error-color) !important;
+        color: #8B0000 !important;
+    }
+    
+    .historial-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px dashed #ddd;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .historial-aspecto {
+        background: rgba(127, 156, 150, 0.1);
+        color: var(--color3);
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .historial-tipo {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 4px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .tipo-positivo {
+        background-color: rgba(76, 175, 80, 0.1);
+        color: #2e7d32;
+    }
+    
+    .tipo-negativo {
+        background-color: rgba(244, 67, 54, 0.1);
+        color: #c62828;
+    }
+    
+    /* ===== MATRIZ FODA CON DROP ZONES ===== */
+    .matriz-header {
+        margin-bottom: 20px;
+    }
+    
+    .matriz-stats {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .stat-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .stat-badge.total {
+        background: rgba(33, 150, 243, 0.1);
+        color: var(--info-color);
+        border: 1px solid var(--info-color);
+    }
+    
+    .stat-badge.positivo {
+        background: rgba(76, 175, 80, 0.1);
+        color: var(--success-color);
+        border: 1px solid var(--success-color);
+    }
+    
+    .stat-badge.negativo {
+        background: rgba(244, 67, 54, 0.1);
+        color: var(--error-color);
+        border: 1px solid var(--error-color);
+    }
+    
+    .matriz-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+    
+    .aspecto-group {
+        background: white;
+        border: 2px dashed #e0e0e0;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        transition: all 0.3s;
+        min-height: 100px;
+    }
+    
+    .aspecto-group.drag-over {
+        border-color: var(--color2);
+        background-color: rgba(77, 124, 138, 0.05);
+        border-style: solid;
+    }
+    
+    .aspecto-title {
+        color: var(--color1);
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--color3);
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .aspecto-count {
+        background: var(--color1);
+        color: white;
+        padding: 2px 10px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    
+    .actividades-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .actividad-item {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        transition: all 0.3s;
+    }
+    
+    @media (min-width: 768px) {
+        .actividad-item {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+        }
+    }
+    
+    .actividad-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .actividad-positiva {
+        border-left: 4px solid var(--success-color);
+    }
+    
+    .actividad-negativa {
+        border-left: 4px solid var(--error-color);
+    }
+    
+    .actividad-texto {
+        flex: 1;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .actividad-tipo {
+        flex-shrink: 0;
+    }
+    
+    .tipo-indicador {
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding: 5px 10px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .tipo-indicador.positivo {
+        background: rgba(76, 175, 80, 0.1);
+        color: var(--success-color);
+    }
+    
+    .tipo-indicador.negativo {
+        background: rgba(244, 67, 54, 0.1);
+        color: var(--error-color);
+    }
+    
+    .empty-aspecto {
+        text-align: center;
+        padding: 20px;
+        color: #666;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px dashed #ccc;
+        margin-top: 10px;
+    }
+    
+    .empty-aspecto i {
+        font-size: 1.5rem;
+        color: #ccc;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    /* ===== BOTÓN GUARDAR MATRIZ ===== */
+    .matriz-actions {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+        text-align: center;
+    }
+    
+    .save-btn {
+        padding: 12px 30px;
+        background: linear-gradient(135deg, var(--color1), var(--color2));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .save-btn:hover:not(:disabled) {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .save-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #6c757d;
+    }
+    
+    /* ===== FORMULARIO DE INGRESO ===== */
+    .quick-input-section h2 {
+        color: var(--color1);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--color4);
+        font-size: 1.4rem;
+    }
+    
+    .input-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .input-box h3 {
+        color: var(--color3);
+        margin-bottom: 12px;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .quick-textarea {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+        font-size: 0.95rem;
+        transition: border 0.3s;
+    }
+    
+    .quick-textarea:focus {
+        border-color: var(--color2);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(77, 124, 138, 0.1);
+    }
+    
+    .char-counter {
+        text-align: right;
+        font-size: 0.8rem;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .tipo-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .tipo-option {
+        padding: 12px;
+        border: 2px solid;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: white;
+    }
+    
+    .positivo-option {
+        color: var(--success-color);
+        border-color: var(--success-color);
+    }
+    
+    .negativo-option {
+        color: var(--error-color);
+        border-color: var(--error-color);
+    }
+    
+    .tipo-option.selected {
+        transform: scale(0.98);
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.1);
+    }
+    
+    .tipo-option:not(.selected) {
+        background-color: #f5f5f5 !important;
+        color: #888 !important;
+        border-color: #ddd !important;
+    }
+    
+    .aspecto-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    .aspecto-option {
+        padding: 10px;
+        border: 1px solid #ccc;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.85rem;
+        text-align: center;
+        transition: all 0.3s;
+        font-weight: 600;
+    }
+    
+    .aspecto-option:hover {
+        background-color: #f0f7ff;
+        border-color: var(--color2);
+    }
+    
+    .aspecto-option.selected {
+        background-color: var(--color1);
+        color: white;
+        border-color: var(--color1);
+    }
+    
+    .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 25px;
+    }
+    
+    .quick-action-btn {
+        padding: 14px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s;
+    }
+    
+    .quick-action-btn:first-child {
+        background: linear-gradient(135deg, var(--color1), var(--color2));
+        color: white;
+    }
+    
+    .quick-action-btn.secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .quick-action-btn:hover:not(:disabled) {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .quick-action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    /* ===== MENSAJES ===== */
+    .mensaje-carga {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.95rem;
+        display: none;
+        animation: fadeIn 0.3s;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    .mensaje-exito {
+        background: rgba(76, 175, 80, 0.1);
+        color: #2e7d32;
+        border: 1px solid var(--success-color);
+        display: block;
+    }
+    
+    .mensaje-error {
+        background: rgba(244, 67, 54, 0.1);
+        color: #c62828;
+        border: 1px solid var(--error-color);
+        display: block;
+    }
+    
+    .mensaje-info {
+        background: rgba(33, 150, 243, 0.1);
+        color: var(--info-color);
+        border: 1px solid var(--info-color);
+        display: block;
+    }
+    
+    /* ===== ESTADO VACÍO ===== */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #666;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        color: #ddd;
+        margin-bottom: 15px;
+        display: block;
+    }
+    
+    /* ===== MEDIA QUERIES RESPONSIVE ===== */
+    @media (min-width: 768px) {
+        .columns-container {
+            grid-template-columns: 1fr 2fr;
+        }
+        
+        .middle-column {
+            grid-column: span 2;
+        }
+        
+        .content-title {
+            font-size: 2rem;
+        }
+        
+        .fodaint-container {
+            padding: 20px;
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .columns-container {
+            grid-template-columns: 1fr 2fr 1fr;
+        }
+        
+        .middle-column {
+            grid-column: auto;
+        }
+        
+        .historial-container {
+            max-height: 700px;
+        }
+        
+        .matriz-container {
+            max-height: 800px;
+        }
+    }
+    
+    @media (min-width: 1200px) {
+        .fodaint-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .content-title {
+            font-size: 2.2rem;
+        }
+    }
+</style>
+
+<script>
+    // Variables globales
+    let tipoSeleccionado = 'Positivo';
+    let aspectoSSeleccionado = 'ADMINISTRACIÓN Y GERENCIA';
+    let actividadesArrastradas = new Map();
+    let actividadesTransferidas = new Set();
+    
+    // Inicializar al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        seleccionarTipo('Positivo');
+        seleccionarAspecto('ADMINISTRACIÓN Y GERENCIA');
+        
+        // Contador de caracteres
+        const textarea = document.getElementById('quick-actividad');
+        const charCount = document.getElementById('char-count');
+        
+        if (textarea && charCount) {
+            textarea.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+                if (this.value.length > 450) {
+                    charCount.style.color = '#f44336';
+                } else if (this.value.length > 400) {
+                    charCount.style.color = '#FF9800';
+                } else {
+                    charCount.style.color = '#666';
+                }
+            });
+            charCount.textContent = textarea.value.length;
+        }
+        
+        // Inicializar drag and drop
+        initDragAndDrop();
+        
+        // Configurar drop zones
+        setupDropZones();
+        
+        // Inicializar botón de guardar como deshabilitado
+        document.getElementById('btn-guardar-matriz').disabled = true;
+    });
+    
+    // Configurar zonas de drop
+    function setupDropZones() {
+        const dropZones = document.querySelectorAll('.drop-zone');
+        
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                this.classList.add('drag-over');
+            });
+            
+            zone.addEventListener('dragenter', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+            
+            zone.addEventListener('dragleave', function(e) {
+                if (!this.contains(e.relatedTarget)) {
+                    this.classList.remove('drag-over');
+                }
+            });
+            
+            zone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                handleDrop(e, this);
+            });
+        });
+    }
+    
+    // Inicializar drag and drop para elementos arrastrables
+    function initDragAndDrop() {
+        const draggables = document.querySelectorAll('.draggable-item');
+        
+        draggables.forEach(item => {
+            item.addEventListener('dragstart', function(e) {
+                // Si ya fue transferida, no permitir arrastrar
+                if (this.classList.contains('transferida')) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                const data = {
+                    id: this.dataset.id,
+                    actividad: this.dataset.actividad,
+                    tipo: this.dataset.tipo,
+                    aspecto_original: this.dataset.aspecto
+                };
+                
+                e.dataTransfer.setData('text/plain', JSON.stringify(data));
+                e.dataTransfer.effectAllowed = 'move';
+                this.classList.add('dragging');
+            });
+            
+            item.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+            });
+        });
+    }
+    
+    // Manejar drop
+    function handleDrop(e, dropZone) {
+        try {
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const nuevoAspecto = dropZone.dataset.aspecto;
+            
+            // Verificar si ya fue transferida
+            if (actividadesTransferidas.has(data.id)) {
+                mostrarMensajeMatriz('⚠️ Esta actividad ya fue transferida', 'info');
+                return;
+            }
+            
+            // Almacenar la actividad arrastrada
+            actividadesArrastradas.set(data.id, {
+                actividad: data.actividad,
+                tipo: data.tipo,
+                aspecto_original: data.aspecto_original,
+                aspecto_nuevo: nuevoAspecto,
+                canva_id: data.id
+            });
+            
+            // Marcar como transferida
+            actividadesTransferidas.add(data.id);
+            
+            // Mostrar visualmente en la matriz
+            agregarActividadVisual(dropZone, data.actividad, data.tipo);
+            
+            // Marcar la actividad original como transferida
+            const originalItem = document.querySelector(`.historial-item[data-id="${data.id}"]`);
+            if (originalItem) {
+                originalItem.classList.add('transferida');
+                originalItem.draggable = false;
+                originalItem.style.cursor = 'not-allowed';
+                
+                // Agregar badge de transferida
+                const header = originalItem.querySelector('.historial-header');
+                if (header) {
+                    const transferidaBadge = document.createElement('div');
+                    transferidaBadge.className = 'historial-source-badge transferida-badge';
+                    transferidaBadge.innerHTML = '<i class="fas fa-check"></i> Transferida';
+                    header.appendChild(transferidaBadge);
+                }
+            }
+            
+            // Habilitar botón de guardar
+            document.getElementById('btn-guardar-matriz').disabled = false;
+            
+            console.log(`Actividad ${data.id} arrastrada a ${nuevoAspecto}`);
+        } catch (error) {
+            console.error('Error al procesar drop:', error);
+            mostrarMensajeMatriz('❌ Error al procesar la actividad', 'error');
+        }
+    }
+    
+    // Agregar actividad visualmente a la matriz
+    function agregarActividadVisual(dropZone, actividad, tipo) {
+        // Verificar si hay un contenedor de actividades
+        let actividadesList = dropZone.querySelector('.actividades-list');
+        
+        // Si no hay lista de actividades, crear una
+        if (!actividadesList) {
+            // Remover el empty-aspecto si existe
+            const emptyDiv = dropZone.querySelector('.empty-aspecto');
+            if (emptyDiv) {
+                emptyDiv.remove();
+            }
+            
+            // Crear nueva lista
+            actividadesList = document.createElement('div');
+            actividadesList.className = 'actividades-list';
+            dropZone.appendChild(actividadesList);
+        }
+        
+        // Crear elemento de actividad
+        const actividadItem = document.createElement('div');
+        actividadItem.className = `actividad-item ${tipo === 'Positivo' ? 'actividad-positiva' : 'actividad-negativa'}`;
+        actividadItem.innerHTML = `
+            <div class="actividad-texto" style="color: ${tipo === 'Positivo' ? 'green' : '#8B0000'};">
+                <i class="fas fa-circle" style="font-size: 8px; margin-right: 8px;"></i>
+                ${actividad}
+            </div>
+            <div class="actividad-tipo">
+                <span class="tipo-indicador ${tipo === 'Positivo' ? 'positivo' : 'negativo'}">
+                    <i class="fas ${tipo === 'Positivo' ? 'plus-circle' : 'minus-circle'}"></i> ${tipo}
+                </span>
+            </div>
+        `;
+        
+        actividadesList.appendChild(actividadItem);
+        
+        // Actualizar contador
+        const countSpan = dropZone.querySelector('.aspecto-count');
+        if (countSpan) {
+            const currentCount = parseInt(countSpan.textContent) || 0;
+            countSpan.textContent = currentCount + 1;
+        }
+    }
+    
+    // Guardar matriz de FODA Interno
+    function guardarMatrizFodaInt() {
+        if (actividadesArrastradas.size === 0) {
+            mostrarMensajeMatriz('ℹ️ No hay actividades nuevas para guardar', 'info');
+            return;
+        }
+        
+        const btn = document.getElementById('btn-guardar-matriz');
+        if (!btn) return;
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        
+        // Convertir Map a array
+        const actividadesArray = Array.from(actividadesArrastradas.values());
+        
+        // Mostrar mensaje de carga
+        mostrarMensajeMatriz('Guardando actividades FODA Interno...', 'info');
+        
+        fetch('/guardar_matriz_foda_int', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                actividades: actividadesArray,
+                fuente: 'foda_int'
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                mostrarMensajeMatriz('✅ ' + data.message, 'exito');
+                
+                // Limpiar actividades arrastradas después de guardar
+                actividadesArrastradas.clear();
+                actividadesTransferidas.clear();
+                
+                // Recargar después de 2 segundos
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            } else {
+                mostrarMensajeMatriz('❌ ' + data.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Guardar Matriz';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarMensajeMatriz('❌ Error al conectar con el servidor', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Guardar Matriz';
+        });
+    }
+    
+    // Mostrar mensaje en la matriz
+    function mostrarMensajeMatriz(texto, tipo) {
+        const mensajeDiv = document.getElementById('matriz-message');
+        if (!mensajeDiv) return;
+        
+        mensajeDiv.textContent = texto;
+        mensajeDiv.className = 'mensaje-carga';
+        
+        if (tipo === 'exito') {
+            mensajeDiv.classList.add('mensaje-exito');
+        } else if (tipo === 'info') {
+            mensajeDiv.classList.add('mensaje-info');
+        } else {
+            mensajeDiv.classList.add('mensaje-error');
+        }
+        
+        if (window.innerWidth < 768) {
+            mensajeDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // Ocultar mensaje después de 5 segundos (excepto éxito)
+        if (tipo !== 'exito') {
+            setTimeout(() => {
+                mensajeDiv.style.display = 'none';
+            }, 5000);
+        }
+    }
+    
+    // Funciones para el formulario de entrada rápida
+    function seleccionarTipo(tipo) {
+        tipoSeleccionado = tipo;
+        
+        const btnPositivo = document.getElementById('btn-positivo');
+        const btnNegativo = document.getElementById('btn-negativo');
+        
+        if (btnPositivo && btnNegativo) {
+            if (tipo === 'Positivo') {
+                btnPositivo.classList.add('selected');
+                btnNegativo.classList.remove('selected');
+            } else {
+                btnNegativo.classList.add('selected');
+                btnPositivo.classList.remove('selected');
+            }
+        }
+        
+        document.getElementById('quick-tipo').value = tipo;
+    }
+    
+    function seleccionarAspecto(aspecto) {
+        aspectoSSeleccionado = aspecto;
+        
+        document.querySelectorAll('.aspecto-option').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        
+        const btnSeleccionado = document.querySelector(`.aspecto-option[data-aspecto="${aspecto}"]`);
+        if (btnSeleccionado) {
+            btnSeleccionado.classList.add('selected');
+        }
+        
+        document.getElementById('quick-aspecto').value = aspecto;
+    }
+    
+    // Guardar actividad de FODA Interno
+    function guardarActividadFodaInt() {
+        const actividad = document.getElementById('quick-actividad').value.trim();
+        const tipo = tipoSeleccionado;
+        const aspecto = aspectoSSeleccionado;
+        
+        // Validaciones
+        if (!actividad) {
+            mostrarMensaje('❌ Por favor, ingrese una actividad.', 'error');
+            document.getElementById('quick-actividad').focus();
+            return;
+        }
+        
+        if (actividad.length > 500) {
+            mostrarMensaje('❌ La actividad no puede superar los 500 caracteres.', 'error');
+            return;
+        }
+        
+        // Deshabilitar botón durante la carga
+        const btn = document.querySelector('.quick-action-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+        }
+        
+        // Enviar datos al servidor
+        fetch('/guardar_foda_int', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                actividad: actividad,
+                tipo: tipo,
+                aspecto: aspecto,
+                fuente: 'foda_int'
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                mostrarMensaje('✅ ' + data.message, 'exito');
+                limpiarEntradaRapida();
+                
+                // Recargar la página para ver los cambios
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                mostrarMensaje('❌ Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarMensaje('❌ Error al conectar con el servidor.', 'error');
+        })
+        .finally(() => {
+            // Rehabilitar botón
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-upload"></i> Cargar';
+            }
+        });
+    }
+    
+    function mostrarMensaje(texto, tipo) {
+        const mensajeDiv = document.getElementById('mensaje-carga');
+        if (!mensajeDiv) return;
+        
+        mensajeDiv.textContent = texto;
+        mensajeDiv.className = 'mensaje-carga';
+        
+        if (tipo === 'exito') {
+            mensajeDiv.classList.add('mensaje-exito');
+        } else {
+            mensajeDiv.classList.add('mensaje-error');
+        }
+        
+        if (window.innerWidth < 768) {
+            mensajeDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        setTimeout(() => {
+            mensajeDiv.style.display = 'none';
+        }, 5000);
+    }
+    
+    function limpiarEntradaRapida() {
+        const textarea = document.getElementById('quick-actividad');
+        if (textarea) {
+            textarea.value = '';
+            const charCount = document.getElementById('char-count');
+            if (charCount) charCount.textContent = '0';
+        }
+        
+        seleccionarTipo('Positivo');
+        seleccionarAspecto('ADMINISTRACIÓN Y GERENCIA');
+        
+        const mensajeDiv = document.getElementById('mensaje-carga');
+        if (mensajeDiv) mensajeDiv.style.display = 'none';
+        
+        if (textarea) textarea.focus();
+    }
+</script>
+{% endblock %}
