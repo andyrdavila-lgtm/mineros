@@ -69,7 +69,6 @@ def index():
     <p>Puerto: {port}</p>
     <p>Base de datos: {db_url[:50]}...</p>
     <p><a href="/login">Ir al login</a></p>
-    <p><a href="/health">Verificar salud</a></p>
     <p><a href="/init-db">Inicializar BD</a></p>
     '''
 
@@ -153,22 +152,6 @@ def init_db():
         return 'Base de datos ya inicializada. <a href="/login">Ir al login</a>'
     except Exception as e:
         return f'Error: {str(e)}'
-
-# Ruta de verificación
-@app.route('/health')
-def health():
-    try:
-        db.session.execute('SELECT 1')
-        db_status = 'ok'
-    except:
-        db_status = 'error'
-    
-    return jsonify({
-        'status': 'ok',
-        'port': os.environ.get('PORT', 'No configurado'),
-        'database': db_status,
-        'python_version': os.sys.version.split()[0]
-    })
 
 # Inicializar base de datos al inicio
 @app.before_first_request
