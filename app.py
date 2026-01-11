@@ -1091,6 +1091,309 @@ def page_not_found(e):
     </html>
     ''', 404
 
+# ==================== RUTAS API PARA ADMIN DASHBOARD ====================
+
+@app.route('/api/admin/estadisticas')
+@admin_required
+def api_admin_estadisticas():
+    """API para obtener estadísticas del dashboard administrativo"""
+    try:
+        # Obtener estadísticas generales
+        total_actividades = AspectoAmbiental.query.count()
+        usuarios_count = User.query.count()
+        
+        # Estadísticas por fuente
+        total_actividades_canva = AspectoAmbiental.query.filter_by(fuente='canva').count()
+        total_actividades_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').count()
+        total_actividades_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').count()
+        
+        # Contar actividades positivas y negativas
+        actividades_positivas = AspectoAmbiental.query.filter_by(tipo='Positivo').count()
+        actividades_negativas = AspectoAmbiental.query.filter_by(tipo='Negativo').count()
+        
+        # Actividades de los últimos 7 días
+        fecha_limite = datetime.utcnow() - timedelta(days=7)
+        actividades_recientes_7dias = AspectoAmbiental.query.filter(
+            AspectoAmbiental.created_at >= fecha_limite
+        ).count()
+        
+        return jsonify({
+            'success': True,
+            'estadisticas': {
+                'total_actividades': total_actividades,
+                'actividades_canva': total_actividades_canva,
+                'actividades_foda_ext': total_actividades_foda_ext,
+                'actividades_foda_int': total_actividades_foda_int,
+                'positivas_canva': AspectoAmbiental.query.filter_by(fuente='canva', tipo='Positivo').count(),
+                'negativas_canva': AspectoAmbiental.query.filter_by(fuente='canva', tipo='Negativo').count(),
+                'positivas_foda_ext': AspectoAmbiental.query.filter_by(fuente='foda_ext', tipo='Positivo').count(),
+                'negativas_foda_ext': AspectoAmbiental.query.filter_by(fuente='foda_ext', tipo='Negativo').count(),
+                'actividades_recientes_7dias': actividades_recientes_7dias,
+                'usuarios_total': usuarios_count,
+                'actividades_positivas': actividades_positivas,
+                'actividades_negativas': actividades_negativas
+            }
+        })
+        
+    except Exception as e:
+        print(f"Error en api_admin_estadisticas: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/admin/filtrar_actividades', methods=['POST'])
+@admin_required
+def api_admin_filtrar_actividades():
+    """API para filtrar actividades del dashboard administrativo"""
+    try:
+        data = request.get_json()
+        
+        # Obtener parámetros de filtro
+        tipo_filtro = data.get('tipo_filtro', 'all')
+        bloque_filtro = data.get('bloque_filtro', 'all')
+        fuente_filtro = data.get('fuente_filtro', 'all')
+        fecha_desde = data.get('fecha_desde')
+        fecha_hasta = data.get('fecha_hasta')
+        busqueda = data.get('busqueda', '').strip()
+        orden_por = data.get('orden_por', 'fecha_desc')
+        pagina = data.get('pagina', 1)
+        por_pagina = data.get('por_pagina', 25)
+        
+        # Construir consulta base
+        query = AspectoAmbiental.query
+        
+        # Aplicar filtros
+        if tipo_filtro != 'all':
+            query = query.filter(AspectoAmbiental.tipo == tipo_filtro)
+        
+        if bloque_filtro != 'all':
+            query = query.filter(AspectoAmbiental.aspecto == bloque_filtro)
+        
+        if fuente_filtro != 'all':
+            query = query.filter(AspectoAmbiental.fuente == fuente_filtro)
+        
+        if fecha_desde:
+            try:
+                fecha_desde_dt = datetime.strptime(fecha_desde, '%Y-%m-%d')
+                query = query.filter(AspectoAmbiental.created_at >= fecha_desde_dt)
+            except ValueError:
+                pass
+        
+        if fecha_hasta:
+            try:
+                fecha_hasta_dt = datetime.strptime(fecha_hasta, '%Y-%m-%d')
+                # Ajustar para incluir todo el día
+                fecha_hasta_dt = fecha_hasta_dt.replace(hour=23, minute=59, second=59)
+                query = query.filter(AspectoAmbiental.created_at <= fecha_hasta_dt)
+            except ValueError:
+                pass
+        
+        if busqueda:
+            query = query.filter(
+                or_(
+                    AspectoAmbiental.actividad.ilike(f'%{busqueda}%'),
+                    AspectoAmbiental.aspecto.ilike(f'%{busqueda}%')
+                )
+            )
+        
+        # Aplicar ordenamiento
+        if orden_por == 'fecha_desc':
+            query = query.order_by(AspectoAmbiental.created_at.desc())
+        elif orden_por == 'fecha_asc':
+            query = query.order_by(AspectoAmbiental.created_at.asc())
+        elif orden_por == 'actividad_asc':
+            query = query.order_by(AspectoAmbiental.actividad.asc())
+        elif orden_por == 'actividad_desc':
+            query = query.order_by(AspectoAmbiental.actividad.desc())
+        elif orden_por == 'tipo_asc':
+            query = query.order_by(AspectoAmbiental.tipo.asc())
+        
+        # Paginación
+        total = query.count()
+        total_paginas = (total + por_pagina - 1) // por_pagina
+        offset = (pagina - 1) * por_pagina
+        actividades = query.offset(offset).limit(por_pagina).all()
+        
+        # Formatear datos para la respuesta
+        actividades_formateadas = []
+        for a in actividades:
+            # Determinar la descripción basada en la fuente
+            if a.fuente == 'canva':
+                descripcion = f"Bloque CANVA: {a.tipo}"
+            elif a.fuente == 'foda_ext':
+                descripcion = f"FODA Externo - {a.aspecto}"
+            elif a.fuente == 'foda_int':
+                descripcion = f"FODA Interno - {a.aspecto}"
+            else:
+                descripcion = a.aspecto
+            
+            actividades_formateadas.append({
+                'id': a.id,
+                'actividad': a.actividad,
+                'tipo': a.tipo,
+                'bloque': a.aspecto,
+                'aspecto': descripcion,
+                'fuente': a.fuente,
+                'fecha': a.created_at.strftime('%Y-%m-%d %H:%M:%S') if a.created_at else '',
+                'creador': a.creador.username if a.creador else 'Desconocido'
+            })
+        
+        return jsonify({
+            'success': True,
+            'actividades': actividades_formateadas,
+            'total': total,
+            'total_paginas': total_paginas,
+            'pagina_actual': pagina
+        })
+        
+    except Exception as e:
+        print(f"Error en api_admin_filtrar_actividades: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/admin/exportar_datos', methods=['POST'])
+@admin_required
+def api_admin_exportar_datos():
+    """API para exportar datos a CSV"""
+    try:
+        data = request.get_json()
+        
+        # Obtener parámetros de filtro (mismos que en filtrar_actividades)
+        tipo_filtro = data.get('tipo_filtro', 'all')
+        bloque_filtro = data.get('bloque_filtro', 'all')
+        fuente_filtro = data.get('fuente_filtro', 'all')
+        fecha_desde = data.get('fecha_desde')
+        fecha_hasta = data.get('fecha_hasta')
+        busqueda = data.get('busqueda', '').strip()
+        orden_por = data.get('orden_por', 'fecha_desc')
+        
+        # Construir consulta (misma lógica que en filtrar_actividades)
+        query = AspectoAmbiental.query
+        
+        if tipo_filtro != 'all':
+            query = query.filter(AspectoAmbiental.tipo == tipo_filtro)
+        
+        if bloque_filtro != 'all':
+            query = query.filter(AspectoAmbiental.aspecto == bloque_filtro)
+        
+        if fuente_filtro != 'all':
+            query = query.filter(AspectoAmbiental.fuente == fuente_filtro)
+        
+        if fecha_desde:
+            try:
+                fecha_desde_dt = datetime.strptime(fecha_desde, '%Y-%m-%d')
+                query = query.filter(AspectoAmbiental.created_at >= fecha_desde_dt)
+            except ValueError:
+                pass
+        
+        if fecha_hasta:
+            try:
+                fecha_hasta_dt = datetime.strptime(fecha_hasta, '%Y-%m-%d')
+                fecha_hasta_dt = fecha_hasta_dt.replace(hour=23, minute=59, second=59)
+                query = query.filter(AspectoAmbiental.created_at <= fecha_hasta_dt)
+            except ValueError:
+                pass
+        
+        if busqueda:
+            query = query.filter(
+                or_(
+                    AspectoAmbiental.actividad.ilike(f'%{busqueda}%'),
+                    AspectoAmbiental.aspecto.ilike(f'%{busqueda}%')
+                )
+            )
+        
+        # Aplicar ordenamiento
+        if orden_por == 'fecha_desc':
+            query = query.order_by(AspectoAmbiental.created_at.desc())
+        elif orden_por == 'fecha_asc':
+            query = query.order_by(AspectoAmbiental.created_at.asc())
+        elif orden_por == 'actividad_asc':
+            query = query.order_by(AspectoAmbiental.actividad.asc())
+        elif orden_por == 'actividad_desc':
+            query = query.order_by(AspectoAmbiental.actividad.desc())
+        elif orden_por == 'tipo_asc':
+            query = query.order_by(AspectoAmbiental.tipo.asc())
+        
+        actividades = query.all()
+        
+        # Crear CSV en memoria
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Escribir encabezados
+        writer.writerow(['ID', 'Actividad', 'Tipo', 'Aspecto/Bloque', 'Fuente', 'Fecha Creación', 'Creador'])
+        
+        # Escribir datos
+        for a in actividades:
+            writer.writerow([
+                a.id,
+                a.actividad,
+                a.tipo,
+                a.aspecto,
+                a.fuente,
+                a.created_at.strftime('%Y-%m-%d %H:%M:%S') if a.created_at else '',
+                a.creador.username if a.creador else 'Desconocido'
+            ])
+        
+        # Preparar respuesta
+        response = make_response(output.getvalue())
+        response.headers['Content-Disposition'] = f'attachment; filename=actividades_export_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+        response.headers['Content-type'] = 'text/csv'
+        
+        return response
+        
+    except Exception as e:
+        print(f"Error en api_admin_exportar_datos: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# ==================== NUEVA RUTA PARA DASHBOARD ADMIN ====================
+
+@app.route('/admin/dashboard')
+@admin_required
+def admin_dashboard():
+    """Dashboard administrativo mejorado con filtros y estadísticas"""
+    # Obtener estadísticas iniciales
+    total_actividades = AspectoAmbiental.query.count()
+    usuarios_count = User.query.count()
+    
+    # Estadísticas por fuente
+    total_actividades_canva = AspectoAmbiental.query.filter_by(fuente='canva').count()
+    total_actividades_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').count()
+    total_actividades_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').count()
+    
+    # Contar actividades positivas y negativas
+    actividades_positivas = AspectoAmbiental.query.filter_by(tipo='Positivo').count()
+    actividades_negativas = AspectoAmbiental.query.filter_by(tipo='Negativo').count()
+    
+    # Definir bloques CANVA para los filtros
+    bloques_canva = [
+        {'nombre': 'Mapeo de Actores y Comunidades Afectadas', 'icono': 'fas fa-users'},
+        {'nombre': 'Propuesta de Valor', 'icono': 'fas fa-gem'},
+        {'nombre': 'Canales', 'icono': 'fas fa-broadcast-tower'},
+        {'nombre': 'Relación con Actores', 'icono': 'fas fa-handshake'},
+        {'nombre': 'Fuentes de Ingreso', 'icono': 'fas fa-money-bill-wave'},
+        {'nombre': 'Recursos Clave', 'icono': 'fas fa-tools'},
+        {'nombre': 'Actividades Clave', 'icono': 'fas fa-tasks'},
+        {'nombre': 'Socios Clave', 'icono': 'fas fa-handshake'},
+        {'nombre': 'Estructura de Costes', 'icono': 'fas fa-calculator'}
+    ]
+    
+    return render_template('admin_dashboard.html',
+                         total_actividades=total_actividades,
+                         usuarios_count=usuarios_count,
+                         total_actividades_canva=total_actividades_canva,
+                         total_actividades_foda_ext=total_actividades_foda_ext,
+                         total_actividades_foda_int=total_actividades_foda_int,
+                         actividades_positivas=actividades_positivas,
+                         actividades_negativas=actividades_negativas,
+                         bloques_canva=bloques_canva)
+
+# ==================== ACTUALIZAR RUTA ADMIN PRINCIPAL ====================
+
+@app.route('/admin')
+@admin_required
+def admin():
+    """Página principal de administración"""
+    # Redirigir al nuevo dashboard
+    return redirect(url_for('admin_dashboard'))
+
 @app.errorhandler(500)
 def internal_server_error(e):
     """Manejar error 500 - Error interno del servidor"""
