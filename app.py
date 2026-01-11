@@ -809,6 +809,26 @@ def check():
 
 # ==================== MANEJO DE ERRORES ====================
 
+# Ruta para guardar actividades arrastradas desde CANVA
+@app.route('/guardar_matriz_foda', methods=['POST'])
+def guardar_matriz_foda():
+    data = request.json
+    actividades = data.get('actividades', [])
+    
+    for actividad in actividades:
+        # Crear nuevo registro en la tabla de FODA externo
+        nueva_actividad = FODAExterno(
+            actividad=actividad['actividad'],
+            tipo=actividad['tipo'],
+            aspecto=actividad['aspecto_nuevo'],  # El nuevo aspecto asignado
+            fuente='foda_ext',  # Siempre como FODA externo
+            empresa_id=current_user.empresa_id
+        )
+        db.session.add(nueva_actividad)
+    
+    db.session.commit()
+    return jsonify({'success': True, 'message': 'Actividades guardadas en la matriz FODA'})
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
