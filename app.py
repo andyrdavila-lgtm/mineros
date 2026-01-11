@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import os
 import sys
+import csv
 import time
 from functools import wraps
 from sqlalchemy.exc import OperationalError, ProgrammingError
