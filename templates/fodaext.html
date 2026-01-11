@@ -11,8 +11,8 @@
                 <h2><i class="fas fa-history"></i> Historial de Actividades</h2>
                 
                 <div class="historial-container">
-                    {% if historial_actividades %}
-                        {% for actividad in historial_actividades %}
+                    {% if aspectos_lista %}
+                        {% for actividad in aspectos_lista[:10] %}
                         <div class="historial-item">
                             <div class="historial-header">
                                 <span class="historial-aspecto {{ 'aspecto-positivo' if actividad.tipo == 'Positivo' else 'aspecto-negativo' }}">
@@ -31,7 +31,9 @@
                                         ❌ NEGATIVO
                                     {% endif %}
                                 </span>
-                                <small class="historial-usuario">{{ actividad.created_by or 'Sistema' }}</small>
+                                <small class="historial-usuario">
+                                    {{ actividad.creador.username if actividad.creador else 'Sistema' }}
+                                </small>
                             </div>
                         </div>
                         {% endfor %}
@@ -52,8 +54,26 @@
                 <h2><i class="fas fa-th-large"></i> Matriz FODA Externo</h2>
                 
                 <div class="matriz-container">
-                    {% for aspecto in ['POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL'] %}
-                        {% set actividades_aspecto = actividades_por_aspecto.get(aspecto, []) %}
+                    {% set aspectos_orden = ['POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL'] %}
+                    
+                    {# Crear un diccionario para agrupar actividades por aspecto #}
+                    {% set actividades_por_aspecto = {} %}
+                    {% for aspecto in aspectos_orden %}
+                        {% set _ = actividades_por_aspecto.update({aspecto: []}) %}
+                    {% endfor %}
+                    
+                    {# Agrupar las actividades #}
+                    {% if aspectos_lista %}
+                        {% for actividad in aspectos_lista %}
+                            {% if actividad.aspecto in actividades_por_aspecto %}
+                                {% set _ = actividades_por_aspecto[actividad.aspecto].append(actividad) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {# Mostrar cada aspecto en orden #}
+                    {% for aspecto in aspectos_orden %}
+                        {% set actividades_aspecto = actividades_por_aspecto[aspecto] %}
                         <div class="aspecto-group">
                             <h3 class="aspecto-title">{{ aspecto }}</h3>
                             
@@ -625,22 +645,25 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
         
-        // Enviar datos al servidor
-        fetch('/guardar_actividad_fodaext', {
+        // Enviar datos al servidor - USANDO LA RUTA CORRECTA DE TU APP.PY
+        fetch('/guardar_foda_ext', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token() }}'
             },
             body: JSON.stringify({
                 actividad: actividad,
                 tipo: tipo,
                 aspecto: aspecto,
-                fuente: '',
-                created_by: 'fodaext'
+                fuente: 'foda_ext'  // Esto marca que viene de FODA Externo
             })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 mostrarMensaje('✅ Actividad guardada correctamente.', 'exito');
@@ -651,7 +674,7 @@
                     window.location.reload();
                 }, 1500);
             } else {
-                mostrarMensaje('❌ Error: ' + data.error, 'error');
+                mostrarMensaje('❌ Error: ' + data.message, 'error');
             }
         })
         .catch(error => {
