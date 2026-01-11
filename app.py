@@ -1,11 +1,12 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, make_response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import sys
-import csv
 import time
+import io
+import csv
 from functools import wraps
 from sqlalchemy.exc import OperationalError, ProgrammingError
 from sqlalchemy import or_, and_
@@ -185,7 +186,7 @@ def login():
                 session['rol'] = user.rol
                 
                 if user.rol == 'admin':
-                    return redirect(url_for('admin'))
+                    return redirect(url_for('admin_dashboard'))
                 else:
                     return redirect(url_for('inicio'))
             else:
@@ -220,26 +221,6 @@ def inicio():
                          aspectos_recientes=aspectos_recientes,
                          aspectos_canva=aspectos_canva,
                          aspectos_foda=aspectos_foda)
-
-@app.route('/admin')
-@admin_required
-def admin():
-    usuarios = User.query.all()
-    aspectos = AspectoAmbiental.query.order_by(AspectoAmbiental.created_at.desc()).all()
-    
-    # Estadísticas detalladas
-    total_actividades_canva = AspectoAmbiental.query.filter_by(fuente='canva').count()
-    total_actividades_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').count()
-    total_actividades_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').count()
-    
-    return render_template('admin.html', 
-                         usuarios=usuarios, 
-                         aspectos=aspectos,
-                         total_usuarios=len(usuarios),
-                         total_aspectos=len(aspectos),
-                         total_canva=total_actividades_canva,
-                         total_foda_ext=total_actividades_foda_ext,
-                         total_foda_int=total_actividades_foda_int)
 
 # ==================== RUTAS PARA ASPECTOS AMBIENTALES ====================
 
@@ -1024,74 +1005,6 @@ def check():
         'python_version': sys.version.split()[0]
     })
 
-# ==================== MANEJO DE ERRORES ====================
-
-@app.errorhandler(404)
-def page_not_found(e):
-    """Manejar error 404 - Página no encontrada"""
-    # Si la solicitud es para favicon.ico, devolver un 204 (No Content)
-    if request.path == '/favicon.ico':
-        return '', 204
-    
-    # Para otras rutas, devolver un mensaje simple
-    return '''
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>404 - Página no encontrada</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                text-align: center;
-                padding: 50px;
-                background: linear-gradient(135deg, #1B4079 0%, #4D7C8A 100%);
-                color: white;
-                height: 100vh;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            .container {
-                background: rgba(255, 255, 255, 0.1);
-                padding: 40px;
-                border-radius: 10px;
-                backdrop-filter: blur(10px);
-            }
-            h1 {
-                color: #CBDF90;
-                font-size: 3rem;
-                margin-bottom: 20px;
-            }
-            p {
-                font-size: 1.2rem;
-                margin-bottom: 30px;
-            }
-            a {
-                color: #CBDF90;
-                text-decoration: none;
-                font-weight: bold;
-                border: 2px solid #CBDF90;
-                padding: 10px 20px;
-                border-radius: 5px;
-                transition: all 0.3s;
-            }
-            a:hover {
-                background: #CBDF90;
-                color: #1B4079;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>404</h1>
-            <p>La página que buscas no existe.</p>
-            <a href="/">Volver al inicio</a>
-        </div>
-    </body>
-    </html>
-    ''', 404
-
 # ==================== RUTAS API PARA ADMIN DASHBOARD ====================
 
 @app.route('/api/admin/estadisticas')
@@ -1391,9 +1304,77 @@ def admin_dashboard():
 @app.route('/admin')
 @admin_required
 def admin():
-    """Página principal de administración"""
+    """Página principal de administración - Redirige al dashboard"""
     # Redirigir al nuevo dashboard
     return redirect(url_for('admin_dashboard'))
+
+# ==================== MANEJO DE ERRORES ====================
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Manejar error 404 - Página no encontrada"""
+    # Si la solicitud es para favicon.ico, devolver un 204 (No Content)
+    if request.path == '/favicon.ico':
+        return '', 204
+    
+    # Para otras rutas, devolver un mensaje simple
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>404 - Página no encontrada</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                padding: 50px;
+                background: linear-gradient(135deg, #1B4079 0%, #4D7C8A 100%);
+                color: white;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .container {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 40px;
+                border-radius: 10px;
+                backdrop-filter: blur(10px);
+            }
+            h1 {
+                color: #CBDF90;
+                font-size: 3rem;
+                margin-bottom: 20px;
+            }
+            p {
+                font-size: 1.2rem;
+                margin-bottom: 30px;
+            }
+            a {
+                color: #CBDF90;
+                text-decoration: none;
+                font-weight: bold;
+                border: 2px solid #CBDF90;
+                padding: 10px 20px;
+                border-radius: 5px;
+                transition: all 0.3s;
+            }
+            a:hover {
+                background: #CBDF90;
+                color: #1B4079;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>404</h1>
+            <p>La página que buscas no existe.</p>
+            <a href="/">Volver al inicio</a>
+        </div>
+    </body>
+    </html>
+    ''', 404
 
 @app.errorhandler(500)
 def internal_server_error(e):
