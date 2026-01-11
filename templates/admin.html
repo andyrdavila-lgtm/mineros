@@ -1,0 +1,1467 @@
+{% extends "inicio.html" %}
+
+{% block content %}
+<div class="dashboard-main-container">
+    <h1 class="content-title">
+        <i class="fas fa-chart-line"></i> Dashboard Administrativo - Actividades por Aspecto
+    </h1>
+    
+    <!-- Filtros -->
+    <div class="filtros-section">
+        <div class="filtros-header">
+            <h2><i class="fas fa-filter"></i> Filtros de Búsqueda</h2>
+            <button class="btn-limpiar" onclick="limpiarFiltros()">
+                <i class="fas fa-eraser"></i> Limpiar Filtros
+            </button>
+        </div>
+        
+        <div class="filtros-grid">
+            <!-- Filtro por Tipo -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-balance-scale"></i> Tipo de Actividad</h3>
+                <div class="tipo-filtro-options">
+                    <button class="tipo-filtro-btn all-tipo selected" onclick="seleccionarFiltroTipo('all')">
+                        Todos
+                    </button>
+                    <button class="tipo-filtro-btn positivo" onclick="seleccionarFiltroTipo('Positivo')">
+                        <i class="fas fa-thumbs-up"></i> Positivas
+                    </button>
+                    <button class="tipo-filtro-btn negativo" onclick="seleccionarFiltroTipo('Negativo')">
+                        <i class="fas fa-thumbs-down"></i> Negativas
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Filtro por Bloque CANVA -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-layer-group"></i> Bloque CANVA</h3>
+                <select id="filtro-bloque" class="select-filtro" onchange="aplicarFiltros()">
+                    <option value="all">Todos los bloques</option>
+                    {% for bloque in bloques_canva %}
+                    <option value="{{ bloque.nombre }}">{{ loop.index }}. {{ bloque.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Filtro por Fuente -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-database"></i> Fuente</h3>
+                <select id="filtro-fuente" class="select-filtro" onchange="aplicarFiltros()">
+                    <option value="all">Todas las fuentes</option>
+                    <option value="canva">CANVA</option>
+                    <option value="manual">Manual</option>
+                    <option value="importado">Importado</option>
+                </select>
+            </div>
+            
+            <!-- Filtro por Fecha -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-calendar-alt"></i> Rango de Fechas</h3>
+                <div class="fecha-filtro">
+                    <div class="fecha-input">
+                        <label for="fecha-desde">Desde:</label>
+                        <input type="date" id="fecha-desde" class="date-input" onchange="aplicarFiltros()">
+                    </div>
+                    <div class="fecha-input">
+                        <label for="fecha-hasta">Hasta:</label>
+                        <input type="date" id="fecha-hasta" class="date-input" onchange="aplicarFiltros()">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Filtro por Palabra Clave -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-search"></i> Palabra Clave</h3>
+                <div class="search-box">
+                    <input type="text" id="filtro-busqueda" class="search-input" 
+                           placeholder="Buscar en actividades..." onkeyup="aplicarFiltros()">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+            </div>
+            
+            <!-- Ordenamiento -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-sort"></i> Ordenar por</h3>
+                <select id="ordenar-por" class="select-filtro" onchange="aplicarFiltros()">
+                    <option value="fecha_desc">Fecha (más reciente primero)</option>
+                    <option value="fecha_asc">Fecha (más antiguo primero)</option>
+                    <option value="actividad_asc">Actividad (A-Z)</option>
+                    <option value="actividad_desc">Actividad (Z-A)</option>
+                    <option value="tipo_asc">Tipo (A-Z)</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="filtros-actions">
+            <button class="btn-aplicar" onclick="aplicarFiltros()">
+                <i class="fas fa-check-circle"></i> Aplicar Filtros
+            </button>
+            <button class="btn-exportar" onclick="exportarDashboard()">
+                <i class="fas fa-file-export"></i> Exportar Datos
+            </button>
+        </div>
+    </div>
+    
+    <!-- Resumen Estadístico -->
+    <div class="estadisticas-section">
+        <h2><i class="fas fa-chart-pie"></i> Resumen Estadístico</h2>
+        <div class="estadisticas-grid">
+            <div class="estadistica-card total">
+                <div class="estadistica-icon">
+                    <i class="fas fa-list-alt"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Total Actividades</h3>
+                    <div class="estadistica-valor" id="total-actividades">0</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card positivas">
+                <div class="estadistica-icon">
+                    <i class="fas fa-thumbs-up"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Actividades Positivas</h3>
+                    <div class="estadistica-valor" id="total-positivas">0</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card negativas">
+                <div class="estadistica-icon">
+                    <i class="fas fa-thumbs-down"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Actividades Negativas</h3>
+                    <div class="estadistica-valor" id="total-negativas">0</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card bloques">
+                <div class="estadistica-icon">
+                    <i class="fas fa-th-large"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Bloques Usados</h3>
+                    <div class="estadistica-valor" id="total-bloques">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabla de Actividades -->
+    <div class="tabla-section">
+        <div class="tabla-header">
+            <h2><i class="fas fa-table"></i> Lista de Actividades</h2>
+            <div class="tabla-info">
+                <span id="registros-mostrados">Mostrando 0 de 0 registros</span>
+                <div class="paginacion-control">
+                    <button class="paginacion-btn" onclick="cambiarPagina(-1)">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </button>
+                    <span class="pagina-actual" id="pagina-actual">Página 1</span>
+                    <button class="paginacion-btn" onclick="cambiarPagina(1)">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="dashboard-table" id="tabla-actividades">
+                <thead>
+                    <tr>
+                        <th width="5%">ID</th>
+                        <th width="25%">Actividad</th>
+                        <th width="15%">Tipo</th>
+                        <th width="15%">Bloque CANVA</th>
+                        <th width="15%">Aspecto</th>
+                        <th width="10%">Fuente</th>
+                        <th width="15%">Fecha Registro</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body">
+                    <!-- Los datos se cargarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="tabla-footer">
+            <div class="resultados-por-pagina">
+                <label for="resultados-pagina">Resultados por página:</label>
+                <select id="resultados-pagina" class="select-paginacion" onchange="cambiarResultadosPorPagina()">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            
+            <button class="btn-refrescar" onclick="cargarDatos()">
+                <i class="fas fa-sync-alt"></i> Refrescar Datos
+            </button>
+        </div>
+    </div>
+    
+    <!-- Gráficos de Distribución -->
+    <div class="graficos-section">
+        <h2><i class="fas fa-chart-bar"></i> Distribución de Actividades</h2>
+        <div class="graficos-grid">
+            <div class="grafico-card">
+                <h3><i class="fas fa-chart-pie"></i> Por Tipo</h3>
+                <div class="grafico-container">
+                    <canvas id="grafico-tipo"></canvas>
+                </div>
+            </div>
+            
+            <div class="grafico-card">
+                <h3><i class="fas fa-chart-bar"></i> Por Bloque CANVA</h3>
+                <div class="grafico-container">
+                    <canvas id="grafico-bloque"></canvas>
+                </div>
+            </div>
+            
+            <div class="grafico-card">
+                <h3><i class="fas fa-chart-line"></i> Por Fecha</h3>
+                <div class="grafico-container">
+                    <canvas id="grafico-fecha"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos generales del dashboard */
+    .dashboard-main-container {
+        padding: 20px;
+        background: #f5f7fa;
+        min-height: 100vh;
+    }
+    
+    .content-title {
+        color: #0c2461;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #4a69bd;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .content-title i {
+        color: #4a69bd;
+    }
+    
+    /* Estilos para la sección de filtros */
+    .filtros-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
+    }
+    
+    .filtros-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f2f5;
+    }
+    
+    .filtros-header h2 {
+        color: #0c2461;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .btn-limpiar {
+        background: #6a89cc;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+    
+    .btn-limpiar:hover {
+        background: #5a79bc;
+        transform: translateY(-2px);
+    }
+    
+    .filtros-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+    
+    @media (max-width: 1200px) {
+        .filtros-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .filtros-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .filtro-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .filtro-box h3 {
+        color: #1e3799;
+        margin-bottom: 15px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .tipo-filtro-options {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    
+    .tipo-filtro-btn {
+        padding: 8px 16px;
+        border: 2px solid #dee2e6;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .tipo-filtro-btn.all-tipo {
+        border-color: #0c2461;
+        color: #0c2461;
+    }
+    
+    .tipo-filtro-btn.positivo {
+        border-color: #4CAF50;
+        color: #2e7d32;
+    }
+    
+    .tipo-filtro-btn.negativo {
+        border-color: #ff6b6b;
+        color: #c62828;
+    }
+    
+    .tipo-filtro-btn.selected {
+        background: #0c2461;
+        color: white;
+        border-color: #0c2461;
+        font-weight: bold;
+    }
+    
+    .tipo-filtro-btn.positivo.selected {
+        background: #4CAF50;
+        color: white;
+        border-color: #4CAF50;
+    }
+    
+    .tipo-filtro-btn.negativo.selected {
+        background: #ff6b6b;
+        color: white;
+        border-color: #ff6b6b;
+    }
+    
+    .select-filtro {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+    }
+    
+    .select-filtro:focus {
+        border-color: #4a69bd;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
+    }
+    
+    .fecha-filtro {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    
+    .fecha-input {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .fecha-input label {
+        font-size: 12px;
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .date-input {
+        padding: 8px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    
+    .search-box {
+        position: relative;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 10px 40px 10px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    
+    .search-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    
+    .filtros-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f2f5;
+    }
+    
+    .btn-aplicar, .btn-exportar {
+        padding: 12px 30px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        font-size: 15px;
+    }
+    
+    .btn-aplicar {
+        background: #0c2461;
+        color: white;
+    }
+    
+    .btn-exportar {
+        background: #4a69bd;
+        color: white;
+    }
+    
+    .btn-aplicar:hover, .btn-exportar:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    
+    /* Estilos para la sección de estadísticas */
+    .estadisticas-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
+    }
+    
+    .estadisticas-section h2 {
+        color: #0c2461;
+        margin-bottom: 25px;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .estadisticas-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    
+    @media (max-width: 1200px) {
+        .estadisticas-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .estadisticas-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .estadistica-card {
+        display: flex;
+        align-items: center;
+        padding: 20px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid transparent;
+        transition: all 0.3s;
+    }
+    
+    .estadistica-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+    
+    .estadistica-card.total {
+        border-color: #0c2461;
+    }
+    
+    .estadistica-card.positivas {
+        border-color: #4CAF50;
+    }
+    
+    .estadistica-card.negativas {
+        border-color: #ff6b6b;
+    }
+    
+    .estadistica-card.bloques {
+        border-color: #6a89cc;
+    }
+    
+    .estadistica-icon {
+        width: 60px;
+        height: 60px;
+        background: white;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 20px;
+        font-size: 24px;
+    }
+    
+    .estadistica-card.total .estadistica-icon {
+        color: #0c2461;
+        border: 2px solid #0c2461;
+    }
+    
+    .estadistica-card.positivas .estadistica-icon {
+        color: #4CAF50;
+        border: 2px solid #4CAF50;
+    }
+    
+    .estadistica-card.negativas .estadistica-icon {
+        color: #ff6b6b;
+        border: 2px solid #ff6b6b;
+    }
+    
+    .estadistica-card.bloques .estadistica-icon {
+        color: #6a89cc;
+        border: 2px solid #6a89cc;
+    }
+    
+    .estadistica-content h3 {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .estadistica-valor {
+        font-size: 28px;
+        font-weight: bold;
+        color: #0c2461;
+    }
+    
+    .estadistica-card.positivas .estadistica-valor {
+        color: #4CAF50;
+    }
+    
+    .estadistica-card.negativas .estadistica-valor {
+        color: #ff6b6b;
+    }
+    
+    .estadistica-card.bloques .estadistica-valor {
+        color: #6a89cc;
+    }
+    
+    /* Estilos para la tabla */
+    .tabla-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
+    }
+    
+    .tabla-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f2f5;
+    }
+    
+    .tabla-header h2 {
+        color: #0c2461;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .tabla-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+    
+    #registros-mostrados {
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .paginacion-control {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .paginacion-btn {
+        padding: 8px 16px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s;
+    }
+    
+    .paginacion-btn:hover:not(:disabled) {
+        background: #e9ecef;
+        border-color: #6a89cc;
+    }
+    
+    .paginacion-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    .pagina-actual {
+        font-weight: 600;
+        color: #0c2461;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+    
+    .dashboard-table thead {
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        color: white;
+    }
+    
+    .dashboard-table th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid #dee2e6;
+    }
+    
+    .dashboard-table tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: background-color 0.3s;
+    }
+    
+    .dashboard-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .dashboard-table td {
+        padding: 15px;
+        color: #333;
+    }
+    
+    .dashboard-table td:nth-child(3) { /* Columna Tipo */
+        font-weight: 600;
+    }
+    
+    .dashboard-table td:nth-child(3):contains("Positivo") {
+        color: #4CAF50;
+    }
+    
+    .dashboard-table td:nth-child(3):contains("Negativo") {
+        color: #ff6b6b;
+    }
+    
+    .tabla-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f2f5;
+    }
+    
+    .resultados-por-pagina {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .resultados-por-pagina label {
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .select-paginacion {
+        padding: 8px 15px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+    }
+    
+    .btn-refrescar {
+        padding: 10px 20px;
+        background: #6a89cc;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+    
+    .btn-refrescar:hover {
+        background: #5a79bc;
+        transform: translateY(-2px);
+    }
+    
+    /* Estilos para la sección de gráficos */
+    .graficos-section {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
+    }
+    
+    .graficos-section h2 {
+        color: #0c2461;
+        margin-bottom: 25px;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .graficos-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    
+    @media (max-width: 1200px) {
+        .graficos-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .graficos-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .grafico-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .grafico-card h3 {
+        color: #1e3799;
+        margin-bottom: 20px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .grafico-container {
+        height: 250px;
+        position: relative;
+    }
+    
+    /* Estilos para los estados de carga */
+    .loading {
+        position: relative;
+        opacity: 0.7;
+    }
+    
+    .loading::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 30px;
+        height: 30px;
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #0c2461;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    
+    /* Estilos para los botones de acción en tabla */
+    .accion-btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-right: 5px;
+        transition: all 0.3s;
+    }
+    
+    .btn-editar {
+        background: #4a69bd;
+        color: white;
+    }
+    
+    .btn-eliminar {
+        background: #ff6b6b;
+        color: white;
+    }
+    
+    .accion-btn:hover {
+        opacity: 0.8;
+        transform: translateY(-1px);
+    }
+</style>
+
+<script>
+    // Variables globales
+    let actividadesData = [];
+    let actividadesFiltradas = [];
+    let paginaActual = 1;
+    let resultadosPorPagina = 25;
+    let filtroTipo = 'all';
+    let filtroBloque = 'all';
+    let filtroFuente = 'all';
+    let filtroFechaDesde = '';
+    let filtroFechaHasta = '';
+    let filtroBusqueda = '';
+    let ordenarPor = 'fecha_desc';
+    
+    // Cargar datos al iniciar
+    document.addEventListener('DOMContentLoaded', function() {
+        cargarDatos();
+        inicializarGraficos();
+        establecerFechasPorDefecto();
+    });
+    
+    // Establecer fechas por defecto (últimos 30 días)
+    function establecerFechasPorDefecto() {
+        const hoy = new Date();
+        const hace30Dias = new Date();
+        hace30Dias.setDate(hoy.getDate() - 30);
+        
+        document.getElementById('fecha-desde').value = hace30Dias.toISOString().split('T')[0];
+        document.getElementById('fecha-hasta').value = hoy.toISOString().split('T')[0];
+        
+        filtroFechaDesde = document.getElementById('fecha-desde').value;
+        filtroFechaHasta = document.getElementById('fecha-hasta').value;
+    }
+    
+    // Cargar datos desde el servidor
+    function cargarDatos() {
+        const tablaBody = document.getElementById('tabla-body');
+        tablaBody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 40px;">
+                    <div class="loading"></div>
+                    <p>Cargando datos...</p>
+                </td>
+            </tr>
+        `;
+        
+        // Obtener valores de filtros
+        filtroTipo = obtenerFiltroTipoSeleccionado();
+        filtroBloque = document.getElementById('filtro-bloque').value;
+        filtroFuente = document.getElementById('filtro-fuente').value;
+        filtroFechaDesde = document.getElementById('fecha-desde').value;
+        filtroFechaHasta = document.getElementById('fecha-hasta').value;
+        filtroBusqueda = document.getElementById('filtro-busqueda').value.toLowerCase();
+        ordenarPor = document.getElementById('ordenar-por').value;
+        
+        // Aquí iría la llamada AJAX real al servidor
+        // Por ahora simulamos datos
+        setTimeout(() => {
+            simularCargaDeDatos();
+            aplicarFiltros();
+        }, 1000);
+    }
+    
+    // Simulación de carga de datos (reemplazar con llamada real a API)
+    function simularCargaDeDatos() {
+        // Datos de ejemplo - en producción esto vendría del servidor
+        actividadesData = [
+            {id: 1, actividad: "Implementación de programa de capacitación", tipo: "Positivo", bloque: "Mapeo de Actores y Relaciones", aspecto: "Desarrollo de capacidades", fuente: "canva", fecha: "2024-01-15"},
+            {id: 2, actividad: "Falta de comunicación entre departamentos", tipo: "Negativo", bloque: "Flujos de Información", aspecto: "Comunicación interna", fuente: "manual", fecha: "2024-01-14"},
+            {id: 3, actividad: "Actualización de software de gestión", tipo: "Positivo", bloque: "Infraestructura Tecnológica", aspecto: "Mejora tecnológica", fuente: "canva", fecha: "2024-01-13"},
+            {id: 4, actividad: "Retraso en entregas de proveedores", tipo: "Negativo", bloque: "Cadena de Suministro", aspecto: "Logística", fuente: "importado", fecha: "2024-01-12"},
+            {id: 5, actividad: "Implementación de sistema de evaluación", tipo: "Positivo", bloque: "Mecanismos de Evaluación", aspecto: "Seguimiento y control", fuente: "canva", fecha: "2024-01-11"},
+            {id: 6, actividad: "Falta de mantenimiento preventivo", tipo: "Negativo", bloque: "Infraestructura Tecnológica", aspecto: "Mantenimiento", fuente: "manual", fecha: "2024-01-10"},
+            {id: 7, actividad: "Capacitación en herramientas digitales", tipo: "Positivo", bloque: "Desarrollo de Capacidades", aspecto: "Formación", fuente: "canva", fecha: "2024-01-09"},
+            {id: 8, actividad: "Proceso burocrático lento", tipo: "Negativo", bloque: "Flujos de Procesos", aspecto: "Eficiencia", fuente: "manual", fecha: "2024-01-08"},
+            {id: 9, actividad: "Mejora en infraestructura de red", tipo: "Positivo", bloque: "Infraestructura Tecnológica", aspecto: "Conectividad", fuente: "canva", fecha: "2024-01-07"},
+            {id: 10, actividad: "Falta de coordinación en equipos", tipo: "Negativo", bloque: "Mapeo de Actores y Relaciones", aspecto: "Trabajo en equipo", fuente: "importado", fecha: "2024-01-06"},
+            // Agregar más datos de ejemplo...
+        ];
+        
+        // Para simular más datos
+        for (let i = 11; i <= 50; i++) {
+            const tipos = ["Positivo", "Negativo"];
+            const bloques = ["Mapeo de Actores y Relaciones", "Flujos de Información", "Infraestructura Tecnológica", 
+                            "Cadena de Suministro", "Mecanismos de Evaluación", "Desarrollo de Capacidades", 
+                            "Flujos de Procesos", "Modelo de Financiamiento", "Estructura de Costos"];
+            const fuentes = ["canva", "manual", "importado"];
+            
+            actividadesData.push({
+                id: i,
+                actividad: `Actividad de ejemplo ${i} para demostración`,
+                tipo: tipos[Math.floor(Math.random() * tipos.length)],
+                bloque: bloques[Math.floor(Math.random() * bloques.length)],
+                aspecto: "Aspecto de demostración",
+                fuente: fuentes[Math.floor(Math.random() * fuentes.length)],
+                fecha: `2024-01-${String(Math.floor(Math.random() * 15) + 1).padStart(2, '0')}`
+            });
+        }
+    }
+    
+    // Obtener el filtro de tipo seleccionado
+    function obtenerFiltroTipoSeleccionado() {
+        const botones = document.querySelectorAll('.tipo-filtro-btn.selected');
+        for (let boton of botones) {
+            if (boton.classList.contains('all-tipo')) return 'all';
+            if (boton.classList.contains('positivo')) return 'Positivo';
+            if (boton.classList.contains('negativo')) return 'Negativo';
+        }
+        return 'all';
+    }
+    
+    // Seleccionar filtro de tipo
+    function seleccionarFiltroTipo(tipo) {
+        // Remover selección de todos los botones
+        document.querySelectorAll('.tipo-filtro-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        
+        // Seleccionar el botón correspondiente
+        if (tipo === 'all') {
+            document.querySelector('.tipo-filtro-btn.all-tipo').classList.add('selected');
+        } else if (tipo === 'Positivo') {
+            document.querySelector('.tipo-filtro-btn.positivo').classList.add('selected');
+        } else if (tipo === 'Negativo') {
+            document.querySelector('.tipo-filtro-btn.negativo').classList.add('selected');
+        }
+        
+        aplicarFiltros();
+    }
+    
+    // Aplicar filtros y actualizar tabla
+    function aplicarFiltros() {
+        // Obtener valores actualizados de filtros
+        filtroTipo = obtenerFiltroTipoSeleccionado();
+        filtroBloque = document.getElementById('filtro-bloque').value;
+        filtroFuente = document.getElementById('filtro-fuente').value;
+        filtroFechaDesde = document.getElementById('fecha-desde').value;
+        filtroFechaHasta = document.getElementById('fecha-hasta').value;
+        filtroBusqueda = document.getElementById('filtro-busqueda').value.toLowerCase();
+        ordenarPor = document.getElementById('ordenar-por').value;
+        
+        // Aplicar filtros a los datos
+        actividadesFiltradas = actividadesData.filter(actividad => {
+            // Filtro por tipo
+            if (filtroTipo !== 'all' && actividad.tipo !== filtroTipo) {
+                return false;
+            }
+            
+            // Filtro por bloque
+            if (filtroBloque !== 'all' && actividad.bloque !== filtroBloque) {
+                return false;
+            }
+            
+            // Filtro por fuente
+            if (filtroFuente !== 'all' && actividad.fuente !== filtroFuente) {
+                return false;
+            }
+            
+            // Filtro por fecha
+            if (filtroFechaDesde && actividad.fecha < filtroFechaDesde) {
+                return false;
+            }
+            if (filtroFechaHasta && actividad.fecha > filtroFechaHasta) {
+                return false;
+            }
+            
+            // Filtro por búsqueda
+            if (filtroBusqueda) {
+                const textoBusqueda = filtroBusqueda.toLowerCase();
+                const textoActividad = actividad.actividad.toLowerCase();
+                const textoAspecto = actividad.aspecto.toLowerCase();
+                
+                if (!textoActividad.includes(textoBusqueda) && !textoAspecto.includes(textoBusqueda)) {
+                    return false;
+                }
+            }
+            
+            return true;
+        });
+        
+        // Ordenar actividades
+        actividadesFiltradas.sort((a, b) => {
+            switch (ordenarPor) {
+                case 'fecha_desc':
+                    return new Date(b.fecha) - new Date(a.fecha);
+                case 'fecha_asc':
+                    return new Date(a.fecha) - new Date(b.fecha);
+                case 'actividad_asc':
+                    return a.actividad.localeCompare(b.actividad);
+                case 'actividad_desc':
+                    return b.actividad.localeCompare(a.actividad);
+                case 'tipo_asc':
+                    return a.tipo.localeCompare(b.tipo);
+                default:
+                    return 0;
+            }
+        });
+        
+        // Actualizar estadísticas
+        actualizarEstadisticas();
+        
+        // Actualizar paginación
+        paginaActual = 1;
+        actualizarTabla();
+        actualizarGraficos();
+    }
+    
+    // Actualizar estadísticas
+    function actualizarEstadisticas() {
+        const total = actividadesFiltradas.length;
+        const positivas = actividadesFiltradas.filter(a => a.tipo === 'Positivo').length;
+        const negativas = actividadesFiltradas.filter(a => a.tipo === 'Negativo').length;
+        
+        // Contar bloques únicos
+        const bloquesUnicos = [...new Set(actividadesFiltradas.map(a => a.bloque))].length;
+        
+        document.getElementById('total-actividades').textContent = total;
+        document.getElementById('total-positivas').textContent = positivas;
+        document.getElementById('total-negativas').textContent = negativas;
+        document.getElementById('total-bloques').textContent = bloquesUnicos;
+        
+        // Actualizar información de registros
+        const inicio = (paginaActual - 1) * resultadosPorPagina + 1;
+        const fin = Math.min(paginaActual * resultadosPorPagina, total);
+        document.getElementById('registros-mostrados').textContent = 
+            `Mostrando ${inicio}-${fin} de ${total} registros`;
+        document.getElementById('pagina-actual').textContent = `Página ${paginaActual}`;
+    }
+    
+    // Actualizar tabla con datos filtrados y paginados
+    function actualizarTabla() {
+        const tablaBody = document.getElementById('tabla-body');
+        
+        if (actividadesFiltradas.length === 0) {
+            tablaBody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; color: #dee2e6;"></i>
+                        <p>No se encontraron actividades con los filtros aplicados.</p>
+                        <button class="btn-limpiar" onclick="limpiarFiltros()" style="margin-top: 15px;">
+                            <i class="fas fa-eraser"></i> Limpiar Filtros
+                        </button>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        // Calcular índices para paginación
+        const inicio = (paginaActual - 1) * resultadosPorPagina;
+        const fin = inicio + resultadosPorPagina;
+        const actividadesPagina = actividadesFiltradas.slice(inicio, fin);
+        
+        // Generar HTML para las filas
+        let html = '';
+        actividadesPagina.forEach(actividad => {
+            const colorTipo = actividad.tipo === 'Positivo' ? '#4CAF50' : '#ff6b6b';
+            
+            html += `
+                <tr>
+                    <td>${actividad.id}</td>
+                    <td>${actividad.actividad}</td>
+                    <td style="color: ${colorTipo}; font-weight: 600;">${actividad.tipo}</td>
+                    <td>${actividad.bloque}</td>
+                    <td>${actividad.aspecto}</td>
+                    <td>
+                        <span class="badge-fuente ${actividad.fuente}">
+                            ${actividad.fuente}
+                        </span>
+                    </td>
+                    <td>${formatearFecha(actividad.fecha)}</td>
+                </tr>
+            `;
+        });
+        
+        tablaBody.innerHTML = html;
+        
+        // Actualizar información de paginación
+        actualizarEstadisticas();
+    }
+    
+    // Formatear fecha para mostrar
+    function formatearFecha(fechaStr) {
+        const fecha = new Date(fechaStr);
+        return fecha.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        });
+    }
+    
+    // Cambiar página
+    function cambiarPagina(direccion) {
+        const totalPaginas = Math.ceil(actividadesFiltradas.length / resultadosPorPagina);
+        
+        if (direccion === -1 && paginaActual > 1) {
+            paginaActual--;
+        } else if (direccion === 1 && paginaActual < totalPaginas) {
+            paginaActual++;
+        }
+        
+        actualizarTabla();
+    }
+    
+    // Cambiar resultados por página
+    function cambiarResultadosPorPagina() {
+        resultadosPorPagina = parseInt(document.getElementById('resultados-pagina').value);
+        paginaActual = 1;
+        actualizarTabla();
+    }
+    
+    // Limpiar todos los filtros
+    function limpiarFiltros() {
+        // Restablecer filtros
+        seleccionarFiltroTipo('all');
+        document.getElementById('filtro-bloque').value = 'all';
+        document.getElementById('filtro-fuente').value = 'all';
+        document.getElementById('filtro-busqueda').value = '';
+        document.getElementById('ordenar-por').value = 'fecha_desc';
+        
+        // Restablecer fechas a los últimos 30 días
+        establecerFechasPorDefecto();
+        
+        // Aplicar filtros limpios
+        aplicarFiltros();
+        
+        mostrarAlerta('✅ Filtros limpiados correctamente.', 'success');
+    }
+    
+    // Inicializar gráficos
+    function inicializarGraficos() {
+        // Configuración común para gráficos
+        Chart.defaults.font.family = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#666';
+        
+        // Gráfico de tipo (doughnut)
+        const ctxTipo = document.getElementById('grafico-tipo').getContext('2d');
+        window.graficoTipo = new Chart(ctxTipo, {
+            type: 'doughnut',
+            data: {
+                labels: ['Positivas', 'Negativas'],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ['#4CAF50', '#ff6b6b'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.raw} actividades`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de bloques (bar)
+        const ctxBloque = document.getElementById('grafico-bloque').getContext('2d');
+        window.graficoBloque = new Chart(ctxBloque, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Actividades',
+                    data: [],
+                    backgroundColor: '#0c2461',
+                    borderColor: '#1e3799',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de fechas (line)
+        const ctxFecha = document.getElementById('grafico-fecha').getContext('2d');
+        window.graficoFecha = new Chart(ctxFecha, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Actividades por día',
+                    data: [],
+                    borderColor: '#4a69bd',
+                    backgroundColor: 'rgba(74, 105, 189, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+    }
+    
+    // Actualizar gráficos con datos filtrados
+    function actualizarGraficos() {
+        if (!window.graficoTipo) return;
+        
+        // Gráfico por tipo
+        const positivas = actividadesFiltradas.filter(a => a.tipo === 'Positivo').length;
+        const negativas = actividadesFiltradas.filter(a => a.tipo === 'Negativo').length;
+        
+        window.graficoTipo.data.datasets[0].data = [positivas, negativas];
+        window.graficoTipo.update();
+        
+        // Gráfico por bloque
+        const bloquesCount = {};
+        actividadesFiltradas.forEach(actividad => {
+            bloquesCount[actividad.bloque] = (bloquesCount[actividad.bloque] || 0) + 1;
+        });
+        
+        const bloquesLabels = Object.keys(bloquesCount);
+        const bloquesData = Object.values(bloquesCount);
+        
+        // Limitar a los 10 bloques con más actividades
+        const topBloques = bloquesLabels
+            .map((bloque, index) => ({bloque, count: bloquesData[index]}))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+        
+        window.graficoBloque.data.labels = topBloques.map(b => {
+            // Acortar nombres largos
+            return b.bloque.length > 20 ? b.bloque.substring(0, 20) + '...' : b.bloque;
+        });
+        window.graficoBloque.data.datasets[0].data = topBloques.map(b => b.count);
+        window.graficoBloque.update();
+        
+        // Gráfico por fecha (últimos 7 días)
+        const ultimos7Dias = [];
+        const hoy = new Date();
+        
+        for (let i = 6; i >= 0; i--) {
+            const fecha = new Date();
+            fecha.setDate(hoy.getDate() - i);
+            const fechaStr = fecha.toISOString().split('T')[0];
+            ultimos7Dias.push(fechaStr);
+        }
+        
+        const actividadesPorFecha = {};
+        ultimos7Dias.forEach(fecha => {
+            actividadesPorFecha[fecha] = 0;
+        });
+        
+        actividadesFiltradas.forEach(actividad => {
+            if (actividadesPorFecha.hasOwnProperty(actividad.fecha)) {
+                actividadesPorFecha[actividad.fecha]++;
+            }
+        });
+        
+        window.graficoFecha.data.labels = ultimos7Dias.map(fecha => {
+            const d = new Date(fecha);
+            return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+        });
+        window.graficoFecha.data.datasets[0].data = ultimos7Dias.map(fecha => actividadesPorFecha[fecha]);
+        window.graficoFecha.update();
+    }
+    
+    // Exportar datos del dashboard
+    function exportarDashboard() {
+        mostrarAlerta('📊 Preparando exportación de datos...', 'success');
+        
+        // Simulación de exportación
+        setTimeout(() => {
+            const fecha = new Date().toISOString().split('T')[0];
+            const nombreArchivo = `dashboard_actividades_${fecha}.csv`;
+            
+            // Crear CSV
+            let csv = 'ID,Actividad,Tipo,Bloque CANVA,Aspecto,Fuente,Fecha\n';
+            
+            actividadesFiltradas.forEach(actividad => {
+                csv += `${actividad.id},"${actividad.actividad}",${actividad.tipo},"${actividad.bloque}","${actividad.aspecto}",${actividad.fuente},${actividad.fecha}\n`;
+            });
+            
+            // Descargar archivo
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', nombreArchivo);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            mostrarAlerta(`✅ Datos exportados correctamente: ${nombreArchivo}`, 'success');
+        }, 1500);
+    }
+    
+    // Función para mostrar alertas
+    function mostrarAlerta(mensaje, tipo) {
+        let alerta = document.getElementById('alerta-flotante');
+        
+        if (!alerta) {
+            alerta = document.createElement('div');
+            alerta.id = 'alerta-flotante';
+            alerta.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transition: all 0.3s ease;
+                transform: translateX(100%);
+                opacity: 0;
+                max-width: 400px;
+            `;
+            document.body.appendChild(alerta);
+        }
+        
+        if (tipo === 'success') {
+            alerta.style.backgroundColor = '#4CAF50';
+        } else {
+            alerta.style.backgroundColor = '#ff6b6b';
+        }
+        
+        alerta.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${mensaje}`;
+        
+        setTimeout(() => {
+            alerta.style.transform = 'translateX(0)';
+            alerta.style.opacity = '1';
+        }, 10);
+        
+        setTimeout(() => {
+            alerta.style.transform = 'translateX(100%)';
+            alerta.style.opacity = '0';
+        }, 4000);
+    }
+</script>
+{% endblock %}
