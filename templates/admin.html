@@ -1,1347 +1,998 @@
-{% extends "inicio.html" %}
-
-{% block content %}
-<div class="dashboard-main-container">
-    <h1 class="content-title">
-        <i class="fas fa-chart-line"></i> Dashboard Administrativo - Actividades por Aspecto
-    </h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrativo - CURIMINING</title>
     
-    <!-- Filtros -->
-    <div class="filtros-section">
-        <div class="filtros-header">
-            <h2><i class="fas fa-filter"></i> Filtros de Búsqueda</h2>
-            <button class="btn-limpiar" onclick="limpiarFiltros()">
-                <i class="fas fa-eraser"></i> Limpiar Filtros
-            </button>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0c2461;
+            --secondary-color: #4a69bd;
+            --success-color: #4CAF50;
+            --danger-color: #ff6b6b;
+            --warning-color: #FF9800;
+            --info-color: #2196F3;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: white;
+            position: fixed;
+            width: 250px;
+            transition: all 0.3s;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 25px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-header h3 i {
+            color: #CBDF90;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+        }
+        
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .navbar-top {
+            background: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .welcome-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .card-total .stat-icon {
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+            color: white;
+        }
+        
+        .card-total .stat-value {
+            color: #0c2461;
+        }
+        
+        .card-positivas .stat-icon {
+            background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
+            color: white;
+        }
+        
+        .card-positivas .stat-value {
+            color: #4CAF50;
+        }
+        
+        .card-negativas .stat-icon {
+            background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
+            color: white;
+        }
+        
+        .card-negativas .stat-value {
+            color: #ff6b6b;
+        }
+        
+        .card-usuarios .stat-icon {
+            background: linear-gradient(135deg, #6a89cc 0%, #4a69bd 100%);
+            color: white;
+        }
+        
+        .card-usuarios .stat-value {
+            color: #6a89cc;
+        }
+        
+        .card-canva .stat-icon {
+            background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
+            color: white;
+        }
+        
+        .card-canva .stat-value {
+            color: #1e3799;
+        }
+        
+        .card-foda-ext .stat-icon {
+            background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
+            color: white;
+        }
+        
+        .card-foda-ext .stat-value {
+            color: #4CAF50;
+        }
+        
+        .card-foda-int .stat-icon {
+            background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%);
+            color: white;
+        }
+        
+        .card-foda-int .stat-value {
+            color: #2196F3;
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--secondary-color);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .filter-section {
+            margin-bottom: 20px;
+        }
+        
+        .filter-section h6 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-apply {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(12, 36, 97, 0.2);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-clear:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+        }
+        
+        .table-responsive {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table thead {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+        
+        .table th {
+            border: none;
+            padding: 15px;
+            font-weight: 600;
+        }
+        
+        .table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+        
+        .badge-fuente {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-canva {
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+            color: white;
+        }
+        
+        .badge-foda_ext {
+            background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
+            color: white;
+        }
+        
+        .badge-foda_int {
+            background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%);
+            color: white;
+        }
+        
+        .btn-action {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 2px;
+            transition: all 0.3s;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #4a69bd 0%, #6a89cc 100%);
+            color: white;
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
+            color: white;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 300px;
+        }
+        
+        .chart-title {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .alert-floating {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            border-radius: 10px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: -250px;
+            }
+            
+            .sidebar.active {
+                margin-left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .navbar-top {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-chart-line"></i> CURIMINING Admin</h3>
         </div>
         
-        <div class="filtros-grid">
-            <!-- Filtro por Tipo -->
-            <div class="filtro-box">
-                <h3><i class="fas fa-balance-scale"></i> Tipo de Actividad</h3>
-                <div class="tipo-filtro-options">
-                    <button class="tipo-filtro-btn all-tipo selected" onclick="seleccionarFiltroTipo('all')">
-                        Todos
-                    </button>
-                    <button class="tipo-filtro-btn positivo" onclick="seleccionarFiltroTipo('Positivo')">
-                        <i class="fas fa-thumbs-up"></i> Positivas
-                    </button>
-                    <button class="tipo-filtro-btn negativo" onclick="seleccionarFiltroTipo('Negativo')">
-                        <i class="fas fa-thumbs-down"></i> Negativas
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Filtro por Bloque CANVA -->
-            <div class="filtro-box">
-                <h3><i class="fas fa-layer-group"></i> Bloque/Aspecto</h3>
-                <select id="filtro-bloque" class="select-filtro" onchange="aplicarFiltros()">
-                    <option value="all">Todos los bloques</option>
-                    {% for bloque in bloques_canva %}
-                    <option value="{{ bloque.nombre }}">{{ loop.index }}. {{ bloque.nombre }}</option>
-                    {% endfor %}
-                    <!-- Opciones para FODA -->
-                    <option value="POLITICO">POLITICO</option>
-                    <option value="ECONOMICO">ECONOMICO</option>
-                    <option value="SOCIAL">SOCIAL</option>
-                    <option value="TECNOLOGICO">TECNOLOGICO</option>
-                    <option value="ECOLOGICO">ECOLOGICO</option>
-                    <option value="LEGAL">LEGAL</option>
-                </select>
-            </div>
-            
-            <!-- Filtro por Fuente -->
-            <div class="filtro-box">
-                <h3><i class="fas fa-database"></i> Fuente</h3>
-                <select id="filtro-fuente" class="select-filtro" onchange="aplicarFiltros()">
-                    <option value="all">Todas las fuentes</option>
-                    <option value="canva">CANVA</option>
-                    <option value="foda_ext">FODA Externo</option>
-                    <option value="foda_int">FODA Interno</option>
-                    <option value="manual">Manual</option>
-                    <option value="importado">Importado</option>
-                </select>
-            </div>
-            
-            <!-- Filtro por Fecha -->
-            <div class="filtro-box">
-                <h3><i class="fas fa-calendar-alt"></i> Rango de Fechas</h3>
-                <div class="fecha-filtro">
-                    <div class="fecha-input">
-                        <label for="fecha-desde">Desde:</label>
-                        <input type="date" id="fecha-desde" class="date-input" onchange="aplicarFiltros()">
-                    </div>
-                    <div class="fecha-input">
-                        <label for="fecha-hasta">Hasta:</label>
-                        <input type="date" id="fecha-hasta" class="date-input" onchange="aplicarFiltros()">
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Filtro por Palabra Clave -->
-            <div class="filtro-box">
-                <h3><i class="fas fa-search"></i> Palabra Clave</h3>
-                <div class="search-box">
-                    <input type="text" id="filtro-busqueda" class="search-input" 
-                           placeholder="Buscar en actividades..." onkeyup="aplicarFiltros()">
-                    <i class="fas fa-search search-icon"></i>
-                </div>
-            </div>
-            
-            <!-- Ordenamiento -->
-            <div class="filtro-box">
-                <h3><i class="fas fa-sort"></i> Ordenar por</h3>
-                <select id="ordenar-por" class="select-filtro" onchange="aplicarFiltros()">
-                    <option value="fecha_desc">Fecha (más reciente primero)</option>
-                    <option value="fecha_asc">Fecha (más antiguo primero)</option>
-                    <option value="actividad_asc">Actividad (A-Z)</option>
-                    <option value="actividad_desc">Actividad (Z-A)</option>
-                    <option value="tipo_asc">Tipo (A-Z)</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="filtros-actions">
-            <button class="btn-aplicar" onclick="aplicarFiltros()">
-                <i class="fas fa-check-circle"></i> Aplicar Filtros
-            </button>
-            <button class="btn-exportar" onclick="exportarDatos()">
-                <i class="fas fa-file-export"></i> Exportar Datos
-            </button>
-        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="/admin/dashboard">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link" href="/admin">
+                <i class="fas fa-users"></i> Usuarios
+            </a>
+            <a class="nav-link" href="/aspectos">
+                <i class="fas fa-list-alt"></i> Aspectos
+            </a>
+            <a class="nav-link" href="/canvas">
+                <i class="fas fa-th-large"></i> CANVA
+            </a>
+            <a class="nav-link" href="/fodaext">
+                <i class="fas fa-external-link-alt"></i> FODA Externo
+            </a>
+            <a class="nav-link" href="/fodaint">
+                <i class="fas fa-internal-link"></i> FODA Interno
+            </a>
+            <a class="nav-link" href="/cruzado">
+                <i class="fas fa-crosshairs"></i> FODA Cruzado
+            </a>
+            <div class="mt-4"></div>
+            <a class="nav-link" href="/logout">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </nav>
     </div>
     
-    <!-- Resumen Estadístico -->
-    <div class="estadisticas-section">
-        <h2><i class="fas fa-chart-pie"></i> Resumen Estadístico</h2>
-        <div class="estadisticas-grid">
-            <div class="estadistica-card total">
-                <div class="estadistica-icon">
-                    <i class="fas fa-list-alt"></i>
-                </div>
-                <div class="estadistica-content">
-                    <h3>Total Actividades</h3>
-                    <div class="estadistica-valor" id="total-actividades">{{ total_actividades }}</div>
-                </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navbar -->
+        <div class="navbar-top">
+            <div class="welcome-text">
+                <i class="fas fa-user-circle"></i> Bienvenido, {{ session.username }}
             </div>
-            
-            <div class="estadistica-card positivas">
-                <div class="estadistica-icon">
-                    <i class="fas fa-thumbs-up"></i>
-                </div>
-                <div class="estadistica-content">
-                    <h3>Actividades Positivas</h3>
-                    <div class="estadistica-valor" id="total-positivas">{{ actividades_positivas }}</div>
-                </div>
-            </div>
-            
-            <div class="estadistica-card negativas">
-                <div class="estadistica-icon">
-                    <i class="fas fa-thumbs-down"></i>
-                </div>
-                <div class="estadistica-content">
-                    <h3>Actividades Negativas</h3>
-                    <div class="estadistica-valor" id="total-negativas">{{ actividades_negativas }}</div>
-                </div>
-            </div>
-            
-            <div class="estadistica-card usuarios">
-                <div class="estadistica-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="estadistica-content">
-                    <h3>Usuarios</h3>
-                    <div class="estadistica-valor" id="total-usuarios">{{ usuarios_count }}</div>
-                </div>
-            </div>
-            
-            <div class="estadistica-card canva">
-                <div class="estadistica-icon">
-                    <i class="fas fa-th-large"></i>
-                </div>
-                <div class="estadistica-content">
-                    <h3>CANVA</h3>
-                    <div class="estadistica-valor" id="total-canva">{{ total_actividades_canva }}</div>
-                </div>
-            </div>
-            
-            <div class="estadistica-card foda-ext">
-                <div class="estadistica-icon">
-                    <i class="fas fa-external-link-alt"></i>
-                </div>
-                <div class="estadistica-content">
-                    <h3>FODA Externo</h3>
-                    <div class="estadistica-valor" id="total-foda-ext">{{ total_actividades_foda_ext }}</div>
-                </div>
-            </div>
-            
-            <div class="estadistica-card foda-int">
-                <div class="estadistica-icon">
-                    <i class="fas fa-internal-link"></i>
-                </div>
-                <div class="estadistica-content">
-                    <h3>FODA Interno</h3>
-                    <div class="estadistica-valor" id="total-foda-int">{{ total_actividades_foda_int }}</div>
-                </div>
-            </div>
-            
-            <div class="estadistica-card recientes">
-                <div class="estadistica-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="estadistica-content">
-                    <h3>Últimas 24h</h3>
-                    <div class="estadistica-valor" id="total-recientes">0</div>
-                </div>
+            <div>
+                <button class="btn btn-outline-primary btn-sm" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
             </div>
         </div>
-    </div>
-    
-    <!-- Tabla de Actividades -->
-    <div class="tabla-section">
-        <div class="tabla-header">
-            <h2><i class="fas fa-table"></i> Lista de Actividades</h2>
-            <div class="tabla-info">
-                <span id="registros-mostrados">Mostrando 0 de 0 registros</span>
-                <div class="paginacion-control">
-                    <button class="paginacion-btn" onclick="cambiarPagina(-1)">
-                        <i class="fas fa-chevron-left"></i> Anterior
-                    </button>
-                    <span class="pagina-actual" id="pagina-actual">Página 1</span>
-                    <button class="paginacion-btn" onclick="cambiarPagina(1)">
-                        Siguiente <i class="fas fa-chevron-right"></i>
-                    </button>
+        
+        <!-- Estadísticas -->
+        <h4 class="section-title">
+            <i class="fas fa-chart-pie"></i> Estadísticas Generales
+        </h4>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card card-total">
+                    <div class="stat-icon">
+                        <i class="fas fa-list-alt"></i>
+                    </div>
+                    <div class="stat-value" id="total-actividades">0</div>
+                    <div class="stat-label">Total Actividades</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card-positivas">
+                    <div class="stat-icon">
+                        <i class="fas fa-thumbs-up"></i>
+                    </div>
+                    <div class="stat-value" id="positivas-actividades">0</div>
+                    <div class="stat-label">Actividades Positivas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card-negativas">
+                    <div class="stat-icon">
+                        <i class="fas fa-thumbs-down"></i>
+                    </div>
+                    <div class="stat-value" id="negativas-actividades">0</div>
+                    <div class="stat-label">Actividades Negativas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card-usuarios">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="total-usuarios">0</div>
+                    <div class="stat-label">Usuarios Registrados</div>
                 </div>
             </div>
         </div>
         
-        <div class="table-container">
-            <table class="dashboard-table" id="tabla-actividades">
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="stat-card card-canva">
+                    <div class="stat-icon">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                    <div class="stat-value" id="canva-actividades">0</div>
+                    <div class="stat-label">Actividades CANVA</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card card-foda-ext">
+                    <div class="stat-icon">
+                        <i class="fas fa-external-link-alt"></i>
+                    </div>
+                    <div class="stat-value" id="foda-ext-actividades">0</div>
+                    <div class="stat-label">FODA Externo</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card card-foda-int">
+                    <div class="stat-icon">
+                        <i class="fas fa-internal-link"></i>
+                    </div>
+                    <div class="stat-value" id="foda-int-actividades">0</div>
+                    <div class="stat-label">FODA Interno</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filtros -->
+        <h4 class="section-title mt-4">
+            <i class="fas fa-filter"></i> Filtros de Actividades
+        </h4>
+        
+        <div class="filter-card">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Tipo de Actividad</h6>
+                        <select class="form-control" id="filter-tipo">
+                            <option value="all">Todos los tipos</option>
+                            <option value="Positivo">Positivas</option>
+                            <option value="Negativo">Negativas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Bloque/Aspecto</h6>
+                        <select class="form-control" id="filter-bloque">
+                            <option value="all">Todos los bloques</option>
+                            <option value="POLITICO">POLITICO</option>
+                            <option value="ECONOMICO">ECONOMICO</option>
+                            <option value="SOCIAL">SOCIAL</option>
+                            <option value="TECNOLOGICO">TECNOLOGICO</option>
+                            <option value="ECOLOGICO">ECOLOGICO</option>
+                            <option value="LEGAL">LEGAL</option>
+                            {% for bloque in bloques_canva %}
+                            <option value="{{ bloque.nombre }}">{{ bloque.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Fuente</h6>
+                        <select class="form-control" id="filter-fuente">
+                            <option value="all">Todas las fuentes</option>
+                            <option value="canva">CANVA</option>
+                            <option value="foda_ext">FODA Externo</option>
+                            <option value="foda_int">FODA Interno</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Fecha Desde</h6>
+                        <input type="date" class="form-control" id="filter-fecha-desde">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Fecha Hasta</h6>
+                        <input type="date" class="form-control" id="filter-fecha-hasta">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Ordenar por</h6>
+                        <select class="form-control" id="filter-orden">
+                            <option value="fecha_desc">Fecha (Más reciente)</option>
+                            <option value="fecha_asc">Fecha (Más antigua)</option>
+                            <option value="actividad_asc">Actividad (A-Z)</option>
+                            <option value="actividad_desc">Actividad (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="filter-section">
+                        <h6>Buscar en actividades</h6>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="filter-busqueda" placeholder="Buscar...">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" onclick="cargarActividades()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button class="btn-apply" onclick="cargarActividades()">
+                                <i class="fas fa-filter"></i> Aplicar Filtros
+                            </button>
+                            <button class="btn-clear ml-2" onclick="limpiarFiltros()">
+                                <i class="fas fa-eraser"></i> Limpiar Filtros
+                            </button>
+                        </div>
+                        <button class="btn btn-success" onclick="exportarDatos()">
+                            <i class="fas fa-file-export"></i> Exportar a CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabla de Actividades -->
+        <h4 class="section-title mt-4">
+            <i class="fas fa-table"></i> Lista de Actividades
+            <small class="text-muted ml-2" id="contador-actividades">(0 actividades)</small>
+        </h4>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th width="5%">ID</th>
-                        <th width="25%">Actividad</th>
-                        <th width="10%">Tipo</th>
-                        <th width="15%">Bloque/Aspecto</th>
-                        <th width="15%">Descripción</th>
-                        <th width="10%">Fuente</th>
-                        <th width="15%">Fecha</th>
-                        <th width="5%">Acciones</th>
+                        <th>ID</th>
+                        <th>Actividad</th>
+                        <th>Tipo</th>
+                        <th>Aspecto/Bloque</th>
+                        <th>Fuente</th>
+                        <th>Fecha</th>
+                        <th>Creador</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
-                <tbody id="tabla-body">
-                    <!-- Los datos se cargarán dinámicamente -->
+                <tbody id="tabla-actividades">
+                    <!-- Los datos se cargarán aquí dinámicamente -->
                 </tbody>
             </table>
         </div>
         
-        <div class="tabla-footer">
-            <div class="resultados-por-pagina">
-                <label for="resultados-pagina">Resultados por página:</label>
-                <select id="resultados-pagina" class="select-paginacion" onchange="cambiarResultadosPorPagina()">
-                    <option value="10">10</option>
-                    <option value="25" selected>25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
+        <!-- Paginación -->
+        <div class="pagination-container">
+            <div>
+                <span id="info-paginacion">Mostrando 0 de 0 actividades</span>
+            </div>
+            <div>
+                <nav>
+                    <ul class="pagination mb-0">
+                        <li class="page-item">
+                            <button class="page-link" onclick="cambiarPagina(-1)" id="btn-prev">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                        </li>
+                        <li class="page-item">
+                            <span class="page-link" id="pagina-actual">Página 1</span>
+                        </li>
+                        <li class="page-item">
+                            <button class="page-link" onclick="cambiarPagina(1)" id="btn-next">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div>
+                <select class="form-control form-control-sm" id="resultados-por-pagina" onchange="cambiarResultadosPorPagina()">
+                    <option value="10">10 por página</option>
+                    <option value="25" selected>25 por página</option>
+                    <option value="50">50 por página</option>
+                    <option value="100">100 por página</option>
                 </select>
             </div>
-            
-            <button class="btn-refrescar" onclick="cargarDatos()">
-                <i class="fas fa-sync-alt"></i> Refrescar Datos
-            </button>
         </div>
-    </div>
-    
-    <!-- Gráficos de Distribución -->
-    <div class="graficos-section">
-        <h2><i class="fas fa-chart-bar"></i> Distribución de Actividades</h2>
-        <div class="graficos-grid">
-            <div class="grafico-card">
-                <h3><i class="fas fa-chart-pie"></i> Por Fuente</h3>
-                <div class="grafico-container">
-                    <canvas id="grafico-fuente"></canvas>
+        
+        <!-- Gráficos -->
+        <h4 class="section-title mt-4">
+            <i class="fas fa-chart-bar"></i> Gráficos de Distribución
+        </h4>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">Distribución por Fuente</div>
+                    <canvas id="chart-fuente"></canvas>
                 </div>
             </div>
-            
-            <div class="grafico-card">
-                <h3><i class="fas fa-chart-bar"></i> Por Tipo</h3>
-                <div class="grafico-container">
-                    <canvas id="grafico-tipo"></canvas>
-                </div>
-            </div>
-            
-            <div class="grafico-card">
-                <h3><i class="fas fa-chart-line"></i> Por Día (Últimos 7 días)</h3>
-                <div class="grafico-container">
-                    <canvas id="grafico-fecha"></canvas>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">Distribución por Tipo</div>
+                    <canvas id="chart-tipo"></canvas>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<style>
-    /* Estilos para el dashboard - RESPETANDO LA LÍNEA GRÁFICA DE CANVAS.HTML */
-    .dashboard-main-container {
-        padding: 20px;
-        background: #f5f7fa;
-        min-height: 100vh;
-    }
     
-    .content-title {
-        color: #0c2461;
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        border-bottom: 3px solid #4a69bd;
-        font-size: 28px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .content-title i {
-        color: #4a69bd;
-    }
-    
-    /* Estilos para la sección de filtros */
-    .filtros-section {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
-    }
-    
-    .filtros-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f2f5;
-    }
-    
-    .filtros-header h2 {
-        color: #0c2461;
-        font-size: 22px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .btn-limpiar {
-        background: linear-gradient(135deg, #6a89cc 0%, #4a69bd 100%);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s;
-    }
-    
-    .btn-limpiar:hover {
-        background: linear-gradient(135deg, #4a69bd 0%, #1e3799 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(74, 105, 189, 0.2);
-    }
-    
-    .filtros-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-        margin-bottom: 25px;
-    }
-    
-    @media (max-width: 1200px) {
-        .filtros-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .filtros-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-    
-    .filtro-box {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-        transition: all 0.3s;
-    }
-    
-    .filtro-box:hover {
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-color: #4a69bd;
-    }
-    
-    .filtro-box h3 {
-        color: #1e3799;
-        margin-bottom: 15px;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .tipo-filtro-options {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-    
-    .tipo-filtro-btn {
-        padding: 8px 16px;
-        border: 2px solid #dee2e6;
-        background: white;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .tipo-filtro-btn.all-tipo {
-        border-color: #0c2461;
-        color: #0c2461;
-    }
-    
-    .tipo-filtro-btn.positivo {
-        border-color: #4CAF50;
-        color: #2e7d32;
-    }
-    
-    .tipo-filtro-btn.negativo {
-        border-color: #ff6b6b;
-        color: #c62828;
-    }
-    
-    .tipo-filtro-btn.selected {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-        border-color: #0c2461;
-        font-weight: bold;
-        box-shadow: 0 2px 6px rgba(12, 36, 97, 0.2);
-    }
-    
-    .tipo-filtro-btn.positivo.selected {
-        background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
-        color: white;
-        border-color: #4CAF50;
-    }
-    
-    .tipo-filtro-btn.negativo.selected {
-        background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
-        color: white;
-        border-color: #ff6b6b;
-    }
-    
-    .select-filtro {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        font-size: 14px;
-        background: white;
-        cursor: pointer;
-        transition: all 0.3s;
-    }
-    
-    .select-filtro:focus {
-        border-color: #4a69bd;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
-    }
-    
-    .fecha-filtro {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-    }
-    
-    .fecha-input {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-    }
-    
-    .fecha-input label {
-        font-size: 12px;
-        color: #666;
-        font-weight: 500;
-    }
-    
-    .date-input {
-        padding: 8px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.3s;
-    }
-    
-    .date-input:focus {
-        border-color: #4a69bd;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(74, 105, 189, 0.1);
-    }
-    
-    .search-box {
-        position: relative;
-    }
-    
-    .search-input {
-        width: 100%;
-        padding: 10px 40px 10px 15px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.3s;
-    }
-    
-    .search-input:focus {
-        border-color: #4a69bd;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
-    }
-    
-    .search-icon {
-        position: absolute;
-        right: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6c757d;
-    }
-    
-    .filtros-actions {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        padding-top: 20px;
-        border-top: 2px solid #f0f2f5;
-    }
-    
-    .btn-aplicar, .btn-exportar {
-        padding: 12px 30px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s;
-        font-size: 15px;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    
-    .btn-aplicar {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-    }
-    
-    .btn-exportar {
-        background: linear-gradient(135deg, #4a69bd 0%, #6a89cc 100%);
-        color: white;
-    }
-    
-    .btn-aplicar:hover, .btn-exportar:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-    
-    /* Estilos para la sección de estadísticas */
-    .estadisticas-section {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
-    }
-    
-    .estadisticas-section h2 {
-        color: #0c2461;
-        margin-bottom: 25px;
-        font-size: 22px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .estadisticas-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 20px;
-    }
-    
-    @media (max-width: 1200px) {
-        .estadisticas-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .estadisticas-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-    
-    .estadistica-card {
-        display: flex;
-        align-items: center;
-        padding: 20px;
-        border-radius: 10px;
-        background: white;
-        border: 2px solid transparent;
-        transition: all 0.3s;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .estadistica-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
-    
-    .estadistica-card.total {
-        border-color: #0c2461;
-        background: linear-gradient(135deg, rgba(12, 36, 97, 0.05) 0%, rgba(30, 55, 153, 0.05) 100%);
-    }
-    
-    .estadistica-card.positivas {
-        border-color: #4CAF50;
-        background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(46, 125, 50, 0.05) 100%);
-    }
-    
-    .estadistica-card.negativas {
-        border-color: #ff6b6b;
-        background: linear-gradient(135deg, rgba(255, 107, 107, 0.05) 0%, rgba(198, 40, 40, 0.05) 100%);
-    }
-    
-    .estadistica-card.usuarios {
-        border-color: #6a89cc;
-        background: linear-gradient(135deg, rgba(106, 137, 204, 0.05) 0%, rgba(74, 105, 189, 0.05) 100%);
-    }
-    
-    .estadistica-card.canva {
-        border-color: #1e3799;
-        background: linear-gradient(135deg, rgba(30, 55, 153, 0.05) 0%, rgba(12, 36, 97, 0.05) 100%);
-    }
-    
-    .estadistica-card.foda-ext {
-        border-color: #4CAF50;
-        background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(46, 125, 50, 0.05) 100%);
-    }
-    
-    .estadistica-card.foda-int {
-        border-color: #2196F3;
-        background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(21, 101, 192, 0.05) 100%);
-    }
-    
-    .estadistica-card.recientes {
-        border-color: #FF9800;
-        background: linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(245, 124, 0, 0.05) 100%);
-    }
-    
-    .estadistica-icon {
-        width: 60px;
-        height: 60px;
-        background: white;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 20px;
-        font-size: 24px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .estadistica-card.total .estadistica-icon {
-        color: #0c2461;
-        border: 2px solid #0c2461;
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-    }
-    
-    .estadistica-card.positivas .estadistica-icon {
-        color: #4CAF50;
-        border: 2px solid #4CAF50;
-        background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
-        color: white;
-    }
-    
-    .estadistica-card.negativas .estadistica-icon {
-        color: #ff6b6b;
-        border: 2px solid #ff6b6b;
-        background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
-        color: white;
-    }
-    
-    .estadistica-card.usuarios .estadistica-icon {
-        color: #6a89cc;
-        border: 2px solid #6a89cc;
-        background: linear-gradient(135deg, #6a89cc 0%, #4a69bd 100%);
-        color: white;
-    }
-    
-    .estadistica-card.canva .estadistica-icon {
-        color: #1e3799;
-        border: 2px solid #1e3799;
-        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
-        color: white;
-    }
-    
-    .estadistica-card.foda-ext .estadistica-icon {
-        color: #4CAF50;
-        border: 2px solid #4CAF50;
-        background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
-        color: white;
-    }
-    
-    .estadistica-card.foda-int .estadistica-icon {
-        color: #2196F3;
-        border: 2px solid #2196F3;
-        background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%);
-        color: white;
-    }
-    
-    .estadistica-card.recientes .estadistica-icon {
-        color: #FF9800;
-        border: 2px solid #FF9800;
-        background: linear-gradient(135deg, #FF9800 0%, #f57c00 100%);
-        color: white;
-    }
-    
-    .estadistica-content h3 {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 5px;
-    }
-    
-    .estadistica-valor {
-        font-size: 28px;
-        font-weight: bold;
-    }
-    
-    .estadistica-card.total .estadistica-valor {
-        color: #0c2461;
-    }
-    
-    .estadistica-card.positivas .estadistica-valor {
-        color: #4CAF50;
-    }
-    
-    .estadistica-card.negativas .estadistica-valor {
-        color: #ff6b6b;
-    }
-    
-    .estadistica-card.usuarios .estadistica-valor {
-        color: #6a89cc;
-    }
-    
-    .estadistica-card.canva .estadistica-valor {
-        color: #1e3799;
-    }
-    
-    .estadistica-card.foda-ext .estadistica-valor {
-        color: #4CAF50;
-    }
-    
-    .estadistica-card.foda-int .estadistica-valor {
-        color: #2196F3;
-    }
-    
-    .estadistica-card.recientes .estadistica-valor {
-        color: #FF9800;
-    }
-    
-    /* Estilos para la tabla */
-    .tabla-section {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
-    }
-    
-    .tabla-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f2f5;
-    }
-    
-    .tabla-header h2 {
-        color: #0c2461;
-        font-size: 22px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .tabla-info {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
-        gap: 10px;
-    }
-    
-    #registros-mostrados {
-        color: #666;
-        font-size: 14px;
-    }
-    
-    .paginacion-control {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    .paginacion-btn {
-        padding: 8px 16px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        transition: all 0.3s;
-        color: #0c2461;
-        font-weight: 600;
-    }
-    
-    .paginacion-btn:hover:not(:disabled) {
-        background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-        border-color: #4a69bd;
-        transform: translateY(-2px);
-        box-shadow: 0 2px 6px rgba(74, 105, 189, 0.2);
-    }
-    
-    .paginacion-btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none !important;
-        box-shadow: none !important;
-    }
-    
-    .pagina-actual {
-        font-weight: 600;
-        color: #0c2461;
-    }
-    
-    .table-container {
-        overflow-x: auto;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    
-    .dashboard-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-    }
-    
-    .dashboard-table thead {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-    }
-    
-    .dashboard-table th {
-        padding: 15px;
-        text-align: left;
-        font-weight: 600;
-        border-bottom: 2px solid #1e3799;
-        color: white;
-    }
-    
-    .dashboard-table tbody tr {
-        border-bottom: 1px solid #e9ecef;
-        transition: background-color 0.3s;
-    }
-    
-    .dashboard-table tbody tr:hover {
-        background: linear-gradient(135deg, rgba(12, 36, 97, 0.05) 0%, rgba(30, 55, 153, 0.05) 100%);
-    }
-    
-    .dashboard-table td {
-        padding: 15px;
-        color: #333;
-    }
-    
-    .dashboard-table td:nth-child(3) { /* Columna Tipo */
-        font-weight: 600;
-    }
-    
-    .tabla-footer {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 25px;
-        padding-top: 20px;
-        border-top: 2px solid #f0f2f5;
-    }
-    
-    .resultados-por-pagina {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .resultados-por-pagina label {
-        font-size: 14px;
-        color: #666;
-        font-weight: 500;
-    }
-    
-    .select-paginacion {
-        padding: 8px 15px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        font-size: 14px;
-        background: white;
-        cursor: pointer;
-        color: #0c2461;
-        font-weight: 500;
-        transition: all 0.3s;
-    }
-    
-    .select-paginacion:focus {
-        border-color: #4a69bd;
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(74, 105, 189, 0.1);
-    }
-    
-    .btn-refrescar {
-        padding: 10px 20px;
-        background: linear-gradient(135deg, #6a89cc 0%, #4a69bd 100%);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    
-    .btn-refrescar:hover {
-        background: linear-gradient(135deg, #4a69bd 0%, #1e3799 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(74, 105, 189, 0.2);
-    }
-    
-    /* Estilos para la sección de gráficos */
-    .graficos-section {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
-    }
-    
-    .graficos-section h2 {
-        color: #0c2461;
-        margin-bottom: 25px;
-        font-size: 22px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .graficos-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-    
-    @media (max-width: 1200px) {
-        .graficos-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .graficos-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-    
-    .grafico-card {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-        border-radius: 10px;
-        padding: 20px;
-        border: 2px solid #e9ecef;
-        transition: all 0.3s;
-    }
-    
-    .grafico-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        border-color: #4a69bd;
-    }
-    
-    .grafico-card h3 {
-        color: #1e3799;
-        margin-bottom: 20px;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .grafico-container {
-        height: 250px;
-        position: relative;
-    }
-    
-    /* Estilos para los badges de fuente */
-    .badge-fuente {
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .badge-fuente.canva {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-    }
-    
-    .badge-fuente.foda_ext {
-        background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
-        color: white;
-    }
-    
-    .badge-fuente.foda_int {
-        background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%);
-        color: white;
-    }
-    
-    .badge-fuente.manual {
-        background: linear-gradient(135deg, #FF9800 0%, #f57c00 100%);
-        color: white;
-    }
-    
-    .badge-fuente.importado {
-        background: linear-gradient(135deg, #9C27B0 0%, #7b1fa2 100%);
-        color: white;
-    }
-    
-    /* Estilos para botones de acción */
-    .acciones-celda {
-        display: flex;
-        gap: 5px;
-    }
-    
-    .btn-accion {
-        width: 32px;
-        height: 32px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
-        transition: all 0.3s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .btn-accion:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
-    
-    .btn-editar {
-        background: linear-gradient(135deg, #4a69bd 0%, #6a89cc 100%);
-        color: white;
-    }
-    
-    .btn-eliminar {
-        background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
-        color: white;
-    }
-    
-    /* Estilos para los estados de carga */
-    .loading {
-        position: relative;
-        opacity: 0.7;
-    }
-    
-    .loading::after {
-        content: "";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 30px;
-        height: 30px;
-        border: 3px solid #f3f3f3;
-        border-top: 3px solid #0c2461;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: translate(-50%, -50%) rotate(0deg); }
-        100% { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-</style>
-
-<script>
-    // Variables globales
-    let actividadesData = [];
-    let actividadesFiltradas = [];
-    let paginaActual = 1;
-    let resultadosPorPagina = 25;
-    let filtroTipo = 'all';
-    let filtroBloque = 'all';
-    let filtroFuente = 'all';
-    let filtroFechaDesde = '';
-    let filtroFechaHasta = '';
-    let filtroBusqueda = '';
-    let ordenarPor = 'fecha_desc';
-    
-    // Instancias de gráficos
-    let graficoFuente = null;
-    let graficoTipo = null;
-    let graficoFecha = null;
-    
-    // Cargar datos al iniciar
-    document.addEventListener('DOMContentLoaded', function() {
-        cargarDatos();
-        actualizarEstadisticas();
-        establecerFechasPorDefecto();
-        inicializarGraficos();
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Variables globales
+        let paginaActual = 1;
+        let resultadosPorPagina = 25;
+        let totalActividades = 0;
+        let totalPaginas = 1;
         
-        // Actualizar estadísticas cada 30 segundos
-        setInterval(actualizarEstadisticas, 30000);
-    });
-    
-    // Establecer fechas por defecto (últimos 30 días)
-    function establecerFechasPorDefecto() {
-        const hoy = new Date();
-        const hace30Dias = new Date();
-        hace30Dias.setDate(hoy.getDate() - 30);
+        // Gráficos
+        let chartFuente = null;
+        let chartTipo = null;
         
-        document.getElementById('fecha-desde').value = hace30Dias.toISOString().split('T')[0];
-        document.getElementById('fecha-hasta').value = hoy.toISOString().split('T')[0];
-        
-        filtroFechaDesde = document.getElementById('fecha-desde').value;
-        filtroFechaHasta = document.getElementById('fecha-hasta').value;
-    }
-    
-    // Cargar datos desde la API
-    function cargarDatos() {
-        const tablaBody = document.getElementById('tabla-body');
-        tablaBody.innerHTML = `
-            <tr>
-                <td colspan="8" style="text-align: center; padding: 40px;">
-                    <div class="loading"></div>
-                    <p style="color: #0c2461; margin-top: 10px; font-weight: 600;">Cargando datos desde la base de datos...</p>
-                </td>
-            </tr>
-        `;
-        
-        // Obtener valores de filtros
-        filtroTipo = obtenerFiltroTipoSeleccionado();
-        filtroBloque = document.getElementById('filtro-bloque').value;
-        filtroFuente = document.getElementById('filtro-fuente').value;
-        filtroFechaDesde = document.getElementById('fecha-desde').value;
-        filtroFechaHasta = document.getElementById('fecha-hasta').value;
-        filtroBusqueda = document.getElementById('filtro-busqueda').value;
-        ordenarPor = document.getElementById('ordenar-por').value;
-        
-        // Preparar datos para la petición
-        const datosFiltro = {
-            tipo_filtro: filtroTipo,
-            bloque_filtro: filtroBloque,
-            fuente_filtro: filtroFuente,
-            fecha_desde: filtroFechaDesde,
-            fecha_hasta: filtroFechaHasta,
-            busqueda: filtroBusqueda,
-            orden_por: ordenarPor,
-            pagina: paginaActual,
-            por_pagina: resultadosPorPagina
-        };
-        
-        // Hacer petición a la API
-        fetch('/api/admin/filtrar_actividades', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(datosFiltro)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                actividadesData = data.actividades;
-                actividadesFiltradas = actividadesData;
-                actualizarTabla(data);
-                actualizarGraficos();
-                mostrarAlerta('✅ Datos cargados correctamente', 'success');
-            } else {
-                mostrarAlerta('❌ Error al cargar datos: ' + data.message, 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            mostrarAlerta('❌ Error de conexión al servidor.', 'error');
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Establecer fechas por defecto (últimos 30 días)
+            const fechaHasta = new Date();
+            const fechaDesde = new Date();
+            fechaDesde.setDate(fechaHasta.getDate() - 30);
+            
+            document.getElementById('filter-fecha-desde').value = fechaDesde.toISOString().split('T')[0];
+            document.getElementById('filter-fecha-hasta').value = fechaHasta.toISOString().split('T')[0];
+            
+            // Cargar datos iniciales
+            cargarEstadisticas();
+            cargarActividades();
+            inicializarGraficos();
+            
+            // Configurar actualización automática cada 60 segundos
+            setInterval(cargarEstadisticas, 60000);
         });
-    }
-    
-    // Actualizar estadísticas desde la API
-    function actualizarEstadisticas() {
-        fetch('/api/admin/estadisticas')
+        
+        // Toggle sidebar en móviles
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.toggle('active');
+            if (window.innerWidth <= 768) {
+                if (sidebar.classList.contains('active')) {
+                    mainContent.style.marginLeft = '0';
+                } else {
+                    mainContent.style.marginLeft = '0';
+                }
+            }
+        }
+        
+        // Mostrar/ocultar loading
+        function mostrarLoading(mostrar) {
+            document.getElementById('loading-overlay').style.display = mostrar ? 'flex' : 'none';
+        }
+        
+        // Mostrar alerta
+        function mostrarAlerta(mensaje, tipo = 'info') {
+            const tipos = {
+                'success': {class: 'alert-success', icon: 'fa-check-circle'},
+                'error': {class: 'alert-danger', icon: 'fa-exclamation-circle'},
+                'warning': {class: 'alert-warning', icon: 'fa-exclamation-triangle'},
+                'info': {class: 'alert-info', icon: 'fa-info-circle'}
+            };
+            
+            const alertType = tipos[tipo] || tipos['info'];
+            
+            // Crear alerta
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-floating ${alertType.class} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                <i class="fas ${alertType.icon}"></i> ${mensaje}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            `;
+            
+            // Agregar al body
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 300);
+            }, 5000);
+            
+            // Configurar botón de cerrar
+            alertDiv.querySelector('.close').addEventListener('click', function() {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 300);
+            });
+        }
+        
+        // Cargar estadísticas
+        function cargarEstadisticas() {
+            fetch('/api/admin/estadisticas')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const stats = data.estadisticas;
+                        
+                        // Actualizar estadísticas
+                        document.getElementById('total-actividades').textContent = stats.total_actividades;
+                        document.getElementById('positivas-actividades').textContent = stats.actividades_positivas;
+                        document.getElementById('negativas-actividades').textContent = stats.actividades_negativas;
+                        document.getElementById('total-usuarios').textContent = stats.usuarios_total;
+                        document.getElementById('canva-actividades').textContent = stats.actividades_canva;
+                        document.getElementById('foda-ext-actividades').textContent = stats.actividades_foda_ext;
+                        document.getElementById('foda-int-actividades').textContent = stats.actividades_foda_int;
+                        
+                        // Actualizar contador
+                        document.getElementById('contador-actividades').textContent = `(${stats.total_actividades} actividades)`;
+                        
+                        // Animar números
+                        animarNumeros();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar estadísticas:', error);
+                });
+        }
+        
+        // Animar números de estadísticas
+        function animarNumeros() {
+            const elementos = document.querySelectorAll('.stat-value');
+            elementos.forEach(elemento => {
+                const valorFinal = parseInt(elemento.textContent.replace(/,/g, ''));
+                if (!isNaN(valorFinal)) {
+                    animarContador(elemento, valorFinal);
+                }
+            });
+        }
+        
+        function animarContador(elemento, valorFinal) {
+            let valorActual = 0;
+            const incremento = valorFinal / 50; // 50 pasos
+            const intervalo = setInterval(() => {
+                valorActual += incremento;
+                if (valorActual >= valorFinal) {
+                    valorActual = valorFinal;
+                    clearInterval(intervalo);
+                }
+                elemento.textContent = Math.floor(valorActual).toLocaleString();
+            }, 20);
+        }
+        
+        // Cargar actividades
+        function cargarActividades() {
+            mostrarLoading(true);
+            
+            // Obtener valores de filtros
+            const filtros = {
+                tipo_filtro: document.getElementById('filter-tipo').value,
+                bloque_filtro: document.getElementById('filter-bloque').value,
+                fuente_filtro: document.getElementById('filter-fuente').value,
+                fecha_desde: document.getElementById('filter-fecha-desde').value,
+                fecha_hasta: document.getElementById('filter-fecha-hasta').value,
+                busqueda: document.getElementById('filter-busqueda').value,
+                orden_por: document.getElementById('filter-orden').value,
+                pagina: paginaActual,
+                por_pagina: resultadosPorPagina
+            };
+            
+            fetch('/api/admin/filtrar_actividades', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(filtros)
+            })
             .then(response => response.json())
             .then(data => {
+                mostrarLoading(false);
+                
                 if (data.success) {
-                    const stats = data.estadisticas;
+                    totalActividades = data.total;
+                    totalPaginas = data.total_paginas;
                     
-                    // Actualizar tarjetas de estadísticas
-                    document.getElementById('total-actividades').textContent = stats.total_actividades;
-                    document.getElementById('total-canva').textContent = stats.actividades_canva;
-                    document.getElementById('total-foda-ext').textContent = stats.actividades_foda_ext;
-                    document.getElementById('total-foda-int').textContent = stats.actividades_foda_int;
-                    document.getElementById('total-positivas').textContent = stats.positivas_canva + stats.positivas_foda_ext;
-                    document.getElementById('total-negativas').textContent = stats.negativas_canva + stats.negativas_foda_ext;
-                    document.getElementById('total-recientes').textContent = stats.actividades_recientes_7dias;
-                    document.getElementById('total-usuarios').textContent = stats.usuarios_total;
+                    // Actualizar tabla
+                    actualizarTabla(data.actividades);
                     
-                    // Animación de contadores
-                    animarContadores();
+                    // Actualizar información de paginación
+                    actualizarPaginacion();
+                    
+                    // Actualizar gráficos
+                    actualizarGraficos(data.actividades);
+                } else {
+                    mostrarAlerta('Error al cargar actividades: ' + data.message, 'error');
                 }
             })
             .catch(error => {
-                console.error('Error al cargar estadísticas:', error);
+                mostrarLoading(false);
+                console.error('Error:', error);
+                mostrarAlerta('Error de conexión al servidor', 'error');
             });
-    }
-    
-    // Animación de contadores
-    function animarContadores() {
-        const elementos = document.querySelectorAll('.estadistica-valor');
-        elementos.forEach(elemento => {
-            const valorFinal = parseInt(elemento.textContent.replace(/,/g, ''));
-            if (!isNaN(valorFinal)) {
-                animarContador(elemento, valorFinal);
-            }
-        });
-    }
-    
-    function animarContador(elemento, valorFinal) {
-        let valorActual = 0;
-        const duracion = 1000; // 1 segundo
-        const incremento = valorFinal / (duracion / 16); // 60fps
-        
-        const animacion = setInterval(() => {
-            valorActual += incremento;
-            if (valorActual >= valorFinal) {
-                valorActual = valorFinal;
-                clearInterval(animacion);
-            }
-            elemento.textContent = Math.floor(valorActual).toLocaleString();
-        }, 16);
-    }
-    
-    // Obtener el filtro de tipo seleccionado
-    function obtenerFiltroTipoSeleccionado() {
-        const botones = document.querySelectorAll('.tipo-filtro-btn.selected');
-        for (let boton of botones) {
-            if (boton.classList.contains('all-tipo')) return 'all';
-            if (boton.classList.contains('positivo')) return 'Positivo';
-            if (boton.classList.contains('negativo')) return 'Negativo';
-        }
-        return 'all';
-    }
-    
-    // Seleccionar filtro de tipo
-    function seleccionarFiltroTipo(tipo) {
-        // Remover selección de todos los botones
-        document.querySelectorAll('.tipo-filtro-btn').forEach(btn => {
-            btn.classList.remove('selected');
-        });
-        
-        // Seleccionar el botón correspondiente
-        if (tipo === 'all') {
-            document.querySelector('.tipo-filtro-btn.all-tipo').classList.add('selected');
-        } else if (tipo === 'Positivo') {
-            document.querySelector('.tipo-filtro-btn.positivo').classList.add('selected');
-        } else if (tipo === 'Negativo') {
-            document.querySelector('.tipo-filtro-btn.negativo').classList.add('selected');
         }
         
-        aplicarFiltros();
-    }
-    
-    // Aplicar filtros y actualizar tabla
-    function aplicarFiltros() {
-        paginaActual = 1;
-        cargarDatos();
-    }
-    
-    // Actualizar tabla con datos
-    function actualizarTabla(data) {
-        const tablaBody = document.getElementById('tabla-body');
-        const actividades = data.actividades;
-        const total = data.total;
-        const totalPaginas = data.total_paginas;
-        
-        if (actividades.length === 0) {
-            tablaBody.innerHTML = `
-                <tr>
-                    <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
-                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; color: #dee2e6;"></i>
-                        <p>No se encontraron actividades con los filtros aplicados.</p>
-                        <button class="btn-limpiar" onclick="limpiarFiltros()" style="margin-top: 15px;">
-                            <i class="fas fa-eraser"></i> Limpiar Filtros
-                        </button>
-                    </td>
-                </tr>
-            `;
-        } else {
-            // Generar HTML para las filas
+        // Actualizar tabla
+        function actualizarTabla(actividades) {
+            const tbody = document.getElementById('tabla-actividades');
+            
+            if (actividades.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No se encontraron actividades con los filtros aplicados.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
             let html = '';
             actividades.forEach(actividad => {
-                const colorTipo = actividad.tipo === 'Positivo' ? '#4CAF50' : '#ff6b6b';
+                const fecha = new Date(actividad.fecha);
+                const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
                 
                 html += `
                     <tr>
-                        <td style="font-weight: 600; color: #0c2461;">${actividad.id}</td>
+                        <td>${actividad.id}</td>
                         <td>${actividad.actividad}</td>
-                        <td style="color: ${colorTipo}; font-weight: 600;">
-                            <i class="fas fa-thumbs-${actividad.tipo === 'Positivo' ? 'up' : 'down'}"></i>
-                            ${actividad.tipo}
+                        <td>
+                            <span class="badge ${actividad.tipo === 'Positivo' ? 'bg-success' : 'bg-danger'}">
+                                <i class="fas fa-thumbs-${actividad.tipo === 'Positivo' ? 'up' : 'down'}"></i>
+                                ${actividad.tipo}
+                            </span>
                         </td>
                         <td>${actividad.bloque}</td>
-                        <td>${actividad.aspecto}</td>
                         <td>
-                            <span class="badge-fuente ${actividad.fuente}">
+                            <span class="badge-fuente badge-${actividad.fuente}">
                                 ${actividad.fuente}
                             </span>
                         </td>
-                        <td>${formatearFecha(actividad.fecha)}</td>
-                        <td class="acciones-celda">
-                            <button class="btn-accion btn-editar" onclick="editarActividad(${actividad.id})" title="Editar">
+                        <td>${fechaFormateada}</td>
+                        <td>${actividad.creador}</td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="editarActividad(${actividad.id})" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </button>
-                            <button class="btn-accion btn-eliminar" onclick="eliminarActividad(${actividad.id})" title="Eliminar">
+                            <button class="btn-action btn-delete" onclick="eliminarActividad(${actividad.id})" title="Eliminar">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
@@ -1349,406 +1000,252 @@
                 `;
             });
             
-            tablaBody.innerHTML = html;
+            tbody.innerHTML = html;
         }
         
-        // Actualizar información de paginación
-        const inicio = ((paginaActual - 1) * resultadosPorPagina) + 1;
-        const fin = Math.min(paginaActual * resultadosPorPagina, total);
-        
-        document.getElementById('registros-mostrados').textContent = 
-            `Mostrando ${inicio}-${fin} de ${total} registros`;
-        document.getElementById('pagina-actual').textContent = `Página ${paginaActual} de ${totalPaginas}`;
-        
-        // Habilitar/deshabilitar botones de paginación
-        document.querySelector('.paginacion-btn:nth-child(1)').disabled = paginaActual === 1;
-        document.querySelector('.paginacion-btn:nth-child(3)').disabled = paginaActual === totalPaginas;
-    }
-    
-    // Formatear fecha para mostrar
-    function formatearFecha(fechaStr) {
-        if (!fechaStr) return '';
-        const fecha = new Date(fechaStr);
-        return fecha.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-    
-    // Cambiar página
-    function cambiarPagina(direccion) {
-        const totalPaginas = Math.ceil(actividadesFiltradas.length / resultadosPorPagina);
-        
-        if (direccion === -1 && paginaActual > 1) {
-            paginaActual--;
-        } else if (direccion === 1 && paginaActual < totalPaginas) {
-            paginaActual++;
+        // Actualizar paginación
+        function actualizarPaginacion() {
+            const inicio = ((paginaActual - 1) * resultadosPorPagina) + 1;
+            const fin = Math.min(paginaActual * resultadosPorPagina, totalActividades);
+            
+            document.getElementById('info-paginacion').textContent = 
+                `Mostrando ${inicio}-${fin} de ${totalActividades} actividades`;
+            document.getElementById('pagina-actual').textContent = `Página ${paginaActual} de ${totalPaginas}`;
+            
+            // Habilitar/deshabilitar botones
+            document.getElementById('btn-prev').disabled = paginaActual === 1;
+            document.getElementById('btn-next').disabled = paginaActual === totalPaginas;
         }
         
-        cargarDatos();
-    }
-    
-    // Cambiar resultados por página
-    function cambiarResultadosPorPagina() {
-        resultadosPorPagina = parseInt(document.getElementById('resultados-pagina').value);
-        paginaActual = 1;
-        cargarDatos();
-    }
-    
-    // Limpiar todos los filtros
-    function limpiarFiltros() {
-        // Restablecer filtros
-        seleccionarFiltroTipo('all');
-        document.getElementById('filtro-bloque').value = 'all';
-        document.getElementById('filtro-fuente').value = 'all';
-        document.getElementById('filtro-busqueda').value = '';
-        document.getElementById('ordenar-por').value = 'fecha_desc';
-        
-        // Restablecer fechas a los últimos 30 días
-        establecerFechasPorDefecto();
-        
-        // Aplicar filtros limpios
-        aplicarFiltros();
-        
-        mostrarAlerta('✅ Filtros limpiados correctamente.', 'success');
-    }
-    
-    // Inicializar gráficos
-    function inicializarGraficos() {
-        // Configuración común para gráficos
-        Chart.defaults.font.family = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
-        Chart.defaults.font.size = 12;
-        Chart.defaults.color = '#666';
-        
-        // Gráfico de fuente
-        const ctxFuente = document.getElementById('grafico-fuente').getContext('2d');
-        graficoFuente = new Chart(ctxFuente, {
-            type: 'doughnut',
-            data: {
-                labels: ['CANVA', 'FODA Externo', 'FODA Interno', 'Manual', 'Importado'],
-                datasets: [{
-                    data: [0, 0, 0, 0, 0],
-                    backgroundColor: [
-                        '#0c2461',  // CANVA
-                        '#4CAF50',  // FODA Externo
-                        '#2196F3',  // FODA Interno
-                        '#FF9800',  // Manual
-                        '#9C27B0'   // Importado
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#fff',
-                    hoverOffset: 20
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true,
-                            font: {
-                                size: 11,
-                                weight: '600'
-                            }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return `${context.label}: ${context.raw} actividades`;
-                            }
-                        }
-                    }
-                }
+        // Cambiar página
+        function cambiarPagina(direccion) {
+            const nuevaPagina = paginaActual + direccion;
+            
+            if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+                paginaActual = nuevaPagina;
+                cargarActividades();
             }
-        });
+        }
         
-        // Gráfico de tipo
-        const ctxTipo = document.getElementById('grafico-tipo').getContext('2d');
-        graficoTipo = new Chart(ctxTipo, {
-            type: 'pie',
-            data: {
-                labels: ['Positivas', 'Negativas'],
-                datasets: [{
-                    data: [0, 0],
-                    backgroundColor: ['#4CAF50', '#ff6b6b'],
-                    borderWidth: 2,
-                    borderColor: '#fff',
-                    hoverOffset: 15
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 20,
-                            font: {
-                                size: 11,
-                                weight: '600'
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        // Cambiar resultados por página
+        function cambiarResultadosPorPagina() {
+            resultadosPorPagina = parseInt(document.getElementById('resultados-por-pagina').value);
+            paginaActual = 1;
+            cargarActividades();
+        }
         
-        // Gráfico de fecha
-        const ctxFecha = document.getElementById('grafico-fecha').getContext('2d');
-        graficoFecha = new Chart(ctxFecha, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Actividades por día',
-                    data: [],
-                    borderColor: '#4a69bd',
-                    backgroundColor: 'rgba(74, 105, 189, 0.1)',
-                    borderWidth: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#0c2461',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 7
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 1,
-                            font: {
-                                size: 11
-                            }
-                        },
-                        grid: {
-                            color: 'rgba(0,0,0,0.05)'
-                        }
-                    },
-                    x: {
-                        grid: {
-                            color: 'rgba(0,0,0,0.05)'
-                        },
-                        ticks: {
-                            font: {
-                                size: 11
-                            }
-                        }
-                    }
+        // Limpiar filtros
+        function limpiarFiltros() {
+            document.getElementById('filter-tipo').value = 'all';
+            document.getElementById('filter-bloque').value = 'all';
+            document.getElementById('filter-fuente').value = 'all';
+            document.getElementById('filter-orden').value = 'fecha_desc';
+            document.getElementById('filter-busqueda').value = '';
+            
+            // Establecer fechas por defecto (últimos 30 días)
+            const fechaHasta = new Date();
+            const fechaDesde = new Date();
+            fechaDesde.setDate(fechaHasta.getDate() - 30);
+            
+            document.getElementById('filter-fecha-desde').value = fechaDesde.toISOString().split('T')[0];
+            document.getElementById('filter-fecha-hasta').value = fechaHasta.toISOString().split('T')[0];
+            
+            paginaActual = 1;
+            cargarActividades();
+            
+            mostrarAlerta('Filtros limpiados correctamente', 'success');
+        }
+        
+        // Inicializar gráficos
+        function inicializarGraficos() {
+            // Gráfico de fuente
+            const ctxFuente = document.getElementById('chart-fuente').getContext('2d');
+            chartFuente = new Chart(ctxFuente, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CANVA', 'FODA Externo', 'FODA Interno'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            '#0c2461',
+                            '#4CAF50',
+                            '#2196F3'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
                 },
-                plugins: {
-                    legend: {
-                        labels: {
-                            font: {
-                                size: 12,
-                                weight: '600'
-                            }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
                         }
                     }
                 }
-            }
-        });
-    }
-    
-    // Actualizar gráficos con datos filtrados
-    function actualizarGraficos() {
-        if (!graficoFuente) return;
-        
-        // Calcular distribución por fuente
-        const fuentes = ['canva', 'foda_ext', 'foda_int', 'manual', 'importado'];
-        const datosFuentes = fuentes.map(fuente => 
-            actividadesFiltradas.filter(a => a.fuente === fuente).length
-        );
-        
-        graficoFuente.data.datasets[0].data = datosFuentes;
-        graficoFuente.update();
-        
-        // Calcular distribución por tipo
-        const positivas = actividadesFiltradas.filter(a => a.tipo === 'Positivo').length;
-        const negativas = actividadesFiltradas.filter(a => a.tipo === 'Negativo').length;
-        
-        graficoTipo.data.datasets[0].data = [positivas, negativas];
-        graficoTipo.update();
-        
-        // Calcular distribución por fecha (últimos 7 días)
-        const ultimos7Dias = [];
-        const hoy = new Date();
-        
-        for (let i = 6; i >= 0; i--) {
-            const fecha = new Date();
-            fecha.setDate(hoy.getDate() - i);
-            const fechaStr = fecha.toISOString().split('T')[0];
-            ultimos7Dias.push(fechaStr);
-        }
-        
-        const actividadesPorFecha = {};
-        ultimos7Dias.forEach(fecha => {
-            actividadesPorFecha[fecha] = 0;
-        });
-        
-        actividadesFiltradas.forEach(actividad => {
-            if (actividad.fecha) {
-                const fechaActividad = actividad.fecha.split(' ')[0];
-                if (actividadesPorFecha.hasOwnProperty(fechaActividad)) {
-                    actividadesPorFecha[fechaActividad]++;
+            });
+            
+            // Gráfico de tipo
+            const ctxTipo = document.getElementById('chart-tipo').getContext('2d');
+            chartTipo = new Chart(ctxTipo, {
+                type: 'pie',
+                data: {
+                    labels: ['Positivas', 'Negativas'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#ff6b6b'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
                 }
-            }
-        });
-        
-        graficoFecha.data.labels = ultimos7Dias.map(fecha => {
-            const d = new Date(fecha);
-            return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-        });
-        graficoFecha.data.datasets[0].data = ultimos7Dias.map(fecha => actividadesPorFecha[fecha]);
-        graficoFecha.update();
-    }
-    
-    // Exportar datos a CSV
-    function exportarDatos() {
-        mostrarAlerta('📊 Preparando exportación de datos...', 'info');
-        
-        // Preparar datos para la petición
-        const datosFiltro = {
-            tipo_filtro: filtroTipo,
-            bloque_filtro: filtroBloque,
-            fuente_filtro: filtroFuente,
-            fecha_desde: filtroFechaDesde,
-            fecha_hasta: filtroFechaHasta,
-            busqueda: filtroBusqueda,
-            orden_por: ordenarPor
-        };
-        
-        // Hacer petición a la API de exportación
-        fetch('/api/admin/exportar_datos', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(datosFiltro)
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.blob();
-            }
-            throw new Error('Error en la exportación');
-        })
-        .then(blob => {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `actividades_exportadas_${new Date().toISOString().split('T')[0]}.csv`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            mostrarAlerta('✅ Datos exportados correctamente.', 'success');
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            mostrarAlerta('❌ Error al exportar datos.', 'error');
-        });
-    }
-    
-    // Editar actividad
-    function editarActividad(id) {
-        mostrarAlerta('✏️ Función de edición en desarrollo...', 'info');
-        // Aquí podrías abrir un modal o redirigir a la página de edición
-    }
-    
-    // Eliminar actividad
-    function eliminarActividad(id) {
-        if (confirm('⚠️ ¿Está seguro de que desea eliminar esta actividad?\n\nEsta acción no se puede deshacer.')) {
-            fetch(`/aspectos/${id}/eliminar`, {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    mostrarAlerta('✅ Actividad eliminada correctamente.', 'success');
-                    cargarDatos(); // Recargar datos
-                    actualizarEstadisticas(); // Actualizar estadísticas
-                } else {
-                    mostrarAlerta('❌ Error: ' + data.message, 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                mostrarAlerta('❌ Error de conexión al servidor.', 'error');
             });
         }
-    }
-    
-    // Función para mostrar alertas
-    function mostrarAlerta(mensaje, tipo) {
-        let alerta = document.getElementById('alerta-flotante');
         
-        if (!alerta) {
-            alerta = document.createElement('div');
-            alerta.id = 'alerta-flotante';
-            alerta.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 8px;
-                color: white;
-                font-weight: 600;
-                z-index: 10000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                transition: all 0.3s ease;
-                transform: translateX(100%);
-                opacity: 0;
-                max-width: 400px;
-                backdrop-filter: blur(10px);
-            `;
-            document.body.appendChild(alerta);
+        // Actualizar gráficos
+        function actualizarGraficos(actividades) {
+            if (!actividades || actividades.length === 0) {
+                return;
+            }
+            
+            // Calcular distribución por fuente
+            const fuentes = {
+                'canva': 0,
+                'foda_ext': 0,
+                'foda_int': 0
+            };
+            
+            // Calcular distribución por tipo
+            const tipos = {
+                'Positivo': 0,
+                'Negativo': 0
+            };
+            
+            actividades.forEach(actividad => {
+                if (fuentes[actividad.fuente] !== undefined) {
+                    fuentes[actividad.fuente]++;
+                }
+                
+                if (tipos[actividad.tipo] !== undefined) {
+                    tipos[actividad.tipo]++;
+                }
+            });
+            
+            // Actualizar gráfico de fuente
+            chartFuente.data.datasets[0].data = [
+                fuentes.canva,
+                fuentes.foda_ext,
+                fuentes.foda_int
+            ];
+            chartFuente.update();
+            
+            // Actualizar gráfico de tipo
+            chartTipo.data.datasets[0].data = [
+                tipos.Positivo,
+                tipos.Negativo
+            ];
+            chartTipo.update();
         }
         
-        let icono = 'info-circle';
-        let background = '';
-        
-        if (tipo === 'success') {
-            icono = 'check-circle';
-            background = 'linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%)';
-        } else if (tipo === 'error') {
-            icono = 'exclamation-circle';
-            background = 'linear-gradient(135deg, #ff6b6b 0%, #c62828 100%)';
-        } else if (tipo === 'info') {
-            icono = 'info-circle';
-            background = 'linear-gradient(135deg, #2196F3 0%, #1565c0 100%)';
-        } else {
-            background = 'linear-gradient(135deg, #FF9800 0%, #f57c00 100%)';
+        // Exportar datos
+        function exportarDatos() {
+            mostrarLoading(true);
+            
+            // Obtener valores de filtros
+            const filtros = {
+                tipo_filtro: document.getElementById('filter-tipo').value,
+                bloque_filtro: document.getElementById('filter-bloque').value,
+                fuente_filtro: document.getElementById('filter-fuente').value,
+                fecha_desde: document.getElementById('filter-fecha-desde').value,
+                fecha_hasta: document.getElementById('filter-fecha-hasta').value,
+                busqueda: document.getElementById('filter-busqueda').value,
+                orden_por: document.getElementById('filter-orden').value
+            };
+            
+            fetch('/api/admin/exportar_datos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(filtros)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('Error en la exportación');
+            })
+            .then(blob => {
+                mostrarLoading(false);
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `actividades_export_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                mostrarAlerta('Datos exportados correctamente', 'success');
+            })
+            .catch(error => {
+                mostrarLoading(false);
+                console.error('Error:', error);
+                mostrarAlerta('Error al exportar datos', 'error');
+            });
         }
         
-        alerta.style.background = background;
-        alerta.innerHTML = `<i class="fas fa-${icono}"></i> ${mensaje}`;
+        // Editar actividad
+        function editarActividad(id) {
+            if (confirm('¿Desea editar esta actividad?')) {
+                window.location.href = `/aspectos/${id}/editar`;
+            }
+        }
         
-        setTimeout(() => {
-            alerta.style.transform = 'translateX(0)';
-            alerta.style.opacity = '1';
-        }, 10);
-        
-        setTimeout(() => {
-            alerta.style.transform = 'translateX(100%)';
-            alerta.style.opacity = '0';
-        }, 4000);
-    }
-</script>
-{% endblock %}
+        // Eliminar actividad
+        function eliminarActividad(id) {
+            if (confirm('¿Está seguro de eliminar esta actividad?\nEsta acción no se puede deshacer.')) {
+                mostrarLoading(true);
+                
+                fetch(`/aspectos/${id}/eliminar`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    mostrarLoading(false);
+                    
+                    if (data.success) {
+                        mostrarAlerta('Actividad eliminada correctamente', 'success');
+                        // Recargar datos
+                        cargarEstadisticas();
+                        cargarActividades();
+                    } else {
+                        mostrarAlerta('Error al eliminar: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    mostrarLoading(false);
+                    console.error('Error:', error);
+                    mostrarAlerta('Error de conexión al servidor', 'error');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
