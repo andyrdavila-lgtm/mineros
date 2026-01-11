@@ -5,63 +5,73 @@
     <h1 class="content-title">FODA Externo - Análisis Ambiental</h1>
     
     <div class="columns-container">
-        <!-- Columna Izquierda - Historial de Actividades (foda_ext + canva) -->
+        <!-- Columna Izquierda - Historial de Actividades CANVA (solo fuente = canva) -->
         <div class="column left-column">
             <div class="form-section">
-                <h2><i class="fas fa-history"></i> Historial de Actividades</h2>
+                <h2><i class="fas fa-project-diagram"></i> Historial CANVA</h2>
                 <div class="historial-info">
-                    <p><i class="fas fa-info-circle"></i> Mostrando actividades de <strong>FODA Externo</strong> y <strong>CANVA</strong></p>
+                    <p><i class="fas fa-info-circle"></i> Actividades disponibles para arrastrar a la matriz FODA</p>
                 </div>
                 
-                <div class="historial-container">
+                <div class="historial-container" id="historial-canva">
                     {% if historial_actividades %}
                         {% for actividad in historial_actividades %}
-                        <div class="historial-item">
-                            <div class="historial-header">
-                                <div class="historial-source-badge fuente-{{ actividad.fuente }}">
-                                    {% if actividad.fuente == 'foda_ext' %}
-                                        <i class="fas fa-external-link-alt"></i> FODA
-                                    {% else %}
+                            {% if actividad.fuente == 'canva' %}
+                            <div class="historial-item draggable-item" 
+                                 draggable="true"
+                                 data-id="{{ actividad.id }}"
+                                 data-actividad="{{ actividad.actividad }}"
+                                 data-tipo="{{ actividad.tipo }}"
+                                 data-aspecto="{{ actividad.aspecto }}">
+                                <div class="historial-header">
+                                    <div class="historial-source-badge fuente-canva">
                                         <i class="fas fa-project-diagram"></i> CANVA
-                                    {% endif %}
+                                    </div>
+                                    <small class="historial-fecha">{{ actividad.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
                                 </div>
-                                <small class="historial-fecha">{{ actividad.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
-                            </div>
-                            
-                            <div class="historial-actividad {{ 'texto-positivo' if actividad.tipo == 'Positivo' else 'texto-negativo' }}">
-                                {{ actividad.actividad }}
-                            </div>
-                            
-                            <div class="historial-footer">
-                                <div>
-                                    <span class="historial-aspecto">
-                                        {{ actividad.aspecto }}
-                                    </span>
+                                
+                                <div class="historial-actividad {{ 'texto-positivo' if actividad.tipo == 'Positivo' else 'texto-negativo' }}">
+                                    {{ actividad.actividad }}
                                 </div>
-                                <div>
-                                    <span class="historial-tipo {{ 'tipo-positivo' if actividad.tipo == 'Positivo' else 'tipo-negativo' }}">
-                                        {% if actividad.tipo == 'Positivo' %}
-                                            <i class="fas fa-thumbs-up"></i> Positivo
-                                        {% else %}
-                                            <i class="fas fa-thumbs-down"></i> Negativo
-                                        {% endif %}
-                                    </span>
+                                
+                                <div class="historial-footer">
+                                    <div>
+                                        <span class="historial-aspecto">
+                                            {{ actividad.aspecto }}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <span class="historial-tipo {{ 'tipo-positivo' if actividad.tipo == 'Positivo' else 'tipo-negativo' }}">
+                                            {% if actividad.tipo == 'Positivo' %}
+                                                <i class="fas fa-thumbs-up"></i> Positivo
+                                            {% else %}
+                                                <i class="fas fa-thumbs-down"></i> Negativo
+                                            {% endif %}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                            {% endif %}
                         {% endfor %}
+                        {% if not historial_actividades|selectattr('fuente', 'equalto', 'canva')|list %}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No hay actividades CANVA</h3>
+                            <p>Las actividades de CANVA aparecerán aquí.</p>
+                        </div>
+                        {% endif %}
                     {% else %}
                         <div class="empty-state">
                             <i class="fas fa-inbox"></i>
                             <h3>No hay actividades registradas</h3>
-                            <p>Las actividades que ingrese aparecerán aquí.</p>
+                            <p>Las actividades de CANVA aparecerán aquí.</p>
                         </div>
                     {% endif %}
                 </div>
             </div>
         </div>
         
-        <!-- Columna Central - Matriz FODA Externo (solo foda_ext) -->
+        <!-- Columna Central - Matriz FODA Externo (solo foda_ext) con drop zones -->
         <div class="column middle-column">
             <div class="table-section">
                 <h2><i class="fas fa-th-large"></i> Matriz FODA Externo</h2>
@@ -83,7 +93,7 @@
                         {% set _ = actividades_por_aspecto.update({aspecto: []}) %}
                     {% endfor %}
                     
-                    {# Agrupar las actividades #}
+                    {# Agrupar las actividades de foda_ext #}
                     {% if aspectos_lista %}
                         {% for actividad in aspectos_lista %}
                             {% if actividad.aspecto in actividades_por_aspecto %}
@@ -92,14 +102,21 @@
                         {% endfor %}
                     {% endif %}
                     
-                    {# Mostrar cada aspecto en orden #}
+                    {# Mostrar cada aspecto en orden con drop zone #}
                     {% for aspecto in aspectos_orden %}
                         {% set actividades_aspecto = actividades_por_aspecto[aspecto] %}
-                        <div class="aspecto-group">
+                        <div class="aspecto-group drop-zone" 
+                             data-aspecto="{{ aspecto }}"
+                             ondragover="allowDrop(event)"
+                             ondrop="drop(event, '{{ aspecto }}')">
                             <h3 class="aspecto-title">
                                 <i class="fas fa-folder"></i> {{ aspecto }}
                                 <span class="aspecto-count">{{ actividades_aspecto|length }}</span>
                             </h3>
+                            
+                            <div class="drop-hint" id="hint-{{ aspecto }}">
+                                <i class="fas fa-arrow-down"></i> Arrastre actividades CANVA aquí
+                            </div>
                             
                             {% if actividades_aspecto %}
                                 <div class="actividades-list">
@@ -126,19 +143,26 @@
                             {% else %}
                                 <div class="empty-aspecto">
                                     <i class="fas fa-info-circle"></i>
-                                    <p>No hay actividades registradas para este aspecto</p>
+                                    <p>Arrastre actividades CANVA aquí</p>
                                 </div>
                             {% endif %}
                         </div>
                     {% endfor %}
                 </div>
+                
+                <div class="matriz-actions">
+                    <button class="save-btn" onclick="guardarMatriz()">
+                        <i class="fas fa-save"></i> Guardar Matriz
+                    </button>
+                    <div id="matriz-message" class="mensaje-carga"></div>
+                </div>
             </div>
         </div>
         
-        <!-- Columna Derecha - Ingresar Actividades -->
+        <!-- Columna Derecha - Ingresar Actividades FODA -->
         <div class="column right-column">
             <div class="quick-input-section">
-                <h2><i class="fas fa-edit"></i> Ingresar Actividades</h2>
+                <h2><i class="fas fa-edit"></i> Ingresar Actividades FODA</h2>
                 
                 <div class="input-box">
                     <h3><i class="fas fa-tasks"></i> ACTIVIDAD</h3>
@@ -192,15 +216,14 @@
                 <div id="mensaje-carga" class="mensaje-carga"></div>
             </div>
             
-            <div class="info-box">
-                <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
-                <ul class="instructions-list">
-                    <li><i class="fas fa-mobile-alt"></i> <strong>Responsive:</strong> Se adapta a todos los dispositivos</li>
-                    <li><i class="fas fa-edit"></i> Escriba la actividad en el cuadro superior</li>
-                    <li><i class="fas fa-balance-scale"></i> Seleccione el tipo (Positivo/Negativo)</li>
-                    <li><i class="fas fa-layer-group"></i> Elija el aspecto correspondiente</li>
-                    <li><i class="fas fa-upload"></i> Haga clic en "Cargar" para guardar</li>
-                    <li><i class="fas fa-history"></i> El historial muestra actividades de FODA y CANVA</li>
+            <div class="drag-info-box">
+                <h3><i class="fas fa-arrows-alt"></i> Instrucciones de Arrastre</h3>
+                <ul class="drag-instructions">
+                    <li><i class="fas fa-mouse-pointer"></i> <strong>Seleccione</strong> una actividad de CANVA en el panel izquierdo</li>
+                    <li><i class="fas fa-arrows-alt"></i> <strong>Arrastre</strong> la actividad al aspecto deseado en la matriz central</li>
+                    <li><i class="fas fa-save"></i> <strong>Guarde</strong> la matriz para registrar los cambios</li>
+                    <li><i class="fas fa-plus-circle"></i> Las actividades originales de CANVA se mantienen</li>
+                    <li><i class="fas fa-redo"></i> Se crea un nuevo registro FODA con el nuevo aspecto</li>
                 </ul>
             </div>
         </div>
@@ -258,10 +281,10 @@
         box-shadow: 0 6px 20px rgba(0,0,0,0.12);
     }
     
-    /* ===== HISTORIAL DE ACTIVIDADES ===== */
+    /* ===== HISTORIAL DE ACTIVIDADES CANVA ===== */
     .historial-info {
-        background: rgba(33, 150, 243, 0.1);
-        border: 1px solid var(--info-color);
+        background: rgba(203, 223, 144, 0.2);
+        border: 1px solid var(--color5);
         border-radius: 8px;
         padding: 10px 15px;
         margin-bottom: 15px;
@@ -297,11 +320,22 @@
         padding: 15px;
         margin-bottom: 15px;
         transition: all 0.3s;
+        cursor: grab;
     }
     
     .historial-item:hover {
         background: #f0f7ff;
         border-color: var(--color2);
+        transform: translateY(-2px);
+    }
+    
+    .historial-item:active {
+        cursor: grabbing;
+        transform: scale(0.98);
+    }
+    
+    .draggable-item {
+        user-select: none;
     }
     
     .historial-header {
@@ -320,12 +354,6 @@
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-    }
-    
-    .fuente-foda_ext {
-        background-color: rgba(27, 64, 121, 0.1);
-        color: var(--color1);
-        border: 1px solid var(--color1);
     }
     
     .fuente-canva {
@@ -400,7 +428,7 @@
         color: #c62828;
     }
     
-    /* ===== MATRIZ FODA ===== */
+    /* ===== MATRIZ FODA CON DROP ZONES ===== */
     .matriz-header {
         margin-bottom: 20px;
     }
@@ -443,16 +471,24 @@
     }
     
     .aspecto-group {
-        background: #f8f9fa;
-        border: 1px solid #e0e0e0;
+        background: white;
+        border: 2px dashed #e0e0e0;
         border-radius: 10px;
         padding: 15px;
         margin-bottom: 20px;
+        transition: all 0.3s;
+        min-height: 100px;
+    }
+    
+    .aspecto-group.drag-over {
+        border-color: var(--color2);
+        background-color: rgba(77, 124, 138, 0.05);
+        border-style: solid;
     }
     
     .aspecto-title {
         color: var(--color1);
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         padding-bottom: 10px;
         border-bottom: 2px solid var(--color3);
         font-size: 1.2rem;
@@ -468,6 +504,22 @@
         border-radius: 20px;
         font-size: 0.9rem;
         font-weight: 600;
+    }
+    
+    .drop-hint {
+        text-align: center;
+        padding: 10px;
+        margin: 10px 0;
+        background: rgba(203, 223, 144, 0.1);
+        border: 1px dashed var(--color5);
+        border-radius: 6px;
+        color: #5a6c2a;
+        font-size: 0.9rem;
+        display: none;
+    }
+    
+    .aspecto-group:not(:has(.actividad-item)) .drop-hint {
+        display: block;
     }
     
     .actividades-list {
@@ -542,18 +594,53 @@
     
     .empty-aspecto {
         text-align: center;
-        padding: 30px 20px;
+        padding: 20px;
         color: #666;
-        background: #f1f3f4;
+        background: #f9f9f9;
         border-radius: 8px;
         border: 1px dashed #ccc;
+        margin-top: 10px;
     }
     
     .empty-aspecto i {
-        font-size: 2rem;
+        font-size: 1.5rem;
         color: #ccc;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
         display: block;
+    }
+    
+    /* ===== BOTÓN GUARDAR MATRIZ ===== */
+    .matriz-actions {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 2px solid #f0f0f0;
+        text-align: center;
+    }
+    
+    .save-btn {
+        padding: 12px 30px;
+        background: linear-gradient(135deg, var(--color1), var(--color2));
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .save-btn:hover:not(:disabled) {
+        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .save-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
     
     /* ===== FORMULARIO DE INGRESO ===== */
@@ -729,6 +816,47 @@
         transform: none;
     }
     
+    /* ===== INFORMACIÓN DE ARRASTRE ===== */
+    .drag-info-box {
+        background: linear-gradient(135deg, #f9fdf0 0%, #f0f7e8 100%);
+        padding: 20px;
+        border-radius: 10px;
+        margin-top: 25px;
+        border-left: 5px solid var(--color5);
+    }
+    
+    .drag-info-box h3 {
+        color: #5a6c2a;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 1.1rem;
+    }
+    
+    .drag-instructions {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .drag-instructions li {
+        margin-bottom: 10px;
+        color: #495057;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        line-height: 1.4;
+        font-size: 0.9rem;
+    }
+    
+    .drag-instructions li i {
+        color: var(--color5);
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    
+    /* ===== MENSAJES ===== */
     .mensaje-carga {
         margin-top: 20px;
         padding: 15px;
@@ -757,45 +885,6 @@
         color: #c62828;
         border: 1px solid var(--error-color);
         display: block;
-    }
-    
-    /* ===== INFORMACIÓN ===== */
-    .info-box {
-        background: linear-gradient(135deg, #f0f7ff 0%, #e3f2fd 100%);
-        padding: 20px;
-        border-radius: 10px;
-        margin-top: 25px;
-        border-left: 5px solid var(--color1);
-    }
-    
-    .info-box h3 {
-        color: var(--color1);
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 1.2rem;
-    }
-    
-    .instructions-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .instructions-list li {
-        margin-bottom: 12px;
-        color: #495057;
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        line-height: 1.5;
-    }
-    
-    .instructions-list li i {
-        color: var(--color2);
-        flex-shrink: 0;
-        margin-top: 3px;
     }
     
     /* ===== ESTADO VACÍO ===== */
@@ -912,50 +1001,13 @@
             padding: 4px 8px;
         }
     }
-    
-    /* Soporte para modo oscuro (opcional) */
-    @media (prefers-color-scheme: dark) {
-        .column {
-            background: #2d2d2d;
-            color: #fff;
-        }
-        
-        .historial-item,
-        .aspecto-group,
-        .input-box {
-            background: #3d3d3d;
-            border-color: #444;
-        }
-        
-        .quick-textarea {
-            background: #2d2d2d;
-            color: #fff;
-            border-color: #555;
-        }
-        
-        .historial-fecha {
-            color: #aaa;
-        }
-        
-        .empty-aspecto {
-            background: #3d3d3d;
-            color: #aaa;
-        }
-        
-        .info-box {
-            background: #3d3d3d;
-        }
-        
-        .instructions-list li {
-            color: #ccc;
-        }
-    }
 </style>
 
 <script>
     // Variables globales
     let tipoSeleccionado = 'Positivo';
     let aspectoSSeleccionado = 'ECONOMICO';
+    let actividadesArrastradas = new Map(); // Almacena actividades arrastradas: key=canva_id, value={actividad, tipo, aspecto}
     
     // Inicializar al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
@@ -970,7 +1022,6 @@
             textarea.addEventListener('input', function() {
                 charCount.textContent = this.value.length;
                 
-                // Cambiar color si se acerca al límite
                 if (this.value.length > 450) {
                     charCount.style.color = '#f44336';
                 } else if (this.value.length > 400) {
@@ -980,45 +1031,217 @@
                 }
             });
             
-            // Inicializar contador
             charCount.textContent = textarea.value.length;
         }
         
+        // Hacer elementos arrastrables
+        initDragAndDrop();
+        
         // Detectar cambios de orientación
         window.addEventListener('orientationchange', function() {
-            console.log('Orientación cambiada:', window.orientation);
-            // Forzar repintado para ajustar layout
             setTimeout(() => {
                 window.dispatchEvent(new Event('resize'));
             }, 100);
         });
         
-        // Ajustar alturas en móviles
         ajustarAlturasResponsive();
     });
     
-    // Función para ajustar alturas en dispositivos móviles
-    function ajustarAlturasResponsive() {
-        if (window.innerWidth < 768) {
-            // En móviles, ajustar altura máxima de contenedores
-            const historial = document.querySelector('.historial-container');
-            const matriz = document.querySelector('.matriz-container');
+    // Función para inicializar drag and drop
+    function initDragAndDrop() {
+        const draggables = document.querySelectorAll('.draggable-item');
+        const dropZones = document.querySelectorAll('.drop-zone');
+        
+        draggables.forEach(item => {
+            item.addEventListener('dragstart', handleDragStart);
+        });
+        
+        dropZones.forEach(zone => {
+            zone.addEventListener('dragover', handleDragOver);
+            zone.addEventListener('dragenter', handleDragEnter);
+            zone.addEventListener('dragleave', handleDragLeave);
+            zone.addEventListener('drop', handleDrop);
+        });
+    }
+    
+    function handleDragStart(e) {
+        const item = e.target.closest('.historial-item');
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+            id: item.dataset.id,
+            actividad: item.dataset.actividad,
+            tipo: item.dataset.tipo,
+            aspecto_original: item.dataset.aspecto
+        }));
+        
+        e.dataTransfer.effectAllowed = 'move';
+        
+        // Efecto visual
+        item.classList.add('dragging');
+    }
+    
+    function handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+    
+    function handleDragEnter(e) {
+        const dropZone = e.target.closest('.drop-zone');
+        if (dropZone) {
+            dropZone.classList.add('drag-over');
+        }
+    }
+    
+    function handleDragLeave(e) {
+        const dropZone = e.target.closest('.drop-zone');
+        if (dropZone && !dropZone.contains(e.relatedTarget)) {
+            dropZone.classList.remove('drag-over');
+        }
+    }
+    
+    function handleDrop(e) {
+        e.preventDefault();
+        const dropZone = e.target.closest('.drop-zone');
+        if (!dropZone) return;
+        
+        dropZone.classList.remove('drag-over');
+        
+        try {
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const nuevoAspecto = dropZone.dataset.aspecto;
             
-            if (historial) {
-                historial.style.maxHeight = '400px';
+            // Almacenar la actividad arrastrada
+            actividadesArrastradas.set(data.id, {
+                actividad: data.actividad,
+                tipo: data.tipo,
+                aspecto_original: data.aspecto_original,
+                aspecto_nuevo: nuevoAspecto,
+                canva_id: data.id
+            });
+            
+            // Mostrar visualmente en la matriz
+            agregarActividadVisual(dropZone, data.actividad, data.tipo);
+            
+            // Remover clase dragging del elemento original
+            const draggables = document.querySelectorAll('.historial-item');
+            draggables.forEach(item => {
+                item.classList.remove('dragging');
+            });
+            
+            console.log(`Actividad ${data.id} arrastrada a ${nuevoAspecto}`);
+        } catch (error) {
+            console.error('Error al procesar drop:', error);
+        }
+    }
+    
+    function agregarActividadVisual(dropZone, actividad, tipo) {
+        // Crear elemento visual para la actividad
+        const actividadesList = dropZone.querySelector('.actividades-list') || 
+                               dropZone.querySelector('.empty-aspecto');
+        
+        if (actividadesList) {
+            // Si hay empty-aspecto, convertirlo en lista
+            if (actividadesList.classList.contains('empty-aspecto')) {
+                const newList = document.createElement('div');
+                newList.className = 'actividades-list';
+                dropZone.replaceChild(newList, actividadesList);
             }
             
-            if (matriz) {
-                matriz.style.maxHeight = '500px';
+            const actividadItem = document.createElement('div');
+            actividadItem.className = `actividad-item ${tipo === 'Positivo' ? 'actividad-positiva' : 'actividad-negativa'} nueva-actividad`;
+            actividadItem.innerHTML = `
+                <div class="actividad-texto" style="color: ${tipo === 'Positivo' ? 'green' : '#8B0000'};">
+                    <i class="fas fa-circle" style="font-size: 8px; margin-right: 8px;"></i>
+                    ${actividad}
+                </div>
+                <div class="actividad-tipo">
+                    <span class="tipo-indicador ${tipo === 'Positivo' ? 'positivo' : 'negativo'}">
+                        <i class="fas ${tipo === 'Positivo' ? 'plus-circle' : 'minus-circle'}"></i> ${tipo}
+                    </span>
+                </div>
+            `;
+            
+            dropZone.querySelector('.actividades-list').appendChild(actividadItem);
+            
+            // Actualizar contador
+            const countSpan = dropZone.querySelector('.aspecto-count');
+            if (countSpan) {
+                const currentCount = parseInt(countSpan.textContent) || 0;
+                countSpan.textContent = currentCount + 1;
             }
         }
     }
     
-    // Función para seleccionar tipo
+    // Función para guardar la matriz con actividades arrastradas
+    function guardarMatriz() {
+        if (actividadesArrastradas.size === 0) {
+            mostrarMensaje('ℹ️ No hay actividades nuevas para guardar.', 'info');
+            return;
+        }
+        
+        const btn = document.querySelector('.save-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        }
+        
+        // Convertir Map a array
+        const actividadesArray = Array.from(actividadesArrastradas.values());
+        
+        fetch('/guardar_matriz_foda', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                actividades: actividadesArray,
+                fuente: 'foda_ext' // Siempre se guarda como FODA externo
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                mostrarMensaje('✅ ' + data.message, 'exito');
+                actividadesArrastradas.clear();
+                
+                // Recargar después de guardar
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                mostrarMensaje('❌ Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarMensaje('❌ Error al conectar con el servidor.', 'error');
+        })
+        .finally(() => {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> Guardar Matriz';
+            }
+        });
+    }
+    
+    // Funciones existentes (sin cambios)
+    function ajustarAlturasResponsive() {
+        if (window.innerWidth < 768) {
+            const historial = document.querySelector('.historial-container');
+            const matriz = document.querySelector('.matriz-container');
+            
+            if (historial) historial.style.maxHeight = '400px';
+            if (matriz) matriz.style.maxHeight = '500px';
+        }
+    }
+    
     function seleccionarTipo(tipo) {
         tipoSeleccionado = tipo;
         
-        // Actualizar UI - Poner el seleccionado activo y el otro gris
         const btnPositivo = document.getElementById('btn-positivo');
         const btnNegativo = document.getElementById('btn-negativo');
         
@@ -1032,15 +1255,12 @@
             }
         }
         
-        // Actualizar campo oculto
         document.getElementById('quick-tipo').value = tipo;
     }
     
-    // Función para seleccionar aspecto
     function seleccionarAspecto(aspecto) {
         aspectoSSeleccionado = aspecto;
         
-        // Actualizar UI
         document.querySelectorAll('.aspecto-option').forEach(btn => {
             btn.classList.remove('selected');
         });
@@ -1050,17 +1270,14 @@
             btnSeleccionado.classList.add('selected');
         }
         
-        // Actualizar campo oculto
         document.getElementById('quick-aspecto').value = aspecto;
     }
     
-    // Función para guardar actividad
     function guardarActividad() {
         const actividad = document.getElementById('quick-actividad').value.trim();
         const tipo = tipoSeleccionado;
         const aspecto = aspectoSSeleccionado;
         
-        // Validaciones
         if (!actividad) {
             mostrarMensaje('❌ Por favor, ingrese una actividad.', 'error');
             document.getElementById('quick-actividad').focus();
@@ -1072,14 +1289,12 @@
             return;
         }
         
-        // Deshabilitar botón durante la carga
         const btn = document.querySelector('.quick-action-btn');
         if (btn) {
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
         }
         
-        // Enviar datos al servidor
         fetch('/guardar_foda_ext', {
             method: 'POST',
             headers: {
@@ -1088,7 +1303,8 @@
             body: JSON.stringify({
                 actividad: actividad,
                 tipo: tipo,
-                aspecto: aspecto
+                aspecto: aspecto,
+                fuente: 'foda_ext'
             })
         })
         .then(response => {
@@ -1102,7 +1318,6 @@
                 mostrarMensaje('✅ ' + data.message, 'exito');
                 limpiarEntradaRapida();
                 
-                // Recargar la página para ver los cambios
                 setTimeout(() => {
                     window.location.reload();
                 }, 1500);
@@ -1112,10 +1327,9 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            mostrarMensaje('❌ Error al conectar con el servidor. Verifique su conexión.', 'error');
+            mostrarMensaje('❌ Error al conectar con el servidor.', 'error');
         })
         .finally(() => {
-            // Rehabilitar botón
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-upload"></i> Cargar';
@@ -1123,7 +1337,6 @@
         });
     }
     
-    // Función para mostrar mensajes
     function mostrarMensaje(texto, tipo) {
         const mensajeDiv = document.getElementById('mensaje-carga');
         if (!mensajeDiv) return;
@@ -1133,27 +1346,28 @@
         
         if (tipo === 'exito') {
             mensajeDiv.classList.add('mensaje-exito');
+        } else if (tipo === 'info') {
+            mensajeDiv.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
+            mensajeDiv.style.color = 'var(--info-color)';
+            mensajeDiv.style.border = '1px solid var(--info-color)';
+            mensajeDiv.style.display = 'block';
         } else {
             mensajeDiv.classList.add('mensaje-error');
         }
         
-        // Desplazar hacia el mensaje en móviles
         if (window.innerWidth < 768) {
             mensajeDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
         
-        // Ocultar mensaje después de 5 segundos
         setTimeout(() => {
             mensajeDiv.style.display = 'none';
         }, 5000);
     }
     
-    // Función para limpiar formulario
     function limpiarEntradaRapida() {
         const textarea = document.getElementById('quick-actividad');
         if (textarea) {
             textarea.value = '';
-            // Actualizar contador
             const charCount = document.getElementById('char-count');
             if (charCount) charCount.textContent = '0';
         }
@@ -1164,11 +1378,9 @@
         const mensajeDiv = document.getElementById('mensaje-carga');
         if (mensajeDiv) mensajeDiv.style.display = 'none';
         
-        // Enfocar textarea
         if (textarea) textarea.focus();
     }
     
-    // Detectar cambios de tamaño de ventana
     window.addEventListener('resize', function() {
         ajustarAlturasResponsive();
     });
