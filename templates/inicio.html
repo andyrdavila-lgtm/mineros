@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curso de Minería - CURIMINING</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        /* Colores proporcionados */
+        :root {
+            --color1: #1B4079; /* Azul oscuro */
+            --color2: #4D7C8A; /* Azul grisáceo */
+            --color3: #7F9C96; /* Verde azulado claro */
+            --color4: #8FAD88; /* Verde claro */
+            --color5: #CBDF90; /* Verde amarillento */
+        }
+        
+        /* Estilos para la pantalla de login */
+        .login-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--color1) 0%, var(--color2) 100%);
+            padding: 20px;
+        }
+        
+        .login-box {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        
+        .login-title {
+            color: var(--color1);
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        
+        .login-subtitle {
+            color: var(--color2);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--color1);
+            font-weight: 600;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5eb;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus {
+            border-color: var(--color2);
+            outline: none;
+        }
+        
+        .login-button {
+            background-color: var(--color1);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        
+        .login-button:hover {
+            background-color: var(--color2);
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        /* Estilos para la página principal */
+        .main-container {
+            min-height: 100vh;
+        }
+        
+        .header {
+            background-color: var(--color1);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .header-title {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .header-subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+        
+        .tabs-container {
+            display: flex;
+            background-color: var(--color2);
+            overflow-x: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .tab {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 24px;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 200px;
+            text-align: center;
+            text-decoration: none;
+            border-bottom: 4px solid transparent;
+        }
+        
+        .tab:hover {
+            background-color: var(--color3);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .tab.active {
+            background-color: var(--color3);
+            border-bottom-color: var(--color5);
+        }
+        
+        .tab i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        
+        .content-container {
+            padding: 40px;
+            background-color: #f9f9f9;
+            min-height: calc(100vh - 180px);
+        }
+        
+        .content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+            animation: fadeIn 0.5s;
+        }
+        
+        .content-title {
+            color: var(--color1);
+            font-size: 28px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--color4);
+        }
+        
+        .content-text {
+            line-height: 1.6;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .content-list {
+            margin-left: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .content-list li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        
+        .logout-button {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .logout-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .login-info {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid var(--color2);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .tabs-container {
+                flex-wrap: wrap;
+            }
+            
+            .tab {
+                min-width: 150px;
+                flex: 1;
+                padding: 15px 10px;
+                font-size: 16px;
+            }
+            
+            .content-container {
+                padding: 20px;
+            }
+            
+            .header-title {
+                font-size: 24px;
+            }
+            
+            .content-title {
+                font-size: 24px;
+            }
+            
+            .logout-button {
+                position: relative;
+                top: 0;
+                right: 0;
+                margin-top: 20px;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+    <!-- Página Principal (ya autenticado) -->
+    <div class="main-container">
+        <div class="header">
+            <h1 class="header-title">Curso de Minería - CURIMINING</h1>
+            <p class="header-subtitle">Sistema de Gestión de Análisis Estratégico</p>
+            <a href="{{ url_for('logout') }}" class="logout-button">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </div>
+        
+        <div class="tabs-container">
+            <a href="{{ url_for('inicio') }}" class="tab {% if request.endpoint == 'inicio' %}active{% endif %}">
+                <i class="fas fa-home"></i> INICIO
+            </a>
+            <a href="{{ url_for('canvas') }}" class="tab {% if request.endpoint == 'canvas' %}active{% endif %}">
+                <i class="fas fa-project-diagram"></i> CANVA
+            </a>
+            <a href="{{ url_for('fodaext') }}" class="tab {% if request.endpoint == 'fodaext' %}active{% endif %}">
+                <i class="fas fa-external-link-alt"></i> FODA Externo
+            </a>
+            <a href="{{ url_for('fodaint') }}" class="tab {% if request.endpoint == 'fodaint' %}active{% endif %}">
+                <i class="fas fa-cogs"></i> FODA Interno
+            </a>
+            <a href="{{ url_for('cruzado') }}" class="tab {% if request.endpoint == 'cruzado' %}active{% endif %}">
+                <i class="fas fa-th"></i> FODA Cruzado
+            </a>
+        </div>
+        
+        <div class="content-container">
+            <div class="content">
+                <!-- Contenido específico de cada página -->
+                {% block content %}
+                    <!-- Esto se reemplazará en cada plantilla específica -->
+                    <h1 class="content-title">Bienvenido al Sistema CURIMINING</h1>
+                    <p class="content-text">Seleccione una de las pestañas para acceder a las herramientas de análisis estratégico para el curso de minería.</p>
+                    
+                    <h3>Herramientas disponibles:</h3>
+                    <ul class="content-list">
+                        <li><strong>CANVA:</strong> Modelo de negocio Canvas para proyectos mineros.</li>
+                        <li><strong>FODA Externo:</strong> Análisis de oportunidades y amenazas del entorno.</li>
+                        <li><strong>FODA Interno:</strong> Evaluación de fortalezas y debilidades internas.</li>
+                        <li><strong>FODA Cruzado:</strong> Matriz cruzada para estrategias derivadas del FODA.</li>
+                    </ul>
+                    
+                    <div class="login-info">
+                        <p><strong>Usuario actual:</strong> {{ session.username }} ({{ session.rol }})</p>
+                    </div>
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- Pantalla de Login (no autenticado) -->
+    <div class="login-container">
+        <div class="login-box">
+            <h1 class="login-title">CURIMINING</h1>
+            <p class="login-subtitle">Curso de Minería - Sistema de Gestión</p>
+            
+            <form method="POST" action="{{ url_for('login') }}">
+                <div class="input-group">
+                    <label for="username">Usuario</label>
+                    <input type="text" id="username" name="username" placeholder="Ingrese su usuario" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" required>
+                </div>
+                
+                <button type="submit" class="login-button">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+                </button>
+                
+                {% if error %}
+                <div class="error-message">
+                    <i class="fas fa-exclamation-circle"></i> {{ error }}
+                </div>
+                {% endif %}
+            </form>
+            
+            <div class="login-info">
+                <p><strong>Credenciales de prueba:</strong></p>
+                <p>Usuario: <strong>admin</strong> | Contraseña: <strong>admin123</strong></p>
+                <p>O cree su propia cuenta desde el panel de administración.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</body>
+</html>
