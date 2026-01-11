@@ -483,7 +483,8 @@ def guardar_matriz_foda():
         print(f"Error al guardar matriz FODA: {str(e)}")
         return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
 
-# Ruta para FODA Interno
+# ==================== RUTAS ESPECÍFICAS PARA FODA INTERNO ====================
+
 @app.route('/fodaint')
 @login_required
 def fodaint():
@@ -524,7 +525,6 @@ def fodaint():
                              historial_actividades=[],
                              estadisticas={'total': 0, 'positivos': 0, 'negativos': 0, 'historial_total': 0})
 
-# Ruta para guardar actividades FODA Interno
 @app.route('/guardar_foda_int', methods=['POST'])
 @login_required
 def guardar_foda_int():
@@ -586,7 +586,6 @@ def guardar_foda_int():
         print(f"Error al guardar actividad fodaint: {e}")
         return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
 
-# Ruta para guardar matriz FODA Interno (actividades arrastradas desde CANVA)
 @app.route('/guardar_matriz_foda_int', methods=['POST'])
 @login_required
 def guardar_matriz_foda_int():
@@ -645,19 +644,6 @@ def eliminar_foda_ext(id):
         db.session.rollback()
         print(f"Error al eliminar fodaext: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
-
-# ==================== RUTAS ESPECÍFICAS PARA FODA INTERNO ====================
-
-@app.route('/fodaint')
-@login_required
-def fodaint():
-    """Página para análisis FODA Interno"""
-    # Similar a fodaext pero para interno
-    aspectos_lista = AspectoAmbiental.query.filter_by(
-        fuente='foda_int'
-    ).order_by(AspectoAmbiental.created_at.desc()).all()
-    
-    return render_template('fodaint.html', aspectos_lista=aspectos_lista)
 
 # ==================== RUTAS ESPECÍFICAS PARA FODA CRUZADO ====================
 
