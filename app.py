@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 import os
 import sys
 import time
@@ -30,13 +31,16 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# ==================== MODELOS DE BASE DE DATOS ====================
+
 # Modelo de usuario
 class User(db.Model):
-    __tablename__ = 'usuarios'  # Nombre de tabla más específico
+    __tablename__ = 'usuarios'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     rol = db.Column(db.String(20), nullable=False, default='user')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -44,7 +48,23 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password, password)
 
-# Decoradores de autenticación
+# Nueva tabla: Aspectos Ambientales
+class AspectoAmbiental(db.Model):
+    __tablename__ = 'aspectos_ambientales'
+    id = db.Column(db.Integer, primary_key=True)
+    actividad = db.Column(db.String(200), nullable=False)
+    tipo = db.Column(db.String(100), nullable=False)
+    aspecto = db.Column(db.Text, nullable=False)
+    fuente = db.Column(db.String(200), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    
+    # Relación
+    creador = db.relationship('User', backref=db.backref('aspectos', lazy=True))
+
+# ==================== DECORADORES DE AUTENTICACIÓN ====================
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -64,11 +84,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# FUNCIÓN MEJORADA para inicializar base de datos CON TODOS LOS USUARIOS
+# ==================== FUNCIÓN DE INICIALIZACIÓN DE BD ====================
+
 def initialize_database():
-    """Intenta inicializar la base de datos con reintentos y crea todos los usuarios"""
+    """Intenta inicializar la base de datos con reintentos"""
     max_retries = 3
-    retry_delay = 2  # segundos
+    retry_delay = 2
     
     for attempt in range(max_retries):
         try:
@@ -100,14 +121,9 @@ def initialize_database():
             # Crear cada usuario si no existe
             for usuario_info in usuarios:
                 username = usuario_info["username"]
-                
-                # Verificar si el usuario ya existe
-                user_exists = db.session.execute(
-                    db.select(User).filter_by(username=username)
-                ).scalar_one_or_none()
+                user_exists = User.query.filter_by(username=username).first()
                 
                 if not user_exists:
-                    # Crear nuevo usuario
                     nuevo_usuario = User(
                         username=username,
                         rol=usuario_info["rol"]
@@ -119,35 +135,57 @@ def initialize_database():
                 else:
                     usuarios_existentes += 1
             
+            # Datos de ejemplo para aspectos ambientales
+            aspectos_ejemplo = [
+                {
+                    "actividad": "Perforación de roca",
+                    "tipo": "Emisión atmosférica",
+                    "aspecto": "Generación de polvo en suspensión",
+                    "fuente": "Perforadora, voladura"
+                },
+                {
+                    "actividad": "Transporte de material",
+                    "tipo": "Consumo de recursos",
+                    "aspecto": "Consumo de combustible diesel",
+                    "fuente": "Camiones, maquinaria"
+                },
+                {
+                    "actividad": "Procesamiento de mineral",
+                    "tipo": "Generación de residuos",
+                    "aspecto": "Producción de relaves",
+                    "fuente": "Planta concentradora"
+                },
+                {
+                    "actividad": "Manejo de químicos",
+                    "tipo": "Riesgo de contaminación",
+                    "aspecto": "Derrames de reactivos químicos",
+                    "fuente": "Área de almacenamiento"
+                }
+            ]
+            
+            # Crear aspectos ambientales de ejemplo si no existen
+            for aspecto_info in aspectos_ejemplo:
+                aspecto_existe = AspectoAmbiental.query.filter_by(
+                    actividad=aspecto_info["actividad"],
+                    aspecto=aspecto_info["aspecto"]
+                ).first()
+                
+                if not aspecto_existe:
+                    nuevo_aspecto = AspectoAmbiental(**aspecto_info)
+                    db.session.add(nuevo_aspecto)
+                    print(f"  ✅ Aspecto '{aspecto_info['actividad']}' creado")
+            
             # Commit todos los cambios
             if usuarios_creados > 0:
                 db.session.commit()
                 print(f"✅ {usuarios_creados} usuarios nuevos creados")
             
-            print(f"ℹ️  {usuarios_existentes} usuarios ya existían")
-            print(f"📊 Total de usuarios en sistema: {User.query.count()}")
+            db.session.commit()
+            print("✅ Datos de ejemplo creados")
             
-            # Mostrar resumen de usuarios
-            print("\n📋 RESUMEN DE USUARIOS CREADOS:")
-            print("=" * 40)
-            print("👑 ADMINISTRADORES (rol: admin):")
-            admin_users = User.query.filter_by(rol='admin').all()
-            for user in admin_users:
-                print(f"   • {user.username}")
+            print(f"📊 Total de usuarios: {User.query.count()}")
+            print(f"📊 Total de aspectos: {AspectoAmbiental.query.count()}")
             
-            print("\n👥 USUARIOS REGULARES (rol: user):")
-            regular_users = User.query.filter_by(rol='user').all()
-            for user in regular_users:
-                print(f"   • {user.username}")
-            
-            print("=" * 40)
-            
-            # Verificar que las tablas fueron creadas
-            table_check = db.session.execute(
-                "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-            ).fetchall()
-            
-            print(f"✅ Tablas en la base de datos: {[t[0] for t in table_check]}")
             return True
             
         except OperationalError as e:
@@ -160,12 +198,13 @@ def initialize_database():
                 
         except Exception as e:
             print(f"❌ Error inesperado: {type(e).__name__}: {e}")
-            db.session.rollback()  # Rollback en caso de error
+            db.session.rollback()
             return False
     
     return False
 
-# Ruta principal - Muestra el login
+# ==================== RUTAS PRINCIPALES ====================
+
 @app.route('/')
 def index():
     return redirect(url_for('login'))
@@ -199,14 +238,107 @@ def login():
 @app.route('/inicio')
 @login_required
 def inicio():
-    return render_template('inicio.html')
+    # Obtener estadísticas para el dashboard
+    total_aspectos = AspectoAmbiental.query.count()
+    aspectos_recientes = AspectoAmbiental.query.order_by(
+        AspectoAmbiental.created_at.desc()
+    ).limit(5).all()
+    
+    return render_template('inicio.html', 
+                         total_aspectos=total_aspectos,
+                         aspectos_recientes=aspectos_recientes)
 
 @app.route('/admin')
 @admin_required
 def admin():
-    # Obtener lista de usuarios para mostrar en panel admin
     usuarios = User.query.all()
-    return render_template('admin.html', usuarios=usuarios)
+    aspectos = AspectoAmbiental.query.all()
+    return render_template('admin.html', 
+                         usuarios=usuarios, 
+                         aspectos=aspectos,
+                         total_usuarios=len(usuarios),
+                         total_aspectos=len(aspectos))
+
+# ==================== RUTAS PARA ASPECTOS AMBIENTALES ====================
+
+@app.route('/aspectos')
+@login_required
+def listar_aspectos():
+    """Lista todos los aspectos ambientales"""
+    aspectos = AspectoAmbiental.query.order_by(AspectoAmbiental.actividad).all()
+    return render_template('aspectos.html', aspectos=aspectos)
+
+@app.route('/aspectos/crear', methods=['GET', 'POST'])
+@login_required
+def crear_aspecto():
+    """Crear un nuevo aspecto ambiental"""
+    if request.method == 'POST':
+        try:
+            nuevo_aspecto = AspectoAmbiental(
+                actividad=request.form.get('actividad'),
+                tipo=request.form.get('tipo'),
+                aspecto=request.form.get('aspecto'),
+                fuente=request.form.get('fuente'),
+                created_by=session['user_id']
+            )
+            db.session.add(nuevo_aspecto)
+            db.session.commit()
+            return redirect(url_for('listar_aspectos'))
+        except Exception as e:
+            db.session.rollback()
+            return render_template('crear_aspecto.html', error=str(e))
+    
+    return render_template('crear_aspecto.html')
+
+@app.route('/aspectos/<int:id>/editar', methods=['GET', 'POST'])
+@login_required
+def editar_aspecto(id):
+    """Editar un aspecto ambiental existente"""
+    aspecto = AspectoAmbiental.query.get_or_404(id)
+    
+    if request.method == 'POST':
+        try:
+            aspecto.actividad = request.form.get('actividad')
+            aspecto.tipo = request.form.get('tipo')
+            aspecto.aspecto = request.form.get('aspecto')
+            aspecto.fuente = request.form.get('fuente')
+            db.session.commit()
+            return redirect(url_for('listar_aspectos'))
+        except Exception as e:
+            db.session.rollback()
+            return render_template('editar_aspecto.html', aspecto=aspecto, error=str(e))
+    
+    return render_template('editar_aspecto.html', aspecto=aspecto)
+
+@app.route('/aspectos/<int:id>/eliminar', methods=['POST'])
+@login_required
+def eliminar_aspecto(id):
+    """Eliminar un aspecto ambiental"""
+    if session.get('rol') != 'admin':
+        return jsonify({'error': 'No autorizado'}), 403
+    
+    aspecto = AspectoAmbiental.query.get_or_404(id)
+    db.session.delete(aspecto)
+    db.session.commit()
+    return redirect(url_for('listar_aspectos'))
+
+# API para aspectos ambientales (JSON)
+@app.route('/api/aspectos')
+@login_required
+def api_aspectos():
+    """API para obtener aspectos en formato JSON"""
+    aspectos = AspectoAmbiental.query.all()
+    return jsonify([{
+        'id': a.id,
+        'actividad': a.actividad,
+        'tipo': a.tipo,
+        'aspecto': a.aspecto,
+        'fuente': a.fuente,
+        'created_at': a.created_at.isoformat() if a.created_at else None,
+        'updated_at': a.updated_at.isoformat() if a.updated_at else None
+    } for a in aspectos])
+
+# ==================== RUTAS EXISTENTES ====================
 
 @app.route('/canvas')
 @login_required
@@ -233,273 +365,71 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# Ruta MEJORADA para inicializar la base de datos
+# ==================== RUTAS DE ADMINISTRACIÓN Y SISTEMA ====================
+
 @app.route('/init-db')
 def init_db():
+    """Inicializar base de datos"""
     try:
         if initialize_database():
-            # Obtener lista de usuarios creados
             usuarios = User.query.all()
+            aspectos = AspectoAmbiental.query.all()
             
-            html_response = '''
+            return f'''
             <!DOCTYPE html>
-            <html lang="es">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>CURIMINING - Base de Datos Inicializada</title>
-                <style>
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        background: linear-gradient(135deg, #1B4079 0%, #4D7C8A 100%);
-                        color: white;
-                        min-height: 100vh;
-                        margin: 0;
-                        padding: 20px;
-                    }
-                    .container {
-                        max-width: 800px;
-                        margin: 0 auto;
-                        background: rgba(255, 255, 255, 0.1);
-                        backdrop-filter: blur(10px);
-                        border-radius: 15px;
-                        padding: 30px;
-                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-                    }
-                    h1 {
-                        color: #CBDF90;
-                        text-align: center;
-                        margin-bottom: 30px;
-                    }
-                    .success {
-                        background: rgba(76, 175, 80, 0.2);
-                        border: 2px solid #4CAF50;
-                        border-radius: 10px;
-                        padding: 20px;
-                        margin-bottom: 30px;
-                    }
-                    .warning {
-                        background: rgba(255, 193, 7, 0.2);
-                        border: 2px solid #FFC107;
-                        border-radius: 10px;
-                        padding: 20px;
-                        margin-bottom: 30px;
-                    }
-                    .user-list {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-                        gap: 15px;
-                        margin: 20px 0;
-                    }
-                    .user-card {
-                        background: rgba(255, 255, 255, 0.1);
-                        border-radius: 8px;
-                        padding: 15px;
-                        border-left: 4px solid;
-                    }
-                    .admin-card {
-                        border-left-color: #FF5722;
-                    }
-                    .user-card {
-                        border-left-color: #2196F3;
-                    }
-                    .badge {
-                        display: inline-block;
-                        padding: 4px 8px;
-                        border-radius: 12px;
-                        font-size: 12px;
-                        font-weight: bold;
-                        margin-right: 10px;
-                    }
-                    .badge-admin {
-                        background: #FF5722;
-                        color: white;
-                    }
-                    .badge-user {
-                        background: #2196F3;
-                        color: white;
-                    }
-                    .btn {
-                        display: inline-block;
-                        background: #4CAF50;
-                        color: white;
-                        text-decoration: none;
-                        padding: 12px 24px;
-                        border-radius: 6px;
-                        font-weight: bold;
-                        margin-top: 20px;
-                        transition: background 0.3s;
-                    }
-                    .btn:hover {
-                        background: #45a049;
-                    }
-                    .credentials {
-                        background: rgba(0, 0, 0, 0.2);
-                        padding: 10px;
-                        border-radius: 6px;
-                        margin: 5px 0;
-                        font-family: monospace;
-                    }
-                </style>
-            </head>
+            <html>
+            <head><title>Base de Datos Inicializada</title></head>
             <body>
-                <div class="container">
-                    <h1>✅ Base de Datos Inicializada EXITOSAMENTE</h1>
-                    
-                    <div class="success">
-                        <h2>🔄 Sistema CURIMINING Listo</h2>
-                        <p>Se han creado todas las tablas y usuarios necesarios para el sistema.</p>
-                    </div>
-                    
-                    <div class="warning">
-                        <h3>⚠️ ADVERTENCIA DE SEGURIDAD</h3>
-                        <p>Cambia las contraseñas por defecto inmediatamente después del primer acceso.</p>
-                        <p>Las credenciales iniciales son iguales al nombre de usuario (ej: usuario: ANDRES, contraseña: ANDRES).</p>
-                    </div>
-                    
-                    <h2>📋 Usuarios Creados</h2>
-                    <div class="user-list">
-            '''
-            
-            # Agregar tarjetas de usuarios
-            for usuario in usuarios:
-                badge_class = "badge-admin" if usuario.rol == "admin" else "badge-user"
-                badge_text = "ADMIN" if usuario.rol == "admin" else "USER"
-                card_class = "admin-card" if usuario.rol == "admin" else "user-card"
-                
-                html_response += f'''
-                <div class="user-card {card_class}">
-                    <div style="margin-bottom: 10px;">
-                        <span class="badge {badge_class}">{badge_text}</span>
-                        <strong style="font-size: 18px;">{usuario.username}</strong>
-                    </div>
-                    <div class="credentials">
-                        <div><strong>Usuario:</strong> {usuario.username}</div>
-                        <div><strong>Contraseña:</strong> {usuario.username}</div>
-                        <div><strong>Rol:</strong> {usuario.rol}</div>
-                    </div>
-                </div>
-                '''
-            
-            html_response += '''
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: 30px;">
-                        <a href="/login" class="btn">🚀 Ir al Login</a>
-                    </div>
-                    
-                    <div style="margin-top: 30px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 8px;">
-                        <h3>📊 Resumen de Usuarios</h3>
-                        <p><strong>Total de usuarios:</strong> ''' + str(len(usuarios)) + '''</p>
-                        <p><strong>Administradores:</strong> ''' + str(len([u for u in usuarios if u.rol == 'admin'])) + '''</p>
-                        <p><strong>Usuarios regulares:</strong> ''' + str(len([u for u in usuarios if u.rol == 'user'])) + '''</p>
-                    </div>
-                </div>
+                <h1>✅ Base de Datos Inicializada</h1>
+                <p>Usuarios creados: {len(usuarios)}</p>
+                <p>Aspectos ambientales creados: {len(aspectos)}</p>
+                <p><a href="/login">Ir al Login</a></p>
             </body>
             </html>
             '''
-            
-            return html_response
         else:
-            return '''
-            <h1>❌ Error inicializando base de datos</h1>
-            <p>No se pudo conectar a la base de datos o crear las tablas.</p>
-            <p>Verifica que:</p>
-            <ul>
-                <li>La variable DATABASE_URL esté configurada correctamente</li>
-                <li>PostgreSQL esté funcionando</li>
-                <li>Las credenciales sean correctas</li>
-            </ul>
-            <p><a href="/">Volver</a></p>
-            '''
+            return '<h1>❌ Error inicializando BD</h1>'
     except Exception as e:
-        return f'''
-        <h1>❌ Error crítico</h1>
-        <p><strong>Error:</strong> {str(e)}</p>
-        <p><a href="/">Volver</a></p>
-        '''
+        return f'<h1>❌ Error: {str(e)}</h1>'
 
-# Ruta para verificar estado MEJORADA
 @app.route('/check')
 def check():
+    """Verificar estado del sistema"""
     try:
-        # Verificar conexión a base de datos
-        db.session.execute("SELECT 1")
-        db_connected = True
-        
-        # Verificar si existe la tabla 'usuarios'
-        table_exists = False
-        try:
-            User.query.first()
-            table_exists = True
-        except:
-            table_exists = False
-        
+        db_status = 'conectada'
+        user_count = User.query.count()
+        aspecto_count = AspectoAmbiental.query.count()
+    except:
+        db_status = 'error'
         user_count = 0
-        if table_exists:
-            user_count = User.query.count()
-        
-        return jsonify({
-            'status': 'ok',
-            'port': os.environ.get('PORT', 'No configurado'),
-            'python_version': sys.version.split()[0],
-            'database': 'conectada' if db_connected else 'error',
-            'table_exists': table_exists,
-            'user_count': user_count,
-            'database_url_prefix': os.environ.get('DATABASE_URL', 'No configurado')[:30] + '...' if os.environ.get('DATABASE_URL') else 'No configurado'
-        })
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'port': os.environ.get('PORT', 'No configurado'),
-            'python_version': sys.version.split()[0],
-            'database': 'error',
-            'error': str(e)[:100]
-        })
+        aspecto_count = 0
+    
+    return jsonify({
+        'status': 'ok',
+        'database': db_status,
+        'users': user_count,
+        'aspectos': aspecto_count,
+        'port': os.environ.get('PORT', '3000')
+    })
 
-# Ruta para listar usuarios (solo admin)
-@app.route('/usuarios')
-@admin_required
-def listar_usuarios():
-    usuarios = User.query.all()
-    return jsonify([{
-        'id': u.id,
-        'username': u.username,
-        'rol': u.rol
-    } for u in usuarios])
+# ==================== INICIALIZACIÓN ====================
 
-# Inicializar base de datos automáticamente al arrancar
 print("=" * 60)
-print("🚀 INICIANDO CURIMINING - SISTEMA DE GESTIÓN MINERA")
-print("=" * 60)
-print("👥 USUARIOS A CREAR:")
-print("-" * 60)
-print("👑 ADMINISTRADORES (4):")
-print("  • MINERA.ADMIN")
-print("  • ANDRES")
-print("  • RICARDO")
-print("  • ALEJANDRO")
-print()
-print("👥 USUARIOS REGULARES (5):")
-print("  • Minera1")
-print("  • Minera2")
-print("  • Minera3")
-print("  • Minera4")
-print("  • Minera5")
+print("🚀 INICIANDO SISTEMA DE GESTIÓN AMBIENTAL MINERA")
 print("=" * 60)
 
-# Intentar inicializar la base de datos
+# Inicializar base de datos
 with app.app_context():
-    print("🔄 Intentando inicializar base de datos...")
-    if initialize_database():
-        print("✅ Base de datos inicializada con éxito")
-        print("✅ Todos los usuarios creados correctamente")
-    else:
-        print("⚠️  No se pudo inicializar la base de datos automáticamente")
-        print("ℹ️  Visita /init-db para inicializar manualmente")
+    try:
+        print("🔄 Inicializando base de datos...")
+        initialize_database()
+        print("✅ Sistema listo")
+    except Exception as e:
+        print(f"⚠️  Error: {e}")
 
-# Solo para ejecución local
+# ==================== EJECUCIÓN ====================
+
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8080))
+    port = int(os.environ.get('PORT', 3000))
     print(f"🌐 Servidor ejecutándose en: http://0.0.0.0:{port}")
     app.run(host='0.0.0.0', port=port, debug=False)
