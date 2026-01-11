@@ -7,9 +7,34 @@ from functools import wraps
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Configuración de PostgreSQL para Railway
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', '').replace('postgres://', 'postgresql://')
+# Configuración de PostgreSQL para Railway - Versión robusta
+def get_database_url():
+    # Intentar diferentes nombres de variables de entorno comunes en Railway
+    db_url = os.environ.get('DATABASE_URL')
+    if not db_url:
+        db_url = os.environ.get('POSTGRESQL_URL')
+    if not db_url:
+        db_url = os.environ.get('PG_URL')
+    if not db_url:
+        db_url = os.environ.get('POSTGRES_URL')
+    
+    # Si no hay URL de PostgreSQL, usar SQLite para desarrollo
+    if not db_url:
+        print("ADVERTENCIA: No se encontró DATABASE_URL. Usando SQLite para desarrollo.")
+        return 'sqlite:///app.db'
+    
+    # Asegurar que la URL use postgresql:// en lugar de postgres://
+    if db_url.startswith('postgres://'):
+        db_url = db_url.replace('postgres://', 'postgresql://', 1)
+    
+    return db_url
+
+app.config['SQLALCHEMY_DATABASE_URI'] = get_database_url()
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_recycle': 300,
+    'pool_pre_ping': True,
+}
 
 db = SQLAlchemy(app)
 
@@ -121,18 +146,59 @@ def check_auth():
         })
     return jsonify({'authenticated': False})
 
-# Ruta para crear usuario admin inicial (solo en desarrollo)
+# Ruta para crear usuario admin inicial
 @app.route('/create-admin')
 def create_admin():
-    if not User.query.filter_by(username='admin').first():
-        admin_user = User(username='admin', rol='admin')
-        admin_user.set_password('admin123')
-        db.session.add(admin_user)
-        db.session.commit()
-        return 'Admin creado: usuario=admin, contraseña=admin123'
-    return 'Admin ya existe'
+    try:
+        if not User.query.filter_by(username='admin').first():
+            admin_user = User(username='admin', rol='admin')
+            admin_user.set_password('admin123')
+            db.session.add(admin_user)
+            db.session.commit()
+            return f'Admin creado: usuario=admin, contraseña=admin123<br>Usando DB: {app.config["SQLALCHEMY_DATABASE_URI"][:50]}...'
+        return 'Admin ya existe'
+    except Exception as e:
+        return f'Error creando admin: {str(e)}'
+
+# Ruta para verificar conexión a DB
+@app.route('/db-status')
+def db_status():
+    try:
+        # Intentar contar usuarios para verificar conexión
+        count = User.query.count()
+        return jsonify({
+            'status': 'ok',
+            'database_url': app.config['SQLALCHEMY_DATABASE_URI'][:100] + '...' if len(app.config['SQLALCHEMY_DATABASE_URI']) > 100 else app.config['SQLALCHEMY_DATABASE_URI'],
+            'user_count': count,
+            'message': 'Conexión exitosa a la base de datos'
+        })
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'database_url': app.config['SQLALCHEMY_DATABASE_URI'],
+            'message': f'Error de conexión: {str(e)}'
+        }), 500
+
+def create_tables():
+    """Crear tablas si no existen"""
+    with app.app_context():
+        try:
+            db.create_all()
+            print("Tablas creadas exitosamente")
+            
+            # Crear usuario admin si no existe
+            if not User.query.filter_by(username='admin').first():
+                admin_user = User(username='admin', rol='admin')
+                admin_user.set_password('admin123')
+                db.session.add(admin_user)
+                db.session.commit()
+                print("Usuario admin creado: admin/admin123")
+        except Exception as e:
+            print(f"Error creando tablas: {e}")
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    create_tables()
+    port = int(os.environ.get('PORT', 5000))
+    print(f"Starting server on port {port}")
+    print(f"Database URL: {app.config['SQLALCHEMY_DATABASE_URI'][:50]}...")
+    app.run(debug=True, host='0.0.0.0', port=port)
