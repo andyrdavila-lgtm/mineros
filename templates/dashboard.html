@@ -1,1 +1,1251 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Administrativo - CURIMINING</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #0c2461;
+            --secondary-color: #4a69bd;
+            --success-color: #4CAF50;
+            --danger-color: #ff6b6b;
+            --warning-color: #FF9800;
+            --info-color: #2196F3;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .sidebar {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            min-height: 100vh;
+            color: white;
+            position: fixed;
+            width: 250px;
+            transition: all 0.3s;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 25px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .sidebar-header h3 i {
+            color: #CBDF90;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+        }
+        
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .navbar-top {
+            background: white;
+            padding: 15px 20px;
+            margin: -20px -20px 20px -20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .welcome-text {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .card-total .stat-icon {
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+            color: white;
+        }
+        
+        .card-total .stat-value {
+            color: #0c2461;
+        }
+        
+        .card-positivas .stat-icon {
+            background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
+            color: white;
+        }
+        
+        .card-positivas .stat-value {
+            color: #4CAF50;
+        }
+        
+        .card-negativas .stat-icon {
+            background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
+            color: white;
+        }
+        
+        .card-negativas .stat-value {
+            color: #ff6b6b;
+        }
+        
+        .card-usuarios .stat-icon {
+            background: linear-gradient(135deg, #6a89cc 0%, #4a69bd 100%);
+            color: white;
+        }
+        
+        .card-usuarios .stat-value {
+            color: #6a89cc;
+        }
+        
+        .card-canva .stat-icon {
+            background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
+            color: white;
+        }
+        
+        .card-canva .stat-value {
+            color: #1e3799;
+        }
+        
+        .card-foda-ext .stat-icon {
+            background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
+            color: white;
+        }
+        
+        .card-foda-ext .stat-value {
+            color: #4CAF50;
+        }
+        
+        .card-foda-int .stat-icon {
+            background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%);
+            color: white;
+        }
+        
+        .card-foda-int .stat-value {
+            color: #2196F3;
+        }
+        
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid var(--secondary-color);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .filter-section {
+            margin-bottom: 20px;
+        }
+        
+        .filter-section h6 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .btn-apply {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-apply:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(12, 36, 97, 0.2);
+        }
+        
+        .btn-clear {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-clear:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
+        }
+        
+        .table-responsive {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table thead {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+        }
+        
+        .table th {
+            border: none;
+            padding: 15px;
+            font-weight: 600;
+        }
+        
+        .table td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+        
+        .badge-fuente {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-canva {
+            background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+            color: white;
+        }
+        
+        .badge-foda_ext {
+            background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
+            color: white;
+        }
+        
+        .badge-foda_int {
+            background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%);
+            color: white;
+        }
+        
+        .btn-action {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 2px;
+            transition: all 0.3s;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(135deg, #4a69bd 0%, #6a89cc 100%);
+            color: white;
+        }
+        
+        .btn-delete {
+            background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
+            color: white;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            height: 300px;
+        }
+        
+        .chart-title {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .alert-floating {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: none;
+            border-radius: 10px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: -250px;
+            }
+            
+            .sidebar.active {
+                margin-left: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .navbar-top {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h3><i class="fas fa-chart-line"></i> CURIMINING Admin</h3>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="/admin/dashboard">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link" href="/admin">
+                <i class="fas fa-users"></i> Usuarios
+            </a>
+            <a class="nav-link" href="/aspectos">
+                <i class="fas fa-list-alt"></i> Aspectos
+            </a>
+            <a class="nav-link" href="/canvas">
+                <i class="fas fa-th-large"></i> CANVA
+            </a>
+            <a class="nav-link" href="/fodaext">
+                <i class="fas fa-external-link-alt"></i> FODA Externo
+            </a>
+            <a class="nav-link" href="/fodaint">
+                <i class="fas fa-internal-link"></i> FODA Interno
+            </a>
+            <a class="nav-link" href="/cruzado">
+                <i class="fas fa-crosshairs"></i> FODA Cruzado
+            </a>
+            <div class="mt-4"></div>
+            <a class="nav-link" href="/logout">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navbar -->
+        <div class="navbar-top">
+            <div class="welcome-text">
+                <i class="fas fa-user-circle"></i> Bienvenido, {{ session.username }}
+            </div>
+            <div>
+                <button class="btn btn-outline-primary btn-sm" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Estadísticas -->
+        <h4 class="section-title">
+            <i class="fas fa-chart-pie"></i> Estadísticas Generales
+        </h4>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card card-total">
+                    <div class="stat-icon">
+                        <i class="fas fa-list-alt"></i>
+                    </div>
+                    <div class="stat-value" id="total-actividades">0</div>
+                    <div class="stat-label">Total Actividades</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card-positivas">
+                    <div class="stat-icon">
+                        <i class="fas fa-thumbs-up"></i>
+                    </div>
+                    <div class="stat-value" id="positivas-actividades">0</div>
+                    <div class="stat-label">Actividades Positivas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card-negativas">
+                    <div class="stat-icon">
+                        <i class="fas fa-thumbs-down"></i>
+                    </div>
+                    <div class="stat-value" id="negativas-actividades">0</div>
+                    <div class="stat-label">Actividades Negativas</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card card-usuarios">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-value" id="total-usuarios">0</div>
+                    <div class="stat-label">Usuarios Registrados</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <div class="stat-card card-canva">
+                    <div class="stat-icon">
+                        <i class="fas fa-th-large"></i>
+                    </div>
+                    <div class="stat-value" id="canva-actividades">0</div>
+                    <div class="stat-label">Actividades CANVA</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card card-foda-ext">
+                    <div class="stat-icon">
+                        <i class="fas fa-external-link-alt"></i>
+                    </div>
+                    <div class="stat-value" id="foda-ext-actividades">0</div>
+                    <div class="stat-label">FODA Externo</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card card-foda-int">
+                    <div class="stat-icon">
+                        <i class="fas fa-internal-link"></i>
+                    </div>
+                    <div class="stat-value" id="foda-int-actividades">0</div>
+                    <div class="stat-label">FODA Interno</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filtros -->
+        <h4 class="section-title mt-4">
+            <i class="fas fa-filter"></i> Filtros de Actividades
+        </h4>
+        
+        <div class="filter-card">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Tipo de Actividad</h6>
+                        <select class="form-control" id="filter-tipo">
+                            <option value="all">Todos los tipos</option>
+                            <option value="Positivo">Positivas</option>
+                            <option value="Negativo">Negativas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Bloque/Aspecto</h6>
+                        <select class="form-control" id="filter-bloque">
+                            <option value="all">Todos los bloques</option>
+                            <option value="POLITICO">POLITICO</option>
+                            <option value="ECONOMICO">ECONOMICO</option>
+                            <option value="SOCIAL">SOCIAL</option>
+                            <option value="TECNOLOGICO">TECNOLOGICO</option>
+                            <option value="ECOLOGICO">ECOLOGICO</option>
+                            <option value="LEGAL">LEGAL</option>
+                            {% for bloque in bloques_canva %}
+                            <option value="{{ bloque.nombre }}">{{ bloque.nombre }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Fuente</h6>
+                        <select class="form-control" id="filter-fuente">
+                            <option value="all">Todas las fuentes</option>
+                            <option value="canva">CANVA</option>
+                            <option value="foda_ext">FODA Externo</option>
+                            <option value="foda_int">FODA Interno</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Fecha Desde</h6>
+                        <input type="date" class="form-control" id="filter-fecha-desde">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Fecha Hasta</h6>
+                        <input type="date" class="form-control" id="filter-fecha-hasta">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="filter-section">
+                        <h6>Ordenar por</h6>
+                        <select class="form-control" id="filter-orden">
+                            <option value="fecha_desc">Fecha (Más reciente)</option>
+                            <option value="fecha_asc">Fecha (Más antigua)</option>
+                            <option value="actividad_asc">Actividad (A-Z)</option>
+                            <option value="actividad_desc">Actividad (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="filter-section">
+                        <h6>Buscar en actividades</h6>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="filter-busqueda" placeholder="Buscar...">
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" type="button" onclick="cargarActividades()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <button class="btn-apply" onclick="cargarActividades()">
+                                <i class="fas fa-filter"></i> Aplicar Filtros
+                            </button>
+                            <button class="btn-clear ml-2" onclick="limpiarFiltros()">
+                                <i class="fas fa-eraser"></i> Limpiar Filtros
+                            </button>
+                        </div>
+                        <button class="btn btn-success" onclick="exportarDatos()">
+                            <i class="fas fa-file-export"></i> Exportar a CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Tabla de Actividades -->
+        <h4 class="section-title mt-4">
+            <i class="fas fa-table"></i> Lista de Actividades
+            <small class="text-muted ml-2" id="contador-actividades">(0 actividades)</small>
+        </h4>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Actividad</th>
+                        <th>Tipo</th>
+                        <th>Aspecto/Bloque</th>
+                        <th>Fuente</th>
+                        <th>Fecha</th>
+                        <th>Creador</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-actividades">
+                    <!-- Los datos se cargarán aquí dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Paginación -->
+        <div class="pagination-container">
+            <div>
+                <span id="info-paginacion">Mostrando 0 de 0 actividades</span>
+            </div>
+            <div>
+                <nav>
+                    <ul class="pagination mb-0">
+                        <li class="page-item">
+                            <button class="page-link" onclick="cambiarPagina(-1)" id="btn-prev">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                        </li>
+                        <li class="page-item">
+                            <span class="page-link" id="pagina-actual">Página 1</span>
+                        </li>
+                        <li class="page-item">
+                            <button class="page-link" onclick="cambiarPagina(1)" id="btn-next">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <div>
+                <select class="form-control form-control-sm" id="resultados-por-pagina" onchange="cambiarResultadosPorPagina()">
+                    <option value="10">10 por página</option>
+                    <option value="25" selected>25 por página</option>
+                    <option value="50">50 por página</option>
+                    <option value="100">100 por página</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Gráficos -->
+        <h4 class="section-title mt-4">
+            <i class="fas fa-chart-bar"></i> Gráficos de Distribución
+        </h4>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">Distribución por Fuente</div>
+                    <canvas id="chart-fuente"></canvas>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <div class="chart-title">Distribución por Tipo</div>
+                    <canvas id="chart-tipo"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Variables globales
+        let paginaActual = 1;
+        let resultadosPorPagina = 25;
+        let totalActividades = 0;
+        let totalPaginas = 1;
+        
+        // Gráficos
+        let chartFuente = null;
+        let chartTipo = null;
+        
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Establecer fechas por defecto (últimos 30 días)
+            const fechaHasta = new Date();
+            const fechaDesde = new Date();
+            fechaDesde.setDate(fechaHasta.getDate() - 30);
+            
+            document.getElementById('filter-fecha-desde').value = fechaDesde.toISOString().split('T')[0];
+            document.getElementById('filter-fecha-hasta').value = fechaHasta.toISOString().split('T')[0];
+            
+            // Cargar datos iniciales
+            cargarEstadisticas();
+            cargarActividades();
+            inicializarGraficos();
+            
+            // Configurar actualización automática cada 60 segundos
+            setInterval(cargarEstadisticas, 60000);
+        });
+        
+        // Toggle sidebar en móviles
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.toggle('active');
+            if (window.innerWidth <= 768) {
+                if (sidebar.classList.contains('active')) {
+                    mainContent.style.marginLeft = '0';
+                } else {
+                    mainContent.style.marginLeft = '0';
+                }
+            }
+        }
+        
+        // Mostrar/ocultar loading
+        function mostrarLoading(mostrar) {
+            document.getElementById('loading-overlay').style.display = mostrar ? 'flex' : 'none';
+        }
+        
+        // Mostrar alerta
+        function mostrarAlerta(mensaje, tipo = 'info') {
+            const tipos = {
+                'success': {class: 'alert-success', icon: 'fa-check-circle'},
+                'error': {class: 'alert-danger', icon: 'fa-exclamation-circle'},
+                'warning': {class: 'alert-warning', icon: 'fa-exclamation-triangle'},
+                'info': {class: 'alert-info', icon: 'fa-info-circle'}
+            };
+            
+            const alertType = tipos[tipo] || tipos['info'];
+            
+            // Crear alerta
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-floating ${alertType.class} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                <i class="fas ${alertType.icon}"></i> ${mensaje}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            `;
+            
+            // Agregar al body
+            document.body.appendChild(alertDiv);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 300);
+            }, 5000);
+            
+            // Configurar botón de cerrar
+            alertDiv.querySelector('.close').addEventListener('click', function() {
+                alertDiv.classList.remove('show');
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.parentNode.removeChild(alertDiv);
+                    }
+                }, 300);
+            });
+        }
+        
+        // Cargar estadísticas
+        function cargarEstadisticas() {
+            fetch('/api/admin/estadisticas')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const stats = data.estadisticas;
+                        
+                        // Actualizar estadísticas
+                        document.getElementById('total-actividades').textContent = stats.total_actividades;
+                        document.getElementById('positivas-actividades').textContent = stats.actividades_positivas;
+                        document.getElementById('negativas-actividades').textContent = stats.actividades_negativas;
+                        document.getElementById('total-usuarios').textContent = stats.usuarios_total;
+                        document.getElementById('canva-actividades').textContent = stats.actividades_canva;
+                        document.getElementById('foda-ext-actividades').textContent = stats.actividades_foda_ext;
+                        document.getElementById('foda-int-actividades').textContent = stats.actividades_foda_int;
+                        
+                        // Actualizar contador
+                        document.getElementById('contador-actividades').textContent = `(${stats.total_actividades} actividades)`;
+                        
+                        // Animar números
+                        animarNumeros();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error al cargar estadísticas:', error);
+                });
+        }
+        
+        // Animar números de estadísticas
+        function animarNumeros() {
+            const elementos = document.querySelectorAll('.stat-value');
+            elementos.forEach(elemento => {
+                const valorFinal = parseInt(elemento.textContent.replace(/,/g, ''));
+                if (!isNaN(valorFinal)) {
+                    animarContador(elemento, valorFinal);
+                }
+            });
+        }
+        
+        function animarContador(elemento, valorFinal) {
+            let valorActual = 0;
+            const incremento = valorFinal / 50; // 50 pasos
+            const intervalo = setInterval(() => {
+                valorActual += incremento;
+                if (valorActual >= valorFinal) {
+                    valorActual = valorFinal;
+                    clearInterval(intervalo);
+                }
+                elemento.textContent = Math.floor(valorActual).toLocaleString();
+            }, 20);
+        }
+        
+        // Cargar actividades
+        function cargarActividades() {
+            mostrarLoading(true);
+            
+            // Obtener valores de filtros
+            const filtros = {
+                tipo_filtro: document.getElementById('filter-tipo').value,
+                bloque_filtro: document.getElementById('filter-bloque').value,
+                fuente_filtro: document.getElementById('filter-fuente').value,
+                fecha_desde: document.getElementById('filter-fecha-desde').value,
+                fecha_hasta: document.getElementById('filter-fecha-hasta').value,
+                busqueda: document.getElementById('filter-busqueda').value,
+                orden_por: document.getElementById('filter-orden').value,
+                pagina: paginaActual,
+                por_pagina: resultadosPorPagina
+            };
+            
+            fetch('/api/admin/filtrar_actividades', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(filtros)
+            })
+            .then(response => response.json())
+            .then(data => {
+                mostrarLoading(false);
+                
+                if (data.success) {
+                    totalActividades = data.total;
+                    totalPaginas = data.total_paginas;
+                    
+                    // Actualizar tabla
+                    actualizarTabla(data.actividades);
+                    
+                    // Actualizar información de paginación
+                    actualizarPaginacion();
+                    
+                    // Actualizar gráficos
+                    actualizarGraficos(data.actividades);
+                } else {
+                    mostrarAlerta('Error al cargar actividades: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                mostrarLoading(false);
+                console.error('Error:', error);
+                mostrarAlerta('Error de conexión al servidor', 'error');
+            });
+        }
+        
+        // Actualizar tabla
+        function actualizarTabla(actividades) {
+            const tbody = document.getElementById('tabla-actividades');
+            
+            if (actividades.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No se encontraron actividades con los filtros aplicados.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            actividades.forEach(actividad => {
+                const fecha = new Date(actividad.fecha);
+                const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                html += `
+                    <tr>
+                        <td>${actividad.id}</td>
+                        <td>${actividad.actividad}</td>
+                        <td>
+                            <span class="badge ${actividad.tipo === 'Positivo' ? 'bg-success' : 'bg-danger'}">
+                                <i class="fas fa-thumbs-${actividad.tipo === 'Positivo' ? 'up' : 'down'}"></i>
+                                ${actividad.tipo}
+                            </span>
+                        </td>
+                        <td>${actividad.bloque}</td>
+                        <td>
+                            <span class="badge-fuente badge-${actividad.fuente}">
+                                ${actividad.fuente}
+                            </span>
+                        </td>
+                        <td>${fechaFormateada}</td>
+                        <td>${actividad.creador}</td>
+                        <td>
+                            <button class="btn-action btn-edit" onclick="editarActividad(${actividad.id})" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-delete" onclick="eliminarActividad(${actividad.id})" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+        
+        // Actualizar paginación
+        function actualizarPaginacion() {
+            const inicio = ((paginaActual - 1) * resultadosPorPagina) + 1;
+            const fin = Math.min(paginaActual * resultadosPorPagina, totalActividades);
+            
+            document.getElementById('info-paginacion').textContent = 
+                `Mostrando ${inicio}-${fin} de ${totalActividades} actividades`;
+            document.getElementById('pagina-actual').textContent = `Página ${paginaActual} de ${totalPaginas}`;
+            
+            // Habilitar/deshabilitar botones
+            document.getElementById('btn-prev').disabled = paginaActual === 1;
+            document.getElementById('btn-next').disabled = paginaActual === totalPaginas;
+        }
+        
+        // Cambiar página
+        function cambiarPagina(direccion) {
+            const nuevaPagina = paginaActual + direccion;
+            
+            if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+                paginaActual = nuevaPagina;
+                cargarActividades();
+            }
+        }
+        
+        // Cambiar resultados por página
+        function cambiarResultadosPorPagina() {
+            resultadosPorPagina = parseInt(document.getElementById('resultados-por-pagina').value);
+            paginaActual = 1;
+            cargarActividades();
+        }
+        
+        // Limpiar filtros
+        function limpiarFiltros() {
+            document.getElementById('filter-tipo').value = 'all';
+            document.getElementById('filter-bloque').value = 'all';
+            document.getElementById('filter-fuente').value = 'all';
+            document.getElementById('filter-orden').value = 'fecha_desc';
+            document.getElementById('filter-busqueda').value = '';
+            
+            // Establecer fechas por defecto (últimos 30 días)
+            const fechaHasta = new Date();
+            const fechaDesde = new Date();
+            fechaDesde.setDate(fechaHasta.getDate() - 30);
+            
+            document.getElementById('filter-fecha-desde').value = fechaDesde.toISOString().split('T')[0];
+            document.getElementById('filter-fecha-hasta').value = fechaHasta.toISOString().split('T')[0];
+            
+            paginaActual = 1;
+            cargarActividades();
+            
+            mostrarAlerta('Filtros limpiados correctamente', 'success');
+        }
+        
+        // Inicializar gráficos
+        function inicializarGraficos() {
+            // Gráfico de fuente
+            const ctxFuente = document.getElementById('chart-fuente').getContext('2d');
+            chartFuente = new Chart(ctxFuente, {
+                type: 'doughnut',
+                data: {
+                    labels: ['CANVA', 'FODA Externo', 'FODA Interno'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: [
+                            '#0c2461',
+                            '#4CAF50',
+                            '#2196F3'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Gráfico de tipo
+            const ctxTipo = document.getElementById('chart-tipo').getContext('2d');
+            chartTipo = new Chart(ctxTipo, {
+                type: 'pie',
+                data: {
+                    labels: ['Positivas', 'Negativas'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: [
+                            '#4CAF50',
+                            '#ff6b6b'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Actualizar gráficos
+        function actualizarGraficos(actividades) {
+            if (!actividades || actividades.length === 0) {
+                return;
+            }
+            
+            // Calcular distribución por fuente
+            const fuentes = {
+                'canva': 0,
+                'foda_ext': 0,
+                'foda_int': 0
+            };
+            
+            // Calcular distribución por tipo
+            const tipos = {
+                'Positivo': 0,
+                'Negativo': 0
+            };
+            
+            actividades.forEach(actividad => {
+                if (fuentes[actividad.fuente] !== undefined) {
+                    fuentes[actividad.fuente]++;
+                }
+                
+                if (tipos[actividad.tipo] !== undefined) {
+                    tipos[actividad.tipo]++;
+                }
+            });
+            
+            // Actualizar gráfico de fuente
+            chartFuente.data.datasets[0].data = [
+                fuentes.canva,
+                fuentes.foda_ext,
+                fuentes.foda_int
+            ];
+            chartFuente.update();
+            
+            // Actualizar gráfico de tipo
+            chartTipo.data.datasets[0].data = [
+                tipos.Positivo,
+                tipos.Negativo
+            ];
+            chartTipo.update();
+        }
+        
+        // Exportar datos
+        function exportarDatos() {
+            mostrarLoading(true);
+            
+            // Obtener valores de filtros
+            const filtros = {
+                tipo_filtro: document.getElementById('filter-tipo').value,
+                bloque_filtro: document.getElementById('filter-bloque').value,
+                fuente_filtro: document.getElementById('filter-fuente').value,
+                fecha_desde: document.getElementById('filter-fecha-desde').value,
+                fecha_hasta: document.getElementById('filter-fecha-hasta').value,
+                busqueda: document.getElementById('filter-busqueda').value,
+                orden_por: document.getElementById('filter-orden').value
+            };
+            
+            fetch('/api/admin/exportar_datos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(filtros)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('Error en la exportación');
+            })
+            .then(blob => {
+                mostrarLoading(false);
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `actividades_export_${new Date().toISOString().split('T')[0]}.csv`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                mostrarAlerta('Datos exportados correctamente', 'success');
+            })
+            .catch(error => {
+                mostrarLoading(false);
+                console.error('Error:', error);
+                mostrarAlerta('Error al exportar datos', 'error');
+            });
+        }
+        
+        // Editar actividad
+        function editarActividad(id) {
+            if (confirm('¿Desea editar esta actividad?')) {
+                window.location.href = `/aspectos/${id}/editar`;
+            }
+        }
+        
+        // Eliminar actividad
+        function eliminarActividad(id) {
+            if (confirm('¿Está seguro de eliminar esta actividad?\nEsta acción no se puede deshacer.')) {
+                mostrarLoading(true);
+                
+                fetch(`/aspectos/${id}/eliminar`, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    mostrarLoading(false);
+                    
+                    if (data.success) {
+                        mostrarAlerta('Actividad eliminada correctamente', 'success');
+                        // Recargar datos
+                        cargarEstadisticas();
+                        cargarActividades();
+                    } else {
+                        mostrarAlerta('Error al eliminar: ' + data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    mostrarLoading(false);
+                    console.error('Error:', error);
+                    mostrarAlerta('Error de conexión al servidor', 'error');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
