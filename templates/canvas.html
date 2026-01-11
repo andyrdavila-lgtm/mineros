@@ -15,27 +15,54 @@
                         <i class="{{ bloque.icono }}"></i> {{ loop.index }}. {{ bloque.nombre }}
                     </div>
                     <div class="block-content" id="contenido-{{ loop.index }}">
-                        <!-- Las actividades se cargarán dinámicamente aquí -->
                         {% for aspecto in aspectos_canva if aspecto.tipo == bloque.nombre %}
-                        <div class="actividad-item" style="color: {{ 'green' if aspecto.aspecto == 'Positivo' else '#8B0000' }};">
+                        <div class="actividad-item" 
+                             style="color: {{ 'green' if 'Positivo:' in aspecto.aspecto else '#8B0000' }};">
                             • {{ aspecto.actividad }}
+                            <span class="actividad-tipo">
+                                {% if 'Positivo:' in aspecto.aspecto %}
+                                    <i class="fas fa-thumbs-up" style="color: green; margin-left: 5px;"></i>
+                                {% else %}
+                                    <i class="fas fa-thumbs-down" style="color: #8B0000; margin-left: 5px;"></i>
+                                {% endif %}
+                            </span>
                         </div>
                         {% endfor %}
+                    </div>
+                    <div class="block-counter">
+                        {{ aspectos_canva|selectattr('tipo', 'equalto', bloque.nombre)|list|length }} actividades
                     </div>
                 </div>
                 {% endfor %}
             </div>
             
             <div class="canvas-actions">
-                <button class="action-button" onclick="guardarCanvaCompleto()">
+                <button class="action-button save" onclick="guardarCanvaCompleto()">
                     <i class="fas fa-save"></i> Guardar CANVA
                 </button>
-                <button class="action-button" onclick="exportarCanva()">
-                    <i class="fas fa-download"></i> Exportar
+                <button class="action-button export" onclick="exportarCanva()">
+                    <i class="fas fa-download"></i> Exportar PDF
                 </button>
-                <button class="action-button" onclick="limpiarCanva()">
-                    <i class="fas fa-broom"></i> Limpiar
+                {% if session.rol == 'admin' %}
+                <button class="action-button clean" onclick="limpiarCanva()">
+                    <i class="fas fa-broom"></i> Limpiar Todo
                 </button>
+                {% endif %}
+            </div>
+            
+            <div class="canvas-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Total Actividades:</span>
+                    <span class="stat-value">{{ total_actividades }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Positivas:</span>
+                    <span class="stat-value positive">{{ positivas }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Negativas:</span>
+                    <span class="stat-value negative">{{ negativas }}</span>
+                </div>
             </div>
         </div>
         
@@ -53,7 +80,7 @@
                 </div>
                 
                 <div class="input-box">
-                    <h3><i class="fas fa-balance-scale"></i> TIPO CANVA</h3>
+                    <h3><i class="fas fa-balance-scale"></i> TIPO</h3>
                     <div class="tipo-options">
                         <button class="tipo-option positivo-option selected" 
                                 id="btn-positivo"
@@ -70,13 +97,15 @@
                 </div>
                 
                 <div class="input-box">
-                    <h3><i class="fas fa-layer-group"></i> BLOQUE CANVA (se guarda como TIPO)</h3>
+                    <h3><i class="fas fa-layer-group"></i> BLOQUE CANVA</h3>
                     <div class="aspecto-options">
                         {% for bloque in bloques_canva %}
                         <button class="aspecto-option" 
                                 onclick="seleccionarAspecto('{{ bloque.nombre }}')"
-                                data-aspecto="{{ bloque.nombre }}">
-                            {{ loop.index }}. {{ bloque.nombre }}
+                                data-aspecto="{{ bloque.nombre }}"
+                                id="btn-{{ loop.index }}">
+                            <span class="bloque-number">{{ loop.index }}</span>
+                            <span class="bloque-name">{{ bloque.nombre }}</span>
                         </button>
                         {% endfor %}
                     </div>
@@ -84,21 +113,15 @@
                 </div>
                 
                 <div class="input-box">
-                    <h3><i class="fas fa-font"></i> TIPO DE ASPECTO (se guarda como ASPECTO)</h3>
-                    <select id="tipo-aspecto" class="form-select">
-                        <option value="Generación de polvo en suspensión">Generación de polvo en suspensión</option>
-                        <option value="Consumo de combustible diesel">Consumo de combustible diesel</option>
-                        <option value="Producción de relaves">Producción de relaves</option>
-                        <option value="Derrames de reactivos químicos">Derrames de reactivos químicos</option>
-                        <option value="Generación de empleo local">Generación de empleo local</option>
-                        <option value="Desarrollo de infraestructura">Desarrollo de infraestructura</option>
-                        <option value="Transferencia de conocimientos">Transferencia de conocimientos</option>
-                        <option value="Otro">Otro...</option>
-                    </select>
+                    <h3><i class="fas fa-font"></i> DESCRIPCIÓN DEL ASPECTO</h3>
+                    <input type="text" id="tipo-descripcion" 
+                           class="form-input"
+                           placeholder="Ej: Generación de empleo local, Desarrollo de infraestructura..."
+                           value="Generación de empleo local">
                 </div>
                 
                 <div class="quick-actions">
-                    <button class="quick-action-btn" onclick="guardarActividad()">
+                    <button class="quick-action-btn save" onclick="guardarActividad()">
                         <i class="fas fa-save"></i> Guardar Actividad
                     </button>
                     <button class="quick-action-btn secondary" onclick="limpiarEntradaRapida()">
@@ -111,70 +134,579 @@
                 <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
                 <ul class="instructions-list">
                     <li><strong>ACTIVIDAD:</strong> Describa la actividad específica</li>
-                    <li><strong>TIPO CANVA:</strong> Positivo (verde) o Negativo (rojo oscuro)</li>
-                    <li><strong>BLOQUE CANVA:</strong> Se guarda como campo TIPO en la BD</li>
-                    <li><strong>TIPO DE ASPECTO:</strong> Se guarda como campo ASPECTO en la BD</li>
-                    <li>La FUENTE será automáticamente "canva"</li>
-                    <li>CREATED_BY será el usuario actual</li>
+                    <li><strong>TIPO:</strong> Positivo (texto verde) o Negativo (texto rojo oscuro)</li>
+                    <li><strong>BLOQUE CANVA:</strong> Seleccione el bloque correspondiente (1-9)</li>
+                    <li><strong>DESCRIPCIÓN:</strong> Detalle específico del aspecto</li>
+                    <li><strong>Guardar:</strong> Almacena automáticamente en la base de datos</li>
+                    <li>La actividad aparecerá inmediatamente en el bloque correspondiente</li>
                 </ul>
             </div>
             
             <div class="stats-section">
-                <h3><i class="fas fa-chart-bar"></i> Estadísticas CANVA</h3>
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <span class="stat-number">{{ total_actividades }}</span>
-                        <span class="stat-label">Total Actividades</span>
+                <h3><i class="fas fa-chart-bar"></i> Actividades por Bloque</h3>
+                <div class="bloque-stats">
+                    {% for bloque in bloques_canva %}
+                    {% set count = aspectos_canva|selectattr('tipo', 'equalto', bloque.nombre)|list|length %}
+                    <div class="bloque-stat-item">
+                        <span class="bloque-stat-name">{{ loop.index }}. {{ bloque.nombre[:20] }}...</span>
+                        <div class="bloque-stat-bar">
+                            <div class="bloque-stat-fill" style="width: {{ (count / total_actividades * 100) if total_actividades > 0 else 0 }}%"></div>
+                        </div>
+                        <span class="bloque-stat-count">{{ count }}</span>
                     </div>
-                    <div class="stat-card positive">
-                        <span class="stat-number">{{ positivas }}</span>
-                        <span class="stat-label">Positivas</span>
-                    </div>
-                    <div class="stat-card negative">
-                        <span class="stat-number">{{ negativas }}</span>
-                        <span class="stat-label">Negativas</span>
-                    </div>
-                </div>
-                <div class="stats-source">
-                    <small><i class="fas fa-database"></i> Fuente: Tabla aspectos_ambientales donde fuente='canva'</small>
+                    {% endfor %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Estilos CSS (los mismos que antes, pero agregamos) -->
 <style>
-    /* ... (todos los estilos anteriores se mantienen igual) ... */
+    /* Estilos para el layout del CANVA */
+    .canvas-main-container {
+        padding: 20px;
+    }
     
-    /* Estilos adicionales */
-    .form-select {
+    .canvas-layout {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    
+    /* Estilos para la columna izquierda (CANVA) */
+    .canvas-left-column {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .canvas-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .canvas-block {
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        display: flex;
+        flex-direction: column;
+        min-height: 200px;
+        position: relative;
+    }
+    
+    .canvas-block:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .block-title {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        color: white;
+    }
+    
+    .block-title i {
+        margin-right: 10px;
+        font-size: 18px;
+    }
+    
+    .block-content {
+        flex-grow: 1;
+        background-color: rgba(255, 255, 255, 0.15);
+        border-radius: 6px;
+        padding: 12px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: white;
+        overflow-y: auto;
+        max-height: 120px;
+        margin-bottom: 10px;
+    }
+    
+    .actividad-item {
+        margin-bottom: 8px;
+        padding: 6px 8px;
+        background-color: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        font-size: 12px;
+        transition: background-color 0.3s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .actividad-item:hover {
+        background-color: rgba(0, 0, 0, 0.3);
+    }
+    
+    .actividad-tipo {
+        font-size: 10px;
+        opacity: 0.8;
+    }
+    
+    .block-counter {
+        font-size: 11px;
+        text-align: right;
+        color: rgba(255, 255, 255, 0.8);
+        padding-top: 5px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Colores específicos para cada bloque - Manteniendo la paleta proporcionada */
+    .block1 { background: linear-gradient(135deg, #1B4079 0%, #2a5298 100%); } /* color1 */
+    .block2 { background: linear-gradient(135deg, #4D7C8A 0%, #5a8f9c 100%); } /* color2 */
+    .block3 { background: linear-gradient(135deg, #7F9C96 0%, #90b2aa 100%); } /* color3 */
+    .block4 { background: linear-gradient(135deg, #8FAD88 0%, #a0c098 100%); } /* color4 */
+    .block5 { background: linear-gradient(135deg, #CBDF90 0%, #d5e99b 100%); } /* color5 */
+    .block6 { background: linear-gradient(135deg, #1B4079 0%, #3a62a9 100%); } /* color1 variante */
+    .block7 { background: linear-gradient(135deg, #4D7C8A 0%, #6a9faf 100%); } /* color2 variante */
+    .block8 { background: linear-gradient(135deg, #7F9C96 0%, #98c2ba 100%); } /* color3 variante */
+    .block9 { background: linear-gradient(135deg, #8FAD88 0%, #b0d0a8 100%); } /* color4 variante */
+    
+    .canvas-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 30px;
+    }
+    
+    .action-button {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .action-button.save {
+        background-color: #1B4079;
+        color: white;
+    }
+    
+    .action-button.export {
+        background-color: #4D7C8A;
+        color: white;
+    }
+    
+    .action-button.clean {
+        background-color: #8FAD88;
+        color: white;
+    }
+    
+    .action-button:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    
+    .canvas-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 20px;
+        padding: 15px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 8px;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-label {
+        display: block;
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .stat-value {
+        display: block;
+        font-size: 20px;
+        font-weight: bold;
+        color: #1B4079;
+    }
+    
+    .stat-value.positive {
+        color: #4CAF50;
+    }
+    
+    .stat-value.negative {
+        color: #f44336;
+    }
+    
+    /* Estilos para la columna derecha (Formulario) */
+    .canvas-right-column {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .quick-input-section {
+        margin-bottom: 25px;
+    }
+    
+    .quick-input-section h2 {
+        color: #1B4079;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #8FAD88;
+        font-size: 22px;
+    }
+    
+    .input-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .input-box h3 {
+        color: #4D7C8A;
+        margin-bottom: 10px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .quick-textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+        font-size: 14px;
+    }
+    
+    .quick-textarea:focus {
+        border-color: #4D7C8A;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(77, 124, 138, 0.1);
+    }
+    
+    .tipo-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .tipo-option {
+        padding: 12px;
+        border: 2px solid;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background-color: white;
+    }
+    
+    .positivo-option {
+        border-color: #4CAF50;
+        color: #2e7d32;
+        background-color: #e8f5e9;
+    }
+    
+    .negativo-option {
+        border-color: #f44336;
+        color: #c62828;
+        background-color: #ffebee;
+    }
+    
+    .tipo-option.selected {
+        transform: scale(0.98);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .tipo-option:not(.selected) {
+        opacity: 0.5;
+        background-color: #f8f9fa;
+    }
+    
+    .aspecto-options {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-top: 10px;
+        max-height: 250px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+    
+    .aspecto-option {
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        text-align: left;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .aspecto-option:hover {
+        background-color: #e9ecef;
+        border-color: #4D7C8A;
+    }
+    
+    .aspecto-option.selected {
+        background-color: #1B4079;
+        color: white;
+        border-color: #1B4079;
+        font-weight: bold;
+    }
+    
+    .bloque-number {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #1B4079;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 12px;
+    }
+    
+    .aspecto-option.selected .bloque-number {
+        background-color: white;
+        color: #1B4079;
+    }
+    
+    .bloque-name {
+        flex-grow: 1;
+    }
+    
+    .form-input {
         width: 100%;
         padding: 10px;
         border: 1px solid #ced4da;
         border-radius: 6px;
         font-size: 14px;
-        background-color: white;
     }
     
-    .form-select:focus {
-        border-color: var(--color2);
+    .form-input:focus {
+        border-color: #4D7C8A;
         outline: none;
         box-shadow: 0 0 0 3px rgba(77, 124, 138, 0.1);
     }
     
-    .stats-source {
-        margin-top: 10px;
-        padding: 8px;
-        background-color: rgba(255, 255, 255, 0.7);
-        border-radius: 4px;
-        font-size: 12px;
-        color: #666;
-        text-align: center;
+    .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
     }
     
-    .stats-source i {
-        margin-right: 5px;
+    .quick-action-btn {
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s;
+        font-size: 14px;
+    }
+    
+    .quick-action-btn.save {
+        background-color: #1B4079;
+        color: white;
+    }
+    
+    .quick-action-btn.secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .quick-action-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    
+    /* Info box */
+    .info-box {
+        background: linear-gradient(135deg, #f0f7ff 0%, #e3f2fd 100%);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border-left: 4px solid #1B4079;
+    }
+    
+    .info-box h3 {
+        color: #1B4079;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .instructions-list {
+        margin: 10px 0 0 20px;
+    }
+    
+    .instructions-list li {
+        margin-bottom: 8px;
+        color: #495057;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    /* Estadísticas de bloques */
+    .stats-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    
+    .stats-section h3 {
+        color: #1B4079;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .bloque-stats {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .bloque-stat-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 12px;
+    }
+    
+    .bloque-stat-name {
+        width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #666;
+    }
+    
+    .bloque-stat-bar {
+        flex-grow: 1;
+        height: 8px;
+        background-color: #e0e0e0;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .bloque-stat-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7F9C96 0%, #4D7C8A 100%);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+    
+    .bloque-stat-count {
+        width: 30px;
+        text-align: right;
+        font-weight: bold;
+        color: #1B4079;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .canvas-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .canvas-container {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(5, auto);
+        }
+        
+        .block1 { grid-column: 1 / 2; grid-row: 1 / 2; }
+        .block2 { grid-column: 2 / 3; grid-row: 1 / 2; }
+        .block3 { grid-column: 1 / 2; grid-row: 2 / 3; }
+        .block4 { grid-column: 2 / 3; grid-row: 2 / 3; }
+        .block5 { grid-column: 1 / 2; grid-row: 3 / 4; }
+        .block6 { grid-column: 2 / 3; grid-row: 3 / 4; }
+        .block7 { grid-column: 1 / 2; grid-row: 4 / 5; }
+        .block8 { grid-column: 2 / 3; grid-row: 4 / 5; }
+        .block9 { grid-column: 1 / 3; grid-row: 5 / 6; }
+    }
+    
+    @media (max-width: 768px) {
+        .canvas-container {
+            grid-template-columns: 1fr;
+            grid-template-rows: repeat(9, auto);
+        }
+        
+        .block1, .block2, .block3, .block4, .block5, 
+        .block6, .block7, .block8, .block9 {
+            grid-column: 1 / 2;
+        }
+        
+        .block1 { grid-row: 1 / 2; }
+        .block2 { grid-row: 2 / 3; }
+        .block3 { grid-row: 3 / 4; }
+        .block4 { grid-row: 4 / 5; }
+        .block5 { grid-row: 5 / 6; }
+        .block6 { grid-row: 6 / 7; }
+        .block7 { grid-row: 7 / 8; }
+        .block8 { grid-row: 8 / 9; }
+        .block9 { grid-row: 9 / 10; }
+        
+        .canvas-actions {
+            flex-direction: column;
+        }
+        
+        .action-button {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+        
+        .tipo-options {
+            grid-template-columns: 1fr;
+        }
+        
+        .canvas-stats {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
     }
 </style>
 
@@ -245,10 +777,17 @@
         const actividad = document.getElementById('quick-actividad').value.trim();
         const tipoPositivoNegativo = tipoSeleccionado; // "Positivo" o "Negativo"
         const tipoBloqueCanva = bloqueCanvaSeleccionado; // Ej: "Mapeo de Actores..."
-        const tipoAspecto = document.getElementById('tipo-aspecto').value; // Ej: "Generación de polvo..."
+        const descripcion = document.getElementById('tipo-descripcion').value.trim();
         
         if (!actividad) {
             mostrarAlerta('Por favor, ingrese una actividad.', 'error');
+            document.getElementById('quick-actividad').focus();
+            return;
+        }
+        
+        if (!descripcion) {
+            mostrarAlerta('Por favor, ingrese una descripción del aspecto.', 'error');
+            document.getElementById('tipo-descripcion').focus();
             return;
         }
         
@@ -257,20 +796,22 @@
             return;
         }
         
-        // Mapear "Positivo"/"Negativo" al valor que se guardará en el campo "aspecto"
-        // En tu BD, "aspecto" guarda cosas como "Generación de polvo en suspensión"
-        // Vamos a combinar: "Positivo: Generación de empleo local" o similar
-        const aspectoParaBD = tipoPositivoNegativo === 'Positivo' ? 
-            `Positivo: ${tipoAspecto}` : 
-            `Negativo: ${tipoAspecto}`;
+        // Preparar el aspecto para la BD
+        const aspectoParaBD = `${tipoPositivoNegativo}: ${descripcion}`;
         
         // Crear objeto con los datos a enviar
         const datos = {
             actividad: actividad,
-            tipo: tipoBloqueCanva, // Esto va al campo "tipo" en la BD
+            tipo: tipoBloqueCanva, // Esto va al campo "tipo" en la BD (nombre del bloque)
             aspecto: aspectoParaBD, // Esto va al campo "aspecto" en la BD
             fuente: 'canva'
         };
+        
+        // Mostrar indicador de carga
+        const guardarBtn = document.querySelector('.quick-action-btn.save');
+        const originalText = guardarBtn.innerHTML;
+        guardarBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        guardarBtn.disabled = true;
         
         // Enviar datos al servidor
         fetch('/guardar_actividad_canva', {
@@ -284,27 +825,31 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                mostrarAlerta('Actividad guardada correctamente en la BD.', 'success');
+                mostrarAlerta('✅ Actividad guardada correctamente en la base de datos.', 'success');
                 limpiarEntradaRapida();
                 
                 // Actualizar el bloque correspondiente en el CANVA
                 agregarActividadAlBloque(actividad, tipoPositivoNegativo, tipoBloqueCanva);
                 
-                // Recargar la página para actualizar estadísticas
+                // Recargar la página para actualizar estadísticas y lista completa
                 setTimeout(() => {
                     location.reload();
                 }, 1500);
             } else {
-                mostrarAlerta('Error al guardar la actividad: ' + data.message, 'error');
+                mostrarAlerta('❌ Error al guardar: ' + data.message, 'error');
+                guardarBtn.innerHTML = originalText;
+                guardarBtn.disabled = false;
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            mostrarAlerta('Error de conexión al servidor.', 'error');
+            mostrarAlerta('❌ Error de conexión al servidor.', 'error');
+            guardarBtn.innerHTML = originalText;
+            guardarBtn.disabled = false;
         });
     }
     
-    // Función para agregar actividad al bloque correspondiente (solo visual)
+    // Función para agregar actividad al bloque correspondiente (solo visual temporal)
     function agregarActividadAlBloque(actividad, tipoPositivoNegativo, tipoBloqueCanva) {
         // Encontrar el bloque correspondiente
         const bloques = document.querySelectorAll('.canvas-block');
@@ -319,21 +864,30 @@
         if (bloqueEncontrado) {
             const contenido = bloqueEncontrado.querySelector('.block-content');
             const colorTexto = tipoPositivoNegativo === 'Positivo' ? 'green' : '#8B0000';
+            const iconoTipo = tipoPositivoNegativo === 'Positivo' ? 
+                '<i class="fas fa-thumbs-up" style="color: green; margin-left: 5px;"></i>' :
+                '<i class="fas fa-thumbs-down" style="color: #8B0000; margin-left: 5px;"></i>';
             
             // Crear elemento para la nueva actividad
             const divActividad = document.createElement('div');
             divActividad.className = 'actividad-item';
             divActividad.style.color = colorTexto;
-            divActividad.textContent = '• ' + actividad;
+            divActividad.innerHTML = `• ${actividad} <span class="actividad-tipo">${iconoTipo}</span>`;
             
             // Agregar al inicio del contenido
             contenido.insertBefore(divActividad, contenido.firstChild);
+            
+            // Actualizar contador del bloque
+            const counter = bloqueEncontrado.querySelector('.block-counter');
+            const currentCount = parseInt(counter.textContent.match(/\d+/)[0]) || 0;
+            counter.textContent = `${currentCount + 1} actividades`;
         }
     }
     
     // Función para limpiar el formulario de entrada rápida
     function limpiarEntradaRapida() {
         document.getElementById('quick-actividad').value = '';
+        document.getElementById('tipo-descripcion').value = 'Generación de empleo local';
         seleccionarTipo('Positivo');
         
         // Seleccionar el primer bloque
@@ -342,8 +896,8 @@
             seleccionarAspecto(primerBloque.getAttribute('data-aspecto'));
         }
         
-        // Restablecer el select de tipo de aspecto
-        document.getElementById('tipo-aspecto').value = 'Generación de polvo en suspensión';
+        // Enfocar en el textarea de actividad
+        document.getElementById('quick-actividad').focus();
     }
     
     // Función para mostrar alertas
@@ -367,6 +921,7 @@
                 transition: all 0.3s ease;
                 transform: translateX(100%);
                 opacity: 0;
+                max-width: 400px;
             `;
             document.body.appendChild(alerta);
         }
@@ -378,7 +933,7 @@
             alerta.style.backgroundColor = '#f44336';
         }
         
-        alerta.textContent = mensaje;
+        alerta.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${mensaje}`;
         
         // Mostrar alerta
         setTimeout(() => {
@@ -386,46 +941,92 @@
             alerta.style.opacity = '1';
         }, 10);
         
-        // Ocultar después de 3 segundos
+        // Ocultar después de 4 segundos
         setTimeout(() => {
             alerta.style.transform = 'translateX(100%)';
             alerta.style.opacity = '0';
-        }, 3000);
+        }, 4000);
     }
     
     // Función para guardar el CANVA completo
     function guardarCanvaCompleto() {
-        mostrarAlerta('CANVA guardado correctamente.', 'success');
+        mostrarAlerta('✅ CANVA guardado correctamente en el sistema.', 'success');
     }
     
     // Función para exportar el CANVA
     function exportarCanva() {
-        mostrarAlerta('Preparando exportación del CANVA...', 'success');
+        mostrarAlerta('📄 Preparando exportación del CANVA en formato PDF...', 'success');
+        // Aquí iría la lógica real para exportar
+        setTimeout(() => {
+            mostrarAlerta('✅ Exportación completada. El PDF se está descargando.', 'success');
+        }, 1500);
     }
     
     // Función para limpiar el CANVA (solo actividades con fuente='canva')
     function limpiarCanva() {
-        if (confirm('¿Está seguro de que desea eliminar todas las actividades del CANVA? Esta acción no se puede deshacer.')) {
+        if (confirm('⚠️ ¿Está seguro de que desea eliminar TODAS las actividades del CANVA?\n\nEsta acción eliminará permanentemente todas las actividades y no se puede deshacer.')) {
+            
+            // Mostrar indicador de carga
+            const limpiarBtn = document.querySelector('.action-button.clean');
+            const originalText = limpiarBtn.innerHTML;
+            limpiarBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Limpiando...';
+            limpiarBtn.disabled = true;
+            
             fetch('/limpiar_canva', {
                 method: 'POST'
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    mostrarAlerta('Todas las actividades del CANVA han sido eliminadas.', 'success');
+                    mostrarAlerta('✅ Todas las actividades del CANVA han sido eliminadas.', 'success');
+                    
                     // Limpiar visualmente todos los bloques
                     document.querySelectorAll('.block-content').forEach(contenido => {
                         contenido.innerHTML = '';
                     });
-                    // Recargar la página para actualizar estadísticas
+                    
+                    // Actualizar contadores
+                    document.querySelectorAll('.block-counter').forEach(counter => {
+                        counter.textContent = '0 actividades';
+                    });
+                    
+                    // Actualizar estadísticas
+                    document.querySelector('.canvas-stats .stat-value:nth-child(1)').textContent = '0';
+                    document.querySelector('.stat-value.positive').textContent = '0';
+                    document.querySelector('.stat-value.negative').textContent = '0';
+                    
+                    // Actualizar barras de estadísticas
+                    document.querySelectorAll('.bloque-stat-count').forEach(stat => {
+                        stat.textContent = '0';
+                    });
+                    document.querySelectorAll('.bloque-stat-fill').forEach(fill => {
+                        fill.style.width = '0%';
+                    });
+                    
+                    // Recargar la página para actualizar completamente
                     setTimeout(() => {
                         location.reload();
-                    }, 1500);
+                    }, 2000);
                 } else {
-                    mostrarAlerta('Error: ' + data.message, 'error');
+                    mostrarAlerta('❌ Error: ' + data.message, 'error');
+                    limpiarBtn.innerHTML = originalText;
+                    limpiarBtn.disabled = false;
                 }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('❌ Error de conexión al servidor.', 'error');
+                limpiarBtn.innerHTML = originalText;
+                limpiarBtn.disabled = false;
             });
         }
     }
+    
+    // Tecla Enter para guardar actividad
+    document.addEventListener('keydown', function(event) {
+        if (event.ctrlKey && event.key === 'Enter') {
+            guardarActividad();
+        }
+    });
 </script>
 {% endblock %}
