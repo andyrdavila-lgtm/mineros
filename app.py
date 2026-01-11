@@ -1027,11 +1027,136 @@ def check():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    """Manejar error 404 - Página no encontrada"""
+    # Si la solicitud es para favicon.ico, devolver un 204 (No Content)
+    if request.path == '/favicon.ico':
+        return '', 204
+    
+    # Para otras rutas, devolver un mensaje simple
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>404 - Página no encontrada</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                padding: 50px;
+                background: linear-gradient(135deg, #1B4079 0%, #4D7C8A 100%);
+                color: white;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .container {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 40px;
+                border-radius: 10px;
+                backdrop-filter: blur(10px);
+            }
+            h1 {
+                color: #CBDF90;
+                font-size: 3rem;
+                margin-bottom: 20px;
+            }
+            p {
+                font-size: 1.2rem;
+                margin-bottom: 30px;
+            }
+            a {
+                color: #CBDF90;
+                text-decoration: none;
+                font-weight: bold;
+                border: 2px solid #CBDF90;
+                padding: 10px 20px;
+                border-radius: 5px;
+                transition: all 0.3s;
+            }
+            a:hover {
+                background: #CBDF90;
+                color: #1B4079;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>404</h1>
+            <p>La página que buscas no existe.</p>
+            <a href="/">Volver al inicio</a>
+        </div>
+    </body>
+    </html>
+    ''', 404
 
 @app.errorhandler(500)
 def internal_server_error(e):
-    return render_template('500.html'), 500
+    """Manejar error 500 - Error interno del servidor"""
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>500 - Error interno del servidor</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                padding: 50px;
+                background: linear-gradient(135deg, #1B4079 0%, #4D7C8A 100%);
+                color: white;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .container {
+                background: rgba(255, 255, 255, 0.1);
+                padding: 40px;
+                border-radius: 10px;
+                backdrop-filter: blur(10px);
+            }
+            h1 {
+                color: #ff6b6b;
+                font-size: 3rem;
+                margin-bottom: 20px;
+            }
+            p {
+                font-size: 1.2rem;
+                margin-bottom: 30px;
+            }
+            a {
+                color: #CBDF90;
+                text-decoration: none;
+                font-weight: bold;
+                border: 2px solid #CBDF90;
+                padding: 10px 20px;
+                border-radius: 5px;
+                transition: all 0.3s;
+            }
+            a:hover {
+                background: #CBDF90;
+                color: #1B4079;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>500</h1>
+            <p>Ha ocurrido un error interno en el servidor.</p>
+            <a href="/">Volver al inicio</a>
+        </div>
+    </body>
+    </html>
+    ''', 500
+
+# Ruta específica para favicon.ico (evita errores en logs)
+@app.route('/favicon.ico')
+def favicon():
+    """Ruta para favicon.ico - Devuelve un 204 No Content para evitar errores"""
+    return '', 204
 
 # ==================== INICIALIZACIÓN ====================
 
