@@ -5,7 +5,7 @@
     <h1 class="content-title">FODA Externo - Análisis Ambiental</h1>
     
     <div class="columns-container">
-        <!-- Columna Izquierda - Historial de Actividades CANVA (solo fuente = canva) -->
+        <!-- Columna Izquierda - Historial de Actividades CANVA -->
         <div class="column left-column">
             <div class="form-section">
                 <h2><i class="fas fa-project-diagram"></i> Historial CANVA</h2>
@@ -20,8 +20,8 @@
                             <div class="historial-item draggable-item" 
                                  draggable="true"
                                  data-id="{{ actividad.id }}"
-                                 data-actividad="{{ actividad.actividad|escape }}"
-                                 data-tipo="{{ actividad.tipo }}"
+                                 data-actividad="{{ actividad.actividad|replace('"', '&quot;')|replace("'", "&#39;") }}"
+                                 data-tipo="{{ 'Positivo' if actividad.aspecto.startswith('Positivo') else 'Negativo' }}"
                                  data-aspecto="{{ actividad.aspecto }}">
                                 <div class="historial-header">
                                     <div class="historial-source-badge fuente-canva">
@@ -30,19 +30,19 @@
                                     <small class="historial-fecha">{{ actividad.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
                                 </div>
                                 
-                                <div class="historial-actividad {{ 'texto-positivo' if actividad.tipo == 'Positivo' else 'texto-negativo' }}">
+                                <div class="historial-actividad {{ 'texto-positivo' if actividad.aspecto.startswith('Positivo') else 'texto-negativo' }}">
                                     {{ actividad.actividad }}
                                 </div>
                                 
                                 <div class="historial-footer">
                                     <div>
                                         <span class="historial-aspecto">
-                                            {{ actividad.aspecto }}
+                                            {{ actividad.tipo }}
                                         </span>
                                     </div>
                                     <div>
-                                        <span class="historial-tipo {{ 'tipo-positivo' if actividad.tipo == 'Positivo' else 'tipo-negativo' }}">
-                                            {% if actividad.tipo == 'Positivo' %}
+                                        <span class="historial-tipo {{ 'tipo-positivo' if actividad.aspecto.startswith('Positivo') else 'tipo-negativo' }}">
+                                            {% if actividad.aspecto.startswith('Positivo') %}
                                                 <i class="fas fa-thumbs-up"></i> Positivo
                                             {% else %}
                                                 <i class="fas fa-thumbs-down"></i> Negativo
@@ -71,7 +71,7 @@
             </div>
         </div>
         
-        <!-- Columna Central - Matriz FODA Externo (solo foda_ext) con drop zones -->
+        <!-- Columna Central - Matriz FODA Externo -->
         <div class="column middle-column">
             <div class="table-section">
                 <h2><i class="fas fa-th-large"></i> Matriz FODA Externo</h2>
@@ -84,16 +84,12 @@
                 </div>
                 
                 <div class="matriz-container">
-                    {# Definir el orden de aspectos #}
                     {% set aspectos_orden = ['POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL'] %}
-                    
-                    {# Crear diccionario para agrupar actividades por aspecto #}
                     {% set actividades_por_aspecto = {} %}
                     {% for aspecto in aspectos_orden %}
                         {% set _ = actividades_por_aspecto.update({aspecto: []}) %}
                     {% endfor %}
                     
-                    {# Agrupar las actividades de foda_ext #}
                     {% if aspectos_lista %}
                         {% for actividad in aspectos_lista %}
                             {% if actividad.aspecto in actividades_por_aspecto %}
@@ -102,19 +98,15 @@
                         {% endfor %}
                     {% endif %}
                     
-                    {# Mostrar cada aspecto en orden con drop zone #}
                     {% for aspecto in aspectos_orden %}
                         {% set actividades_aspecto = actividades_por_aspecto[aspecto] %}
                         <div class="aspecto-group drop-zone" 
-                             data-aspecto="{{ aspecto }}">
+                             data-aspecto="{{ aspecto }}"
+                             id="dropzone-{{ aspecto }}">
                             <h3 class="aspecto-title">
                                 <i class="fas fa-folder"></i> {{ aspecto }}
                                 <span class="aspecto-count">{{ actividades_aspecto|length }}</span>
                             </h3>
-                            
-                            <div class="drop-hint" id="hint-{{ aspecto }}">
-                                <i class="fas fa-arrow-down"></i> Arrastre actividades CANVA aquí
-                            </div>
                             
                             {% if actividades_aspecto %}
                                 <div class="actividades-list">
@@ -139,7 +131,7 @@
                                     {% endfor %}
                                 </div>
                             {% else %}
-                                <div class="empty-aspecto">
+                                <div class="empty-aspecto" id="empty-{{ aspecto }}">
                                     <i class="fas fa-info-circle"></i>
                                     <p>Arrastre actividades CANVA aquí</p>
                                 </div>
@@ -149,7 +141,7 @@
                 </div>
                 
                 <div class="matriz-actions">
-                    <button class="save-btn" onclick="guardarMatriz()" id="btn-guardar-matriz">
+                    <button class="save-btn" onclick="guardarMatriz()" id="btn-guardar-matriz" disabled>
                         <i class="fas fa-save"></i> Guardar Matriz
                     </button>
                     <div id="matriz-message" class="mensaje-carga"></div>
@@ -220,18 +212,17 @@
 <style>
     /* ===== VARIABLES Y ESTILOS BASE ===== */
     :root {
-        --color1: #1B4079; /* Azul oscuro */
-        --color2: #4D7C8A; /* Azul grisáceo */
-        --color3: #7F9C96; /* Verde azulado claro */
-        --color4: #8FAD88; /* Verde claro */
-        --color5: #CBDF90; /* Verde amarillento */
+        --color1: #1B4079;
+        --color2: #4D7C8A;
+        --color3: #7F9C96;
+        --color4: #8FAD88;
+        --color5: #CBDF90;
         --success-color: #4CAF50;
         --error-color: #f44336;
         --warning-color: #FF9800;
         --info-color: #2196F3;
     }
     
-    /* ===== CONTENEDOR PRINCIPAL ===== */
     .fodaex-container {
         padding: 15px;
         width: 100%;
@@ -247,7 +238,6 @@
         border-bottom: 2px solid var(--color4);
     }
     
-    /* ===== SISTEMA DE COLUMNAS RESPONSIVE ===== */
     .columns-container {
         display: grid;
         grid-template-columns: 1fr;
@@ -332,11 +322,6 @@
         cursor: not-allowed;
     }
     
-    .historial-item.transferida:hover {
-        transform: none;
-        background: #f0f0f0;
-    }
-    
     .historial-header {
         display: flex;
         justify-content: space-between;
@@ -359,6 +344,12 @@
         background-color: rgba(203, 223, 144, 0.2);
         color: #5a6c2a;
         border: 1px solid var(--color5);
+    }
+    
+    .transferida-badge {
+        background-color: #6c757d;
+        color: white;
+        border: 1px solid #6c757d;
     }
     
     .historial-fecha {
@@ -505,22 +496,6 @@
         font-weight: 600;
     }
     
-    .drop-hint {
-        text-align: center;
-        padding: 10px;
-        margin: 10px 0;
-        background: rgba(203, 223, 144, 0.1);
-        border: 1px dashed var(--color5);
-        border-radius: 6px;
-        color: #5a6c2a;
-        font-size: 0.9rem;
-        display: none;
-    }
-    
-    .aspecto-group:not(:has(.actividad-item)) .drop-hint {
-        display: block;
-    }
-    
     .actividades-list {
         display: flex;
         flex-direction: column;
@@ -640,6 +615,7 @@
     .save-btn:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+        background: #6c757d;
     }
     
     /* ===== FORMULARIO DE INGRESO ===== */
@@ -741,12 +717,6 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 8px;
         margin-top: 10px;
-    }
-    
-    @media (max-width: 480px) {
-        .aspecto-options {
-            grid-template-columns: 1fr;
-        }
     }
     
     .aspecto-option {
@@ -868,8 +838,6 @@
     }
     
     /* ===== MEDIA QUERIES RESPONSIVE ===== */
-    
-    /* Tablet (768px en adelante) */
     @media (min-width: 768px) {
         .columns-container {
             grid-template-columns: 1fr 2fr;
@@ -888,7 +856,6 @@
         }
     }
     
-    /* Desktop (1024px en adelante) */
     @media (min-width: 1024px) {
         .columns-container {
             grid-template-columns: 1fr 2fr 1fr;
@@ -905,18 +872,8 @@
         .matriz-container {
             max-height: 800px;
         }
-        
-        .input-box h3 {
-            font-size: 1.1rem;
-        }
-        
-        .aspecto-option {
-            font-size: 0.9rem;
-            padding: 12px;
-        }
     }
     
-    /* Desktop grande (1200px en adelante) */
     @media (min-width: 1200px) {
         .fodaex-container {
             max-width: 1400px;
@@ -933,22 +890,21 @@
     // Variables globales
     let tipoSeleccionado = 'Positivo';
     let aspectoSSeleccionado = 'ECONOMICO';
-    let actividadesArrastradas = new Map(); // Almacena actividades arrastradas
-    let actividadesTransferidas = new Set(); // Para evitar transferencias múltiples
+    let actividadesArrastradas = new Map();
+    let actividadesTransferidas = new Set();
     
     // Inicializar al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
         seleccionarTipo('Positivo');
         seleccionarAspecto('ECONOMICO');
         
-        // Contador de caracteres para textarea
+        // Contador de caracteres
         const textarea = document.getElementById('quick-actividad');
         const charCount = document.getElementById('char-count');
         
         if (textarea && charCount) {
             textarea.addEventListener('input', function() {
                 charCount.textContent = this.value.length;
-                
                 if (this.value.length > 450) {
                     charCount.style.color = '#f44336';
                 } else if (this.value.length > 400) {
@@ -957,96 +913,81 @@
                     charCount.style.color = '#666';
                 }
             });
-            
             charCount.textContent = textarea.value.length;
         }
         
-        // Hacer elementos arrastrables
+        // Inicializar drag and drop
         initDragAndDrop();
         
-        // Detectar cambios de orientación
-        window.addEventListener('orientationchange', function() {
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-            }, 100);
-        });
+        // Configurar drop zones
+        setupDropZones();
         
-        ajustarAlturasResponsive();
+        // Inicializar botón de guardar como deshabilitado
+        document.getElementById('btn-guardar-matriz').disabled = true;
     });
     
-    // Función para inicializar drag and drop
-    function initDragAndDrop() {
-        const draggables = document.querySelectorAll('.draggable-item');
+    // Configurar zonas de drop
+    function setupDropZones() {
         const dropZones = document.querySelectorAll('.drop-zone');
         
-        draggables.forEach(item => {
-            item.addEventListener('dragstart', handleDragStart);
-            item.addEventListener('dragend', handleDragEnd);
-        });
-        
         dropZones.forEach(zone => {
-            zone.addEventListener('dragover', handleDragOver);
-            zone.addEventListener('dragenter', handleDragEnter);
-            zone.addEventListener('dragleave', handleDragLeave);
-            zone.addEventListener('drop', handleDrop);
+            zone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                this.classList.add('drag-over');
+            });
+            
+            zone.addEventListener('dragenter', function(e) {
+                e.preventDefault();
+                this.classList.add('drag-over');
+            });
+            
+            zone.addEventListener('dragleave', function(e) {
+                if (!this.contains(e.relatedTarget)) {
+                    this.classList.remove('drag-over');
+                }
+            });
+            
+            zone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('drag-over');
+                handleDrop(e, this);
+            });
         });
     }
     
-    function handleDragStart(e) {
-        const item = e.target.closest('.historial-item');
+    // Inicializar drag and drop para elementos arrastrables
+    function initDragAndDrop() {
+        const draggables = document.querySelectorAll('.draggable-item');
         
-        // Si ya fue transferida, no permitir arrastrar
-        if (item.classList.contains('transferida')) {
-            e.preventDefault();
-            return false;
-        }
-        
-        e.dataTransfer.setData('text/plain', JSON.stringify({
-            id: item.dataset.id,
-            actividad: item.dataset.actividad,
-            tipo: item.dataset.tipo,
-            aspecto_original: item.dataset.aspecto
-        }));
-        
-        e.dataTransfer.effectAllowed = 'move';
-        
-        // Efecto visual
-        item.classList.add('dragging');
+        draggables.forEach(item => {
+            item.addEventListener('dragstart', function(e) {
+                // Si ya fue transferida, no permitir arrastrar
+                if (this.classList.contains('transferida')) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                const data = {
+                    id: this.dataset.id,
+                    actividad: this.dataset.actividad,
+                    tipo: this.dataset.tipo,
+                    aspecto_original: this.dataset.aspecto
+                };
+                
+                e.dataTransfer.setData('text/plain', JSON.stringify(data));
+                e.dataTransfer.effectAllowed = 'move';
+                this.classList.add('dragging');
+            });
+            
+            item.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+            });
+        });
     }
     
-    function handleDragEnd(e) {
-        const item = e.target.closest('.historial-item');
-        if (item) {
-            item.classList.remove('dragging');
-        }
-    }
-    
-    function handleDragOver(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    }
-    
-    function handleDragEnter(e) {
-        const dropZone = e.target.closest('.drop-zone');
-        if (dropZone) {
-            dropZone.classList.add('drag-over');
-        }
-    }
-    
-    function handleDragLeave(e) {
-        const dropZone = e.target.closest('.drop-zone');
-        if (dropZone && !dropZone.contains(e.relatedTarget)) {
-            dropZone.classList.remove('drag-over');
-        }
-    }
-    
-    function handleDrop(e) {
-        e.preventDefault();
-        const dropZone = e.target.closest('.drop-zone');
-        if (!dropZone) return;
-        
-        dropZone.classList.remove('drag-over');
-        
+    // Manejar drop
+    function handleDrop(e, dropZone) {
         try {
             const data = JSON.parse(e.dataTransfer.getData('text/plain'));
             const nuevoAspecto = dropZone.dataset.aspecto;
@@ -1066,7 +1007,7 @@
                 canva_id: data.id
             });
             
-            // Marcar como transferida para este usuario
+            // Marcar como transferida
             actividadesTransferidas.add(data.id);
             
             // Mostrar visualmente en la matriz
@@ -1083,10 +1024,7 @@
                 const header = originalItem.querySelector('.historial-header');
                 if (header) {
                     const transferidaBadge = document.createElement('div');
-                    transferidaBadge.className = 'historial-source-badge';
-                    transferidaBadge.style.backgroundColor = '#6c757d';
-                    transferidaBadge.style.color = 'white';
-                    transferidaBadge.style.borderColor = '#6c757d';
+                    transferidaBadge.className = 'historial-source-badge transferida-badge';
                     transferidaBadge.innerHTML = '<i class="fas fa-check"></i> Transferida';
                     header.appendChild(transferidaBadge);
                 }
@@ -1102,45 +1040,51 @@
         }
     }
     
+    // Agregar actividad visualmente a la matriz
     function agregarActividadVisual(dropZone, actividad, tipo) {
-        // Crear elemento visual para la actividad
-        const actividadesList = dropZone.querySelector('.actividades-list') || 
-                               dropZone.querySelector('.empty-aspecto');
+        // Verificar si hay un contenedor de actividades
+        let actividadesList = dropZone.querySelector('.actividades-list');
         
-        if (actividadesList) {
-            // Si hay empty-aspecto, convertirlo en lista
-            if (actividadesList.classList.contains('empty-aspecto')) {
-                const newList = document.createElement('div');
-                newList.className = 'actividades-list';
-                dropZone.replaceChild(newList, actividadesList);
+        // Si no hay lista de actividades, crear una
+        if (!actividadesList) {
+            // Remover el empty-aspecto si existe
+            const emptyDiv = dropZone.querySelector('.empty-aspecto');
+            if (emptyDiv) {
+                emptyDiv.remove();
             }
             
-            const actividadItem = document.createElement('div');
-            actividadItem.className = `actividad-item ${tipo === 'Positivo' ? 'actividad-positiva' : 'actividad-negativa'} nueva-actividad`;
-            actividadItem.innerHTML = `
-                <div class="actividad-texto" style="color: ${tipo === 'Positivo' ? 'green' : '#8B0000'};">
-                    <i class="fas fa-circle" style="font-size: 8px; margin-right: 8px;"></i>
-                    ${actividad}
-                </div>
-                <div class="actividad-tipo">
-                    <span class="tipo-indicador ${tipo === 'Positivo' ? 'positivo' : 'negativo'}">
-                        <i class="fas ${tipo === 'Positivo' ? 'plus-circle' : 'minus-circle'}"></i> ${tipo}
-                    </span>
-                </div>
-            `;
-            
-            dropZone.querySelector('.actividades-list').appendChild(actividadItem);
-            
-            // Actualizar contador
-            const countSpan = dropZone.querySelector('.aspecto-count');
-            if (countSpan) {
-                const currentCount = parseInt(countSpan.textContent) || 0;
-                countSpan.textContent = currentCount + 1;
-            }
+            // Crear nueva lista
+            actividadesList = document.createElement('div');
+            actividadesList.className = 'actividades-list';
+            dropZone.appendChild(actividadesList);
+        }
+        
+        // Crear elemento de actividad
+        const actividadItem = document.createElement('div');
+        actividadItem.className = `actividad-item ${tipo === 'Positivo' ? 'actividad-positiva' : 'actividad-negativa'}`;
+        actividadItem.innerHTML = `
+            <div class="actividad-texto" style="color: ${tipo === 'Positivo' ? 'green' : '#8B0000'};">
+                <i class="fas fa-circle" style="font-size: 8px; margin-right: 8px;"></i>
+                ${actividad}
+            </div>
+            <div class="actividad-tipo">
+                <span class="tipo-indicador ${tipo === 'Positivo' ? 'positivo' : 'negativo'}">
+                    <i class="fas ${tipo === 'Positivo' ? 'plus-circle' : 'minus-circle'}"></i> ${tipo}
+                </span>
+            </div>
+        `;
+        
+        actividadesList.appendChild(actividadItem);
+        
+        // Actualizar contador
+        const countSpan = dropZone.querySelector('.aspecto-count');
+        if (countSpan) {
+            const currentCount = parseInt(countSpan.textContent) || 0;
+            countSpan.textContent = currentCount + 1;
         }
     }
     
-    // Función para guardar la matriz con actividades arrastradas
+    // Guardar matriz
     function guardarMatriz() {
         if (actividadesArrastradas.size === 0) {
             mostrarMensajeMatriz('ℹ️ No hay actividades nuevas para guardar', 'info');
@@ -1181,8 +1125,9 @@
                 
                 // Limpiar actividades arrastradas después de guardar
                 actividadesArrastradas.clear();
+                actividadesTransferidas.clear();
                 
-                // Recargar después de 2 segundos para ver los cambios
+                // Recargar después de 2 segundos
                 setTimeout(() => {
                     window.location.reload();
                 }, 2000);
@@ -1194,12 +1139,13 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            mostrarMensajeMatriz('❌ Error al conectar con el servidor. Verifique su conexión.', 'error');
+            mostrarMensajeMatriz('❌ Error al conectar con el servidor', 'error');
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-save"></i> Guardar Matriz';
         });
     }
     
+    // Mostrar mensaje en la matriz
     function mostrarMensajeMatriz(texto, tipo) {
         const mensajeDiv = document.getElementById('matriz-message');
         if (!mensajeDiv) return;
@@ -1227,17 +1173,7 @@
         }
     }
     
-    // Funciones existentes
-    function ajustarAlturasResponsive() {
-        if (window.innerWidth < 768) {
-            const historial = document.querySelector('.historial-container');
-            const matriz = document.querySelector('.matriz-container');
-            
-            if (historial) historial.style.maxHeight = '400px';
-            if (matriz) matriz.style.maxHeight = '500px';
-        }
-    }
-    
+    // Funciones para el formulario de entrada rápida
     function seleccionarTipo(tipo) {
         tipoSeleccionado = tipo;
         
@@ -1277,6 +1213,7 @@
         const tipo = tipoSeleccionado;
         const aspecto = aspectoSSeleccionado;
         
+        // Validaciones
         if (!actividad) {
             mostrarMensaje('❌ Por favor, ingrese una actividad.', 'error');
             document.getElementById('quick-actividad').focus();
@@ -1288,12 +1225,14 @@
             return;
         }
         
+        // Deshabilitar botón durante la carga
         const btn = document.querySelector('.quick-action-btn');
         if (btn) {
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
         }
         
+        // Enviar datos al servidor
         fetch('/guardar_foda_ext', {
             method: 'POST',
             headers: {
@@ -1317,11 +1256,12 @@
                 mostrarMensaje('✅ ' + data.message, 'exito');
                 limpiarEntradaRapida();
                 
+                // Recargar la página para ver los cambios
                 setTimeout(() => {
                     window.location.reload();
                 }, 1500);
             } else {
-                mostrarMensaje('❌ ' + data.message, 'error');
+                mostrarMensaje('❌ Error: ' + data.message, 'error');
             }
         })
         .catch(error => {
@@ -1329,6 +1269,7 @@
             mostrarMensaje('❌ Error al conectar con el servidor.', 'error');
         })
         .finally(() => {
+            // Rehabilitar botón
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-upload"></i> Cargar';
@@ -1374,9 +1315,5 @@
         
         if (textarea) textarea.focus();
     }
-    
-    window.addEventListener('resize', function() {
-        ajustarAlturasResponsive();
-    });
 </script>
 {% endblock %}
