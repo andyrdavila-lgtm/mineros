@@ -483,6 +483,143 @@ def guardar_matriz_foda():
         print(f"Error al guardar matriz FODA: {str(e)}")
         return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
 
+# Ruta para FODA Interno
+@app.route('/fodaint')
+@login_required
+def fodaint():
+    """Página para análisis FODA Interno"""
+    try:
+        # Obtener aspectos para FODA Interno (fuente = 'foda_int')
+        aspectos_lista = AspectoAmbiental.query.filter_by(
+            fuente='foda_int'
+        ).order_by(
+            AspectoAmbiental.aspecto,
+            AspectoAmbiental.created_at.desc()
+        ).all()
+        
+        # Obtener historial de CANVA para arrastrar
+        historial_actividades = AspectoAmbiental.query.filter_by(
+            fuente='canva'
+        ).order_by(
+            AspectoAmbiental.created_at.desc()
+        ).limit(20).all()
+        
+        # Estadísticas
+        estadisticas = {
+            'total': len(aspectos_lista),
+            'positivos': len([a for a in aspectos_lista if a.tipo == 'Positivo']),
+            'negativos': len([a for a in aspectos_lista if a.tipo == 'Negativo']),
+            'historial_total': len(historial_actividades)
+        }
+        
+        return render_template('fodaint.html', 
+                             aspectos_lista=aspectos_lista,
+                             historial_actividades=historial_actividades,
+                             estadisticas=estadisticas)
+        
+    except Exception as e:
+        print(f"Error en fodaint: {e}")
+        return render_template('fodaint.html', 
+                             aspectos_lista=[], 
+                             historial_actividades=[],
+                             estadisticas={'total': 0, 'positivos': 0, 'negativos': 0, 'historial_total': 0})
+
+# Ruta para guardar actividades FODA Interno
+@app.route('/guardar_foda_int', methods=['POST'])
+@login_required
+def guardar_foda_int():
+    """Guardar un aspecto para FODA Interno"""
+    try:
+        if not request.is_json:
+            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
+        
+        data = request.get_json()
+        
+        # Validar campos requeridos
+        if not data.get('actividad'):
+            return jsonify({'success': False, 'message': 'La actividad es obligatoria'}), 400
+        
+        if not data.get('tipo') or data.get('tipo') not in ['Positivo', 'Negativo']:
+            return jsonify({'success': False, 'message': 'Tipo inválido'}), 400
+        
+        # Validar aspectos internos
+        aspectos_validos = [
+            'ADMINISTRACIÓN Y GERENCIA',
+            'MARKETING Y VENTAS', 
+            'OPERACIONES Y LOGÍSTICA',
+            'FINANZAS Y CONTABILIDAD',
+            'RECURSOS HUMANOS',
+            'SISTEMAS DE INFORMACIÓN',
+            'TECNOLOGÍA'
+        ]
+        
+        if not data.get('aspecto') or data.get('aspecto') not in aspectos_validos:
+            return jsonify({'success': False, 'message': 'Aspecto inválido'}), 400
+        
+        # Crear nuevo aspecto
+        nuevo_aspecto = AspectoAmbiental(
+            actividad=data['actividad'].strip(),
+            tipo=data['tipo'],
+            aspecto=data['aspecto'],
+            fuente='foda_int',  # Fuente específica para FODA Interno
+            created_by=session['user_id']
+        )
+        
+        db.session.add(nuevo_aspecto)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '✅ Actividad FODA Interno guardada correctamente',
+            'data': {
+                'id': nuevo_aspecto.id,
+                'actividad': nuevo_aspecto.actividad,
+                'tipo': nuevo_aspecto.tipo,
+                'aspecto': nuevo_aspecto.aspecto,
+                'fuente': nuevo_aspecto.fuente,
+                'created_at': nuevo_aspecto.created_at.strftime('%d/%m/%Y %H:%M')
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al guardar actividad fodaint: {e}")
+        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
+
+# Ruta para guardar matriz FODA Interno (actividades arrastradas desde CANVA)
+@app.route('/guardar_matriz_foda_int', methods=['POST'])
+@login_required
+def guardar_matriz_foda_int():
+    """Guardar actividades arrastradas desde CANVA a la matriz FODA Interno"""
+    try:
+        data = request.get_json()
+        actividades = data.get('actividades', [])
+        
+        if not actividades:
+            return jsonify({'success': False, 'message': 'No hay actividades para guardar'})
+        
+        for actividad_data in actividades:
+            # Crear nuevo registro en la tabla de AspectoAmbiental
+            nueva_actividad = AspectoAmbiental(
+                actividad=actividad_data['actividad'],
+                tipo=actividad_data['tipo'],
+                aspecto=actividad_data['aspecto_nuevo'],  # El nuevo aspecto asignado
+                fuente='foda_int',  # Fuente específica para FODA Interno
+                created_by=session['user_id']
+            )
+            db.session.add(nueva_actividad)
+        
+        db.session.commit()
+        return jsonify({
+            'success': True, 
+            'message': f'{len(actividades)} actividades guardadas en la matriz FODA Interno'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al guardar matriz FODA Interno: {str(e)}")
+        return jsonify({'success': False, 'message': f'Error: {str(e)}'}), 500
+
 @app.route('/eliminar_foda_ext/<int:id>', methods=['POST'])
 @login_required
 def eliminar_foda_ext(id):
