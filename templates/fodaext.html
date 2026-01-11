@@ -1,91 +1,698 @@
-# Añade estas rutas después de las existentes
+{% extends "inicio.html" %}
 
-@app.route('/guardar_actividad_fodaext', methods=['POST'])
-@login_required
-def guardar_actividad_fodaext():
-    try:
-        data = request.get_json()
-        actividad = data.get('actividad', '').strip()
-        tipo = data.get('tipo', 'Positivo')
-        aspecto = data.get('aspecto', 'ECONOMICO')
-        fuente = data.get('fuente', '').strip()
-        
-        if not actividad:
-            return jsonify({'success': False, 'error': 'La actividad es obligatoria'})
-        
-        # Crear nuevo registro
-        nuevo_aspecto = AspectoAmbiental(
-            actividad=actividad,
-            tipo=tipo,
-            aspecto=aspecto,
-            fuente=fuente,
-            created_by='fodaext'  # Siempre fodaext para esta página
-        )
-        
-        db.session.add(nuevo_aspecto)
-        db.session.commit()
-        
-        return jsonify({'success': True, 'id': nuevo_aspecto.id})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error al guardar actividad fodaext: {e}")
-        return jsonify({'success': False, 'error': str(e)})
-
-@app.route('/fodaext', methods=['GET', 'POST'])
-@login_required
-def fodaext():
-    if request.method == 'POST':
-        # Manejo del formulario tradicional (si aún existe)
-        actividad = request.form.get('actividad', '').strip()
-        tipo = request.form.get('tipo', 'Positivo')
-        aspecto = request.form.get('aspecto', 'ECONOMICO')
-        fuente = request.form.get('fuente', '').strip()
-        
-        if actividad:
-            nuevo_aspecto = AspectoAmbiental(
-                actividad=actividad,
-                tipo=tipo,
-                aspecto=aspecto,
-                fuente=fuente,
-                created_by='fodaext'
-            )
-            db.session.add(nuevo_aspecto)
-            db.session.commit()
-        
-        return redirect(url_for('fodaext'))
+{% block content %}
+<div class="fodaex-container">
+    <h1 class="content-title">FODA Externo - Análisis Ambiental</h1>
     
-    # GET request - obtener datos para mostrar
-    try:
-        # Obtener historial de actividades (últimas 20)
-        historial_actividades = AspectoAmbiental.query.filter_by(
-            created_by='fodaext'
-        ).order_by(
-            AspectoAmbiental.created_at.desc()
-        ).limit(20).all()
+    <div class="columns-container">
+        <!-- Columna Izquierda - Historial de Actividades -->
+        <div class="column left-column">
+            <div class="form-section">
+                <h2><i class="fas fa-history"></i> Historial de Actividades</h2>
+                
+                <div class="historial-container">
+                    {% if historial_actividades %}
+                        {% for actividad in historial_actividades %}
+                        <div class="historial-item">
+                            <div class="historial-header">
+                                <span class="historial-aspecto {{ 'aspecto-positivo' if actividad.tipo == 'Positivo' else 'aspecto-negativo' }}">
+                                    {{ actividad.aspecto }}
+                                </span>
+                                <small class="historial-fecha">{{ actividad.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                            </div>
+                            <div class="historial-actividad {{ 'texto-positivo' if actividad.tipo == 'Positivo' else 'texto-negativo' }}">
+                                {{ actividad.actividad }}
+                            </div>
+                            <div class="historial-footer">
+                                <span class="historial-tipo {{ 'tipo-positivo' if actividad.tipo == 'Positivo' else 'tipo-negativo' }}">
+                                    {% if actividad.tipo == 'Positivo' %}
+                                        ✅ POSITIVO
+                                    {% else %}
+                                        ❌ NEGATIVO
+                                    {% endif %}
+                                </span>
+                                <small class="historial-usuario">{{ actividad.created_by or 'Sistema' }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h3>No hay actividades registradas</h3>
+                            <p>Las actividades que ingrese aparecerán aquí.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
         
-        # Obtener todas las actividades agrupadas por aspecto
-        todas_actividades = AspectoAmbiental.query.filter_by(
-            created_by='fodaext'
-        ).order_by(
-            AspectoAmbiental.aspecto,
-            AspectoAmbiental.created_at.desc()
-        ).all()
+        <!-- Columna Central - Tabla agrupada por aspecto -->
+        <div class="column middle-column">
+            <div class="table-section">
+                <h2><i class="fas fa-th-large"></i> Matriz FODA Externo</h2>
+                
+                <div class="matriz-container">
+                    {% for aspecto in ['POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL'] %}
+                        {% set actividades_aspecto = actividades_por_aspecto.get(aspecto, []) %}
+                        <div class="aspecto-group">
+                            <h3 class="aspecto-title">{{ aspecto }}</h3>
+                            
+                            {% if actividades_aspecto %}
+                                <div class="actividades-list">
+                                    {% for actividad in actividades_aspecto %}
+                                    <div class="actividad-item {{ 'actividad-positiva' if actividad.tipo == 'Positivo' else 'actividad-negativa' }}">
+                                        <div class="actividad-texto" style="color: {{ 'green' if actividad.tipo == 'Positivo' else '#8B0000' }};">
+                                            {{ actividad.actividad }}
+                                        </div>
+                                        <div class="actividad-tipo">
+                                            {% if actividad.tipo == 'Positivo' %}
+                                                <span style="color: green;">✅ Positivo</span>
+                                            {% else %}
+                                                <span style="color: #8B0000;">❌ Negativo</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <div class="empty-aspecto">
+                                    <p>No hay actividades registradas para este aspecto</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
         
-        # Organizar por aspecto en el orden especificado
-        orden_aspectos = ['POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL']
-        actividades_por_aspecto = {aspecto: [] for aspecto in orden_aspectos}
+        <!-- Columna Derecha - Ingresar Actividades -->
+        <div class="column right-column">
+            <div class="quick-input-section">
+                <h2><i class="fas fa-edit"></i> Ingresar Actividades</h2>
+                
+                <div class="input-box">
+                    <h3><i class="fas fa-tasks"></i> ACTIVIDAD</h3>
+                    <textarea id="quick-actividad" 
+                              placeholder="Describa la actividad aquí..."
+                              rows="4"
+                              class="quick-textarea"></textarea>
+                </div>
+                
+                <div class="input-box">
+                    <h3><i class="fas fa-balance-scale"></i> TIPO</h3>
+                    <div class="tipo-options">
+                        <button id="btn-positivo" class="tipo-option positivo-option selected" 
+                                onclick="seleccionarTipo('Positivo')">
+                            <i class="fas fa-thumbs-up"></i> Positivo
+                        </button>
+                        <button id="btn-negativo" class="tipo-option negativo-option" 
+                                onclick="seleccionarTipo('Negativo')">
+                            <i class="fas fa-thumbs-down"></i> Negativo
+                        </button>
+                    </div>
+                    <input type="hidden" id="quick-tipo" value="Positivo">
+                </div>
+                
+                <div class="input-box">
+                    <h3><i class="fas fa-layer-group"></i> ASPECTO</h3>
+                    <div class="aspecto-options">
+                        {% for aspecto in ['POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL'] %}
+                        <button class="aspecto-option {% if aspecto == 'ECONOMICO' %}selected{% endif %}" 
+                                onclick="seleccionarAspecto('{{ aspecto }}')"
+                                data-aspecto="{{ aspecto }}">
+                            {{ aspecto }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" id="quick-aspecto" value="ECONOMICO">
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="guardarActividad()">
+                        <i class="fas fa-upload"></i> Cargar
+                    </button>
+                    <button class="quick-action-btn secondary" onclick="limpiarEntradaRapida()">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </button>
+                </div>
+                
+                <div id="mensaje-carga" class="mensaje-carga"></div>
+            </div>
+            
+            <div class="info-box">
+                <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                <ul class="instructions-list">
+                    <li>Escriba la actividad en el cuadro superior</li>
+                    <li>Seleccione el tipo (Positivo/Negativo)</li>
+                    <li>Elija el aspecto correspondiente</li>
+                    <li>Haga clic en "Cargar" para guardar</li>
+                    <li>La actividad aparecerá automáticamente en la tabla central</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para FODA Externo */
+    .fodaex-container {
+        padding: 20px;
+    }
+    
+    .columns-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .column {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .middle-column {
+        grid-column: 2 / 3;
+    }
+    
+    .form-section, .table-section, .quick-input-section {
+        margin-bottom: 25px;
+    }
+    
+    .form-section h2, .table-section h2, .quick-input-section h2 {
+        color: var(--color1);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--color4);
+        font-size: 22px;
+    }
+    
+    /* Historial de Actividades */
+    .historial-container {
+        max-height: 600px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+    
+    .historial-item {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        transition: all 0.3s;
+    }
+    
+    .historial-item:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .historial-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .historial-aspecto {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .aspecto-positivo {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #4CAF50;
+    }
+    
+    .aspecto-negativo {
+        background-color: #ffebee;
+        color: #c62828;
+        border: 1px solid #f44336;
+    }
+    
+    .historial-fecha {
+        color: #6c757d;
+        font-size: 11px;
+    }
+    
+    .historial-actividad {
+        margin: 10px 0;
+        line-height: 1.5;
+        font-size: 14px;
+    }
+    
+    .texto-positivo {
+        color: #2e7d32 !important;
+    }
+    
+    .texto-negativo {
+        color: #8B0000 !important;
+    }
+    
+    .historial-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #dee2e6;
+    }
+    
+    .historial-tipo {
+        font-size: 12px;
+        font-weight: bold;
+        padding: 2px 8px;
+        border-radius: 4px;
+    }
+    
+    .tipo-positivo {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .tipo-negativo {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+    
+    .historial-usuario {
+        color: #6c757d;
+        font-size: 11px;
+    }
+    
+    /* Matriz FODA */
+    .matriz-container {
+        max-height: 700px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+    
+    .aspecto-group {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .aspecto-title {
+        color: var(--color1);
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid var(--color3);
+        font-size: 18px;
+    }
+    
+    .actividades-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .actividad-item {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s;
+    }
+    
+    .actividad-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .actividad-positiva {
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .actividad-negativa {
+        border-left: 4px solid #f44336;
+    }
+    
+    .actividad-texto {
+        flex: 1;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    .actividad-tipo {
+        font-size: 12px;
+        font-weight: bold;
+        padding: 4px 8px;
+        border-radius: 4px;
+        white-space: nowrap;
+    }
+    
+    .empty-aspecto {
+        text-align: center;
+        padding: 20px;
+        color: #6c757d;
+        background: #f1f3f4;
+        border-radius: 6px;
+        border: 1px dashed #dee2e6;
+    }
+    
+    /* Entrada Rápida */
+    .input-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .input-box h3 {
+        color: var(--color3);
+        margin-bottom: 10px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .quick-textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+    }
+    
+    .tipo-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .tipo-option {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .positivo-option {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border: 2px solid #4CAF50;
+    }
+    
+    .negativo-option {
+        background-color: #ffebee;
+        color: #c62828;
+        border: 2px solid #f44336;
+    }
+    
+    .tipo-option.selected {
+        transform: scale(0.98);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .tipo-option:not(.selected) {
+        background-color: #e9ecef !important;
+        color: #6c757d !important;
+        border: 2px solid #ced4da !important;
+    }
+    
+    .aspecto-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    .aspecto-option {
+        padding: 8px;
+        border: 1px solid #ced4da;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .aspecto-option:hover {
+        background-color: #e9ecef;
+    }
+    
+    .aspecto-option.selected {
+        background-color: var(--color1);
+        color: white;
+        border-color: var(--color1);
+    }
+    
+    .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .quick-action-btn {
+        padding: 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+    
+    .quick-action-btn:first-child {
+        background-color: var(--color1);
+        color: white;
+    }
+    
+    .quick-action-btn.secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .quick-action-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    
+    .quick-action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .mensaje-carga {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 6px;
+        text-align: center;
+        font-weight: 600;
+        display: none;
+    }
+    
+    .mensaje-exito {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #4CAF50;
+        display: block;
+    }
+    
+    .mensaje-error {
+        background-color: #ffebee;
+        color: #c62828;
+        border: 1px solid #f44336;
+        display: block;
+    }
+    
+    /* Estado vacío */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        color: #dee2e6;
+        margin-bottom: 15px;
+    }
+    
+    /* Info box */
+    .info-box {
+        background: linear-gradient(135deg, #f0f7ff 0%, #e3f2fd 100%);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border-left: 4px solid var(--color1);
+    }
+    
+    .instructions-list {
+        margin: 10px 0 0 20px;
+    }
+    
+    .instructions-list li {
+        margin-bottom: 8px;
+        color: #495057;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .columns-container {
+            grid-template-columns: 1fr;
+        }
         
-        for actividad in todas_actividades:
-            if actividad.aspecto in actividades_por_aspecto:
-                actividades_por_aspecto[actividad.aspecto].append(actividad)
+        .middle-column {
+            grid-column: 1;
+        }
         
-        return render_template('fodaext.html', 
-                             historial_actividades=historial_actividades,
-                             actividades_por_aspecto=actividades_por_aspecto)
+        .historial-container,
+        .matriz-container {
+            max-height: 400px;
+        }
+    }
+</style>
+
+<script>
+    // Variables para seguimiento de selección
+    let tipoSeleccionado = 'Positivo';
+    let aspectoSSeleccionado = 'ECONOMICO';
+    
+    function seleccionarTipo(tipo) {
+        tipoSeleccionado = tipo;
         
-    except Exception as e:
-        print(f"Error al cargar datos fodaext: {e}")
-        return render_template('fodaext.html', 
-                             historial_actividades=[],
-                             actividades_por_aspecto={})
+        // Actualizar UI - Poner el seleccionado activo y el otro gris
+        if (tipo === 'Positivo') {
+            document.getElementById('btn-positivo').classList.add('selected');
+            document.getElementById('btn-negativo').classList.remove('selected');
+        } else {
+            document.getElementById('btn-negativo').classList.add('selected');
+            document.getElementById('btn-positivo').classList.remove('selected');
+        }
+        
+        // Actualizar campo oculto
+        document.getElementById('quick-tipo').value = tipo;
+    }
+    
+    function seleccionarAspecto(aspecto) {
+        aspectoSSeleccionado = aspecto;
+        
+        // Actualizar UI
+        document.querySelectorAll('.aspecto-option').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        
+        document.querySelector(`.aspecto-option[data-aspecto="${aspecto}"]`).classList.add('selected');
+        
+        // Actualizar campo oculto
+        document.getElementById('quick-aspecto').value = aspecto;
+    }
+    
+    function guardarActividad() {
+        const actividad = document.getElementById('quick-actividad').value.trim();
+        const tipo = tipoSeleccionado;
+        const aspecto = aspectoSSeleccionado;
+        
+        if (!actividad) {
+            mostrarMensaje('Por favor, ingrese una actividad.', 'error');
+            return;
+        }
+        
+        // Deshabilitar botón durante la carga
+        const btn = document.querySelector('.quick-action-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+        
+        // Enviar datos al servidor
+        fetch('/guardar_actividad_fodaext', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                actividad: actividad,
+                tipo: tipo,
+                aspecto: aspecto,
+                fuente: '',
+                created_by: 'fodaext'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarMensaje('✅ Actividad guardada correctamente.', 'exito');
+                limpiarEntradaRapida();
+                
+                // Recargar la página para ver los cambios
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                mostrarMensaje('❌ Error: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarMensaje('❌ Error al conectar con el servidor.', 'error');
+        })
+        .finally(() => {
+            // Rehabilitar botón
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-upload"></i> Cargar';
+        });
+    }
+    
+    function mostrarMensaje(texto, tipo) {
+        const mensajeDiv = document.getElementById('mensaje-carga');
+        mensajeDiv.textContent = texto;
+        mensajeDiv.className = 'mensaje-carga';
+        
+        if (tipo === 'exito') {
+            mensajeDiv.classList.add('mensaje-exito');
+        } else {
+            mensajeDiv.classList.add('mensaje-error');
+        }
+        
+        // Ocultar mensaje después de 5 segundos
+        setTimeout(() => {
+            mensajeDiv.style.display = 'none';
+        }, 5000);
+    }
+    
+    function limpiarEntradaRapida() {
+        document.getElementById('quick-actividad').value = '';
+        seleccionarTipo('Positivo');
+        seleccionarAspecto('ECONOMICO');
+        document.getElementById('mensaje-carga').style.display = 'none';
+    }
+    
+    // Inicializar selecciones
+    document.addEventListener('DOMContentLoaded', function() {
+        seleccionarTipo('Positivo');
+        seleccionarAspecto('ECONOMICO');
+    });
+</script>
+{% endblock %}
