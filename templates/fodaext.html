@@ -1,0 +1,703 @@
+{% extends "inicio.html" %}
+
+{% block content %}
+<div class="fodaex-container">
+    <h1 class="content-title">FODA Externo - Análisis Ambiental</h1>
+    
+    <div class="columns-container">
+        <!-- Columna Izquierda - Formulario para agregar aspectos -->
+        <div class="column left-column">
+            <div class="form-section">
+                <h2><i class="fas fa-plus-circle"></i> Agregar Nuevo Aspecto</h2>
+                
+                <form method="POST" action="{{ url_for('fodaext') }}" id="aspectoForm">
+                    <div class="form-group">
+                        <label for="actividad">Actividad:</label>
+                        <input type="text" id="actividad" name="actividad" 
+                               placeholder="Describa la actividad" required
+                               class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="tipo">Tipo:</label>
+                        <select id="tipo" name="tipo" class="form-select" required>
+                            <option value="Positivo">✅ Positivo</option>
+                            <option value="Negativo">❌ Negativo</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="aspecto">Aspecto:</label>
+                        <select id="aspecto" name="aspecto" class="form-select" required>
+                            <option value="POLITICO">POLÍTICO</option>
+                            <option value="ECONOMICO">ECONÓMICO</option>
+                            <option value="SOCIAL">SOCIAL</option>
+                            <option value="TECNOLOGICO">TECNOLÓGICO</option>
+                            <option value="ECOLOGICO">ECOLÓGICO</option>
+                            <option value="LEGAL">LEGAL</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fuente">Fuente (opcional):</label>
+                        <input type="text" id="fuente" name="fuente" 
+                               placeholder="Fuente de información"
+                               class="form-input">
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class="fas fa-save"></i> Guardar Aspecto
+                    </button>
+                    
+                    {% if error %}
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+            
+            <div class="stats-section">
+                <h3><i class="fas fa-chart-pie"></i> Estadísticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">{{ aspectos_lista|length }}</span>
+                        <span class="stat-label">Total Aspectos</span>
+                    </div>
+                    <div class="stat-card positive">
+                        <span class="stat-number">
+                            {{ aspectos_lista|selectattr('tipo', 'equalto', 'Positivo')|list|length }}
+                        </span>
+                        <span class="stat-label">Positivos</span>
+                    </div>
+                    <div class="stat-card negative">
+                        <span class="stat-number">
+                            {{ aspectos_lista|selectattr('tipo', 'equalto', 'Negativo')|list|length }}
+                        </span>
+                        <span class="stat-label">Negativos</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Columna Central - Tabla de aspectos existentes -->
+        <div class="column middle-column">
+            <div class="table-section">
+                <h2><i class="fas fa-table"></i> Aspectos Registrados</h2>
+                
+                {% if aspectos_lista %}
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Actividad</th>
+                                <th>Tipo</th>
+                                <th>Aspecto</th>
+                                <th>Fuente</th>
+                                <th>Creado por</th>
+                                <th>Fecha</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for aspecto in aspectos_lista %}
+                            <tr class="{{ 'positive-row' if aspecto.tipo == 'Positivo' else 'negative-row' }}">
+                                <td>{{ aspecto.actividad }}</td>
+                                <td>
+                                    <span class="tipo-badge {{ 'tipo-positivo' if aspecto.tipo == 'Positivo' else 'tipo-negativo' }}">
+                                        {% if aspecto.tipo == 'Positivo' %}
+                                            ✅ Positivo
+                                        {% else %}
+                                            ❌ Negativo
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="aspecto-badge aspecto-{{ aspecto.aspecto|lower }}">
+                                        {{ aspecto.aspecto }}
+                                    </span>
+                                </td>
+                                <td>{{ aspecto.fuente or 'N/A' }}</td>
+                                <td>{{ aspecto.created_by or 'Anónimo' }}</td>
+                                <td>{{ aspecto.created_at.strftime('%d/%m/%Y') }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('eliminar_aspecto', id=aspecto.id) }}" 
+                                          style="display: inline;"
+                                          onsubmit="return confirm('¿Está seguro de eliminar este aspecto?');">
+                                        <button type="submit" class="delete-btn">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No hay aspectos registrados</h3>
+                    <p>Comience agregando aspectos usando el formulario de la izquierda.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Columna Derecha - Cuadros de entrada rápida -->
+        <div class="column right-column">
+            <div class="quick-input-section">
+                <h2><i class="fas fa-edit"></i> Entrada Rápida</h2>
+                
+                <div class="input-box">
+                    <h3><i class="fas fa-tasks"></i> ACTIVIDAD</h3>
+                    <textarea id="quick-actividad" 
+                              placeholder="Describa la actividad aquí..."
+                              rows="4"
+                              class="quick-textarea"></textarea>
+                </div>
+                
+                <div class="input-box">
+                    <h3><i class="fas fa-balance-scale"></i> TIPO</h3>
+                    <div class="tipo-options">
+                        <button class="tipo-option positivo-option" 
+                                onclick="seleccionarTipo('Positivo')">
+                            <i class="fas fa-thumbs-up"></i> Positivo
+                        </button>
+                        <button class="tipo-option negativo-option" 
+                                onclick="seleccionarTipo('Negativo')">
+                            <i class="fas fa-thumbs-down"></i> Negativo
+                        </button>
+                    </div>
+                    <input type="hidden" id="quick-tipo" value="Positivo">
+                </div>
+                
+                <div class="input-box">
+                    <h3><i class="fas fa-layer-group"></i> ASPECTO</h3>
+                    <div class="aspecto-options">
+                        {% for aspecto in ['POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL'] %}
+                        <button class="aspecto-option" 
+                                onclick="seleccionarAspecto('{{ aspecto }}')"
+                                data-aspecto="{{ aspecto }}">
+                            {{ aspecto }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" id="quick-aspecto" value="ECONOMICO">
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="quick-action-btn" onclick="llenarFormulario()">
+                        <i class="fas fa-magic"></i> Llenar Formulario
+                    </button>
+                    <button class="quick-action-btn secondary" onclick="limpiarEntradaRapida()">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="info-box">
+                <h3><i class="fas fa-info-circle"></i> Instrucciones</h3>
+                <ul class="instructions-list">
+                    <li>Use los cuadros de la derecha para entrada rápida</li>
+                    <li>Haga clic en "Llenar Formulario" para transferir los datos</li>
+                    <li>Complete la fuente si es necesario en el formulario</li>
+                    <li>Revise la tabla central para ver todos los registros</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para FODA Externo */
+    .fodaex-container {
+        padding: 20px;
+    }
+    
+    .columns-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    
+    .column {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .middle-column {
+        grid-column: 2 / 3;
+    }
+    
+    .form-section, .table-section, .quick-input-section {
+        margin-bottom: 25px;
+    }
+    
+    .form-section h2, .table-section h2, .quick-input-section h2 {
+        color: var(--color1);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid var(--color4);
+        font-size: 22px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--color2);
+        font-weight: 600;
+    }
+    
+    .form-input, .form-select {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #e1e5eb;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+    }
+    
+    .form-input:focus, .form-select:focus {
+        border-color: var(--color2);
+        outline: none;
+    }
+    
+    .submit-btn {
+        background-color: var(--color1);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        transition: background-color 0.3s;
+        margin-top: 10px;
+    }
+    
+    .submit-btn:hover {
+        background-color: var(--color2);
+    }
+    
+    /* Estadísticas */
+    .stats-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        border: 1px solid #dee2e6;
+    }
+    
+    .stat-card.positive {
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .stat-card.negative {
+        border-left: 4px solid #f44336;
+    }
+    
+    .stat-number {
+        display: block;
+        font-size: 24px;
+        font-weight: bold;
+        color: var(--color1);
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Tabla */
+    .table-container {
+        overflow-x: auto;
+        margin-top: 15px;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .data-table th {
+        background-color: var(--color2);
+        color: white;
+        padding: 12px;
+        text-align: left;
+        font-weight: 600;
+        border-bottom: 2px solid var(--color1);
+    }
+    
+    .data-table td {
+        padding: 12px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .data-table tr:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .positive-row {
+        background-color: rgba(76, 175, 80, 0.05);
+    }
+    
+    .negative-row {
+        background-color: rgba(244, 67, 54, 0.05);
+    }
+    
+    .tipo-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+    }
+    
+    .tipo-positivo {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+    
+    .tipo-negativo {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+    
+    .aspecto-badge {
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .aspecto-politico { background-color: #e3f2fd; color: #1565c0; }
+    .aspecto-economico { background-color: #f3e5f5; color: #7b1fa2; }
+    .aspecto-social { background-color: #e8f5e9; color: #2e7d32; }
+    .aspecto-tecnologico { background-color: #fff3e0; color: #ef6c00; }
+    .aspecto-ecologico { background-color: #e0f2f1; color: #00695c; }
+    .aspecto-legal { background-color: #fce4ec; color: #ad1457; }
+    
+    .delete-btn {
+        background: none;
+        border: none;
+        color: #dc3545;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    
+    .delete-btn:hover {
+        background-color: #f8d7da;
+    }
+    
+    /* Entrada Rápida */
+    .input-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .input-box h3 {
+        color: var(--color3);
+        margin-bottom: 10px;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .quick-textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        resize: vertical;
+        min-height: 100px;
+        font-family: inherit;
+    }
+    
+    .tipo-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .tipo-option {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    
+    .positivo-option {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+        border: 2px solid #4CAF50;
+    }
+    
+    .negativo-option {
+        background-color: #ffebee;
+        color: #c62828;
+        border: 2px solid #f44336;
+    }
+    
+    .tipo-option.selected {
+        transform: scale(0.98);
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .aspecto-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+    }
+    
+    .aspecto-option {
+        padding: 8px;
+        border: 1px solid #ced4da;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        text-align: center;
+        transition: all 0.3s;
+    }
+    
+    .aspecto-option:hover {
+        background-color: #e9ecef;
+    }
+    
+    .aspecto-option.selected {
+        background-color: var(--color1);
+        color: white;
+        border-color: var(--color1);
+    }
+    
+    .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .quick-action-btn {
+        padding: 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+    
+    .quick-action-btn:first-child {
+        background-color: var(--color1);
+        color: white;
+    }
+    
+    .quick-action-btn.secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .quick-action-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+    }
+    
+    /* Estado vacío */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        color: #dee2e6;
+        margin-bottom: 15px;
+    }
+    
+    /* Info box */
+    .info-box {
+        background: linear-gradient(135deg, #f0f7ff 0%, #e3f2fd 100%);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 20px;
+        border-left: 4px solid var(--color1);
+    }
+    
+    .instructions-list {
+        margin: 10px 0 0 20px;
+    }
+    
+    .instructions-list li {
+        margin-bottom: 8px;
+        color: #495057;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .columns-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .middle-column {
+            grid-column: 1;
+        }
+    }
+</style>
+
+<script>
+    // Variables para seguimiento de selección
+    let tipoSeleccionado = 'Positivo';
+    let aspectoSSeleccionado = 'ECONOMICO';
+    
+    function seleccionarTipo(tipo) {
+        tipoSeleccionado = tipo;
+        
+        // Actualizar UI
+        document.querySelectorAll('.tipo-option').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        
+        if (tipo === 'Positivo') {
+            document.querySelector('.positivo-option').classList.add('selected');
+        } else {
+            document.querySelector('.negativo-option').classList.add('selected');
+        }
+        
+        // Actualizar campo oculto
+        document.getElementById('quick-tipo').value = tipo;
+    }
+    
+    function seleccionarAspecto(aspecto) {
+        aspectoSSeleccionado = aspecto;
+        
+        // Actualizar UI
+        document.querySelectorAll('.aspecto-option').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        
+        document.querySelector(`.aspecto-option[data-aspecto="${aspecto}"]`).classList.add('selected');
+        
+        // Actualizar campo oculto
+        document.getElementById('quick-aspecto').value = aspecto;
+    }
+    
+    function llenarFormulario() {
+        const actividad = document.getElementById('quick-actividad').value;
+        const tipo = tipoSeleccionado;
+        const aspecto = aspectoSSeleccionado;
+        
+        if (!actividad.trim()) {
+            alert('Por favor, ingrese una actividad en el cuadro de entrada rápida.');
+            return;
+        }
+        
+        // Llenar el formulario principal
+        document.getElementById('actividad').value = actividad;
+        document.getElementById('tipo').value = tipo;
+        document.getElementById('aspecto').value = aspecto;
+        
+        // Hacer scroll al formulario
+        document.getElementById('aspectoForm').scrollIntoView({ 
+            behavior: 'smooth' 
+        });
+        
+        // Resaltar el formulario
+        document.getElementById('aspectoForm').style.boxShadow = '0 0 0 3px rgba(27, 64, 121, 0.3)';
+        setTimeout(() => {
+            document.getElementById('aspectoForm').style.boxShadow = '';
+        }, 2000);
+        
+        // Enfocar el campo de fuente
+        document.getElementById('fuente').focus();
+        
+        // Mostrar mensaje de éxito
+        showToast('Formulario llenado exitosamente. Complete la fuente si es necesario.');
+    }
+    
+    function limpiarEntradaRapida() {
+        document.getElementById('quick-actividad').value = '';
+        seleccionarTipo('Positivo');
+        seleccionarAspecto('ECONOMICO');
+    }
+    
+    function showToast(message) {
+        // Crear toast si no existe
+        let toast = document.getElementById('quick-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'quick-toast';
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background: var(--color1);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 1000;
+                display: none;
+                animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(toast);
+        }
+        
+        toast.textContent = message;
+        toast.style.display = 'block';
+        
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+    
+    // Inicializar selecciones
+    document.addEventListener('DOMContentLoaded', function() {
+        seleccionarTipo('Positivo');
+        seleccionarAspecto('ECONOMICO');
+    });
+</script>
+{% endblock %}
