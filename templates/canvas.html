@@ -16,14 +16,13 @@
                     </div>
                     <div class="block-content" id="contenido-{{ loop.index }}">
                         {% for aspecto in aspectos_canva if aspecto.tipo == bloque.nombre %}
-                        <div class="actividad-item" 
-                             style="color: {{ 'green' if 'Positivo:' in aspecto.aspecto else '#ff6b6b' }};">
+                        <div class="actividad-item">
                             • {{ aspecto.actividad }}
                             <span class="actividad-tipo">
                                 {% if 'Positivo:' in aspecto.aspecto %}
-                                    <i class="fas fa-thumbs-up" style="color: green; margin-left: 5px;"></i>
+                                    <i class="fas fa-thumbs-up positivo-icono"></i>
                                 {% else %}
-                                    <i class="fas fa-thumbs-down" style="color: #ff6b6b; margin-left: 5px;"></i>
+                                    <i class="fas fa-thumbs-down negativo-icono"></i>
                                 {% endif %}
                             </span>
                         </div>
@@ -232,7 +231,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        color: white;
+        color: white !important;
     }
     
     .actividad-item:hover {
@@ -242,6 +241,16 @@
     .actividad-tipo {
         font-size: 10px;
         opacity: 0.8;
+        margin-left: 5px;
+    }
+    
+    /* Iconos específicos para positivo y negativo */
+    .positivo-icono {
+        color: #90EE90 !important; /* Verde claro */
+    }
+    
+    .negativo-icono {
+        color: #FFB6C1 !important; /* Rojo claro */
     }
     
     .block-counter {
@@ -851,15 +860,13 @@
         
         if (bloqueEncontrado) {
             const contenido = bloqueEncontrado.querySelector('.block-content');
-            const colorTexto = tipoPositivoNegativo === 'Positivo' ? 'green' : '#ff6b6b';
             const iconoTipo = tipoPositivoNegativo === 'Positivo' ? 
-                '<i class="fas fa-thumbs-up" style="color: green; margin-left: 5px;"></i>' :
-                '<i class="fas fa-thumbs-down" style="color: #ff6b6b; margin-left: 5px;"></i>';
+                '<i class="fas fa-thumbs-up positivo-icono"></i>' :
+                '<i class="fas fa-thumbs-down negativo-icono"></i>';
             
             // Crear elemento para la nueva actividad
             const divActividad = document.createElement('div');
             divActividad.className = 'actividad-item';
-            divActividad.style.color = colorTexto;
             divActividad.innerHTML = `• ${actividad} <span class="actividad-tipo">${iconoTipo}</span>`;
             
             // Agregar al inicio del contenido
