@@ -17,13 +17,13 @@
                     <div class="block-content" id="contenido-{{ loop.index }}">
                         {% for aspecto in aspectos_canva if aspecto.tipo == bloque.nombre %}
                         <div class="actividad-item" 
-                             style="color: {{ 'green' if 'Positivo:' in aspecto.aspecto else '#8B0000' }};">
+                             style="color: {{ 'green' if 'Positivo:' in aspecto.aspecto else '#ff6b6b' }};">
                             • {{ aspecto.actividad }}
                             <span class="actividad-tipo">
                                 {% if 'Positivo:' in aspecto.aspecto %}
                                     <i class="fas fa-thumbs-up" style="color: green; margin-left: 5px;"></i>
                                 {% else %}
-                                    <i class="fas fa-thumbs-down" style="color: #8B0000; margin-left: 5px;"></i>
+                                    <i class="fas fa-thumbs-down" style="color: #ff6b6b; margin-left: 5px;"></i>
                                 {% endif %}
                             </span>
                         </div>
@@ -232,6 +232,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        color: white;
     }
     
     .actividad-item:hover {
@@ -251,16 +252,16 @@
         border-top: 1px solid rgba(255, 255, 255, 0.2);
     }
     
-    /* Colores específicos para cada bloque - Manteniendo la paleta proporcionada */
-    .block1 { background: linear-gradient(135deg, #1B4079 0%, #2a5298 100%); } /* color1 */
-    .block2 { background: linear-gradient(135deg, #4D7C8A 0%, #5a8f9c 100%); } /* color2 */
-    .block3 { background: linear-gradient(135deg, #7F9C96 0%, #90b2aa 100%); } /* color3 */
-    .block4 { background: linear-gradient(135deg, #8FAD88 0%, #a0c098 100%); } /* color4 */
-    .block5 { background: linear-gradient(135deg, #CBDF90 0%, #d5e99b 100%); } /* color5 */
-    .block6 { background: linear-gradient(135deg, #1B4079 0%, #3a62a9 100%); } /* color1 variante */
-    .block7 { background: linear-gradient(135deg, #4D7C8A 0%, #6a9faf 100%); } /* color2 variante */
-    .block8 { background: linear-gradient(135deg, #7F9C96 0%, #98c2ba 100%); } /* color3 variante */
-    .block9 { background: linear-gradient(135deg, #8FAD88 0%, #b0d0a8 100%); } /* color4 variante */
+    /* Colores específicos para cada bloque - Paleta azul con contraste */
+    .block1 { background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%); }
+    .block2 { background: linear-gradient(135deg, #1e3799 0%, #4a69bd 100%); }
+    .block3 { background: linear-gradient(135deg, #4a69bd 0%, #6a89cc 100%); }
+    .block4 { background: linear-gradient(135deg, #6a89cc 0%, #82ccdd 100%); }
+    .block5 { background: linear-gradient(135deg, #82ccdd 0%, #a5b1c2 100%); }
+    .block6 { background: linear-gradient(135deg, #0c2461 0%, #3c6382 100%); }
+    .block7 { background: linear-gradient(135deg, #1e3799 0%, #5a8f9c 100%); }
+    .block8 { background: linear-gradient(135deg, #4a69bd 0%, #78e08f 100%); }
+    .block9 { background: linear-gradient(135deg, #6a89cc 0%, #b8e994 100%); }
     
     .canvas-actions {
         display: flex;
@@ -283,17 +284,17 @@
     }
     
     .action-button.save {
-        background-color: #1B4079;
+        background-color: #0c2461;
         color: white;
     }
     
     .action-button.export {
-        background-color: #4D7C8A;
+        background-color: #1e3799;
         color: white;
     }
     
     .action-button.clean {
-        background-color: #8FAD88;
+        background-color: #4a69bd;
         color: white;
     }
     
@@ -327,7 +328,7 @@
         display: block;
         font-size: 20px;
         font-weight: bold;
-        color: #1B4079;
+        color: #0c2461;
     }
     
     .stat-value.positive {
@@ -335,7 +336,7 @@
     }
     
     .stat-value.negative {
-        color: #f44336;
+        color: #ff6b6b;
     }
     
     /* Estilos para la columna derecha (Formulario) */
@@ -351,10 +352,10 @@
     }
     
     .quick-input-section h2 {
-        color: #1B4079;
+        color: #0c2461;
         margin-bottom: 20px;
         padding-bottom: 10px;
-        border-bottom: 2px solid #8FAD88;
+        border-bottom: 2px solid #4a69bd;
         font-size: 22px;
     }
     
@@ -367,7 +368,7 @@
     }
     
     .input-box h3 {
-        color: #4D7C8A;
+        color: #1e3799;
         margin-bottom: 10px;
         font-size: 16px;
         display: flex;
@@ -387,9 +388,9 @@
     }
     
     .quick-textarea:focus {
-        border-color: #4D7C8A;
+        border-color: #4a69bd;
         outline: none;
-        box-shadow: 0 0 0 3px rgba(77, 124, 138, 0.1);
+        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
     }
     
     .tipo-options {
@@ -420,7 +421,7 @@
     }
     
     .negativo-option {
-        border-color: #f44336;
+        border-color: #ff6b6b;
         color: #c62828;
         background-color: #ffebee;
     }
@@ -461,19 +462,19 @@
     
     .aspecto-option:hover {
         background-color: #e9ecef;
-        border-color: #4D7C8A;
+        border-color: #4a69bd;
     }
     
     .aspecto-option.selected {
-        background-color: #1B4079;
+        background-color: #0c2461;
         color: white;
-        border-color: #1B4079;
+        border-color: #0c2461;
         font-weight: bold;
     }
     
     .bloque-number {
         background-color: rgba(255, 255, 255, 0.2);
-        color: #1B4079;
+        color: #0c2461;
         width: 24px;
         height: 24px;
         border-radius: 50%;
@@ -486,7 +487,7 @@
     
     .aspecto-option.selected .bloque-number {
         background-color: white;
-        color: #1B4079;
+        color: #0c2461;
     }
     
     .bloque-name {
@@ -502,9 +503,9 @@
     }
     
     .form-input:focus {
-        border-color: #4D7C8A;
+        border-color: #4a69bd;
         outline: none;
-        box-shadow: 0 0 0 3px rgba(77, 124, 138, 0.1);
+        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
     }
     
     .quick-actions {
@@ -529,12 +530,12 @@
     }
     
     .quick-action-btn.save {
-        background-color: #1B4079;
+        background-color: #0c2461;
         color: white;
     }
     
     .quick-action-btn.secondary {
-        background-color: #6c757d;
+        background-color: #6a89cc;
         color: white;
     }
     
@@ -549,11 +550,11 @@
         padding: 15px;
         border-radius: 8px;
         margin-top: 20px;
-        border-left: 4px solid #1B4079;
+        border-left: 4px solid #0c2461;
     }
     
     .info-box h3 {
-        color: #1B4079;
+        color: #0c2461;
         margin-bottom: 10px;
         display: flex;
         align-items: center;
@@ -580,7 +581,7 @@
     }
     
     .stats-section h3 {
-        color: #1B4079;
+        color: #0c2461;
         margin-bottom: 15px;
         display: flex;
         align-items: center;
@@ -618,7 +619,7 @@
     
     .bloque-stat-fill {
         height: 100%;
-        background: linear-gradient(90deg, #7F9C96 0%, #4D7C8A 100%);
+        background: linear-gradient(90deg, #4a69bd 0%, #6a89cc 100%);
         border-radius: 4px;
         transition: width 0.5s ease;
     }
@@ -627,7 +628,7 @@
         width: 30px;
         text-align: right;
         font-weight: bold;
-        color: #1B4079;
+        color: #0c2461;
     }
     
     /* Responsive */
@@ -850,10 +851,10 @@
         
         if (bloqueEncontrado) {
             const contenido = bloqueEncontrado.querySelector('.block-content');
-            const colorTexto = tipoPositivoNegativo === 'Positivo' ? 'green' : '#8B0000';
+            const colorTexto = tipoPositivoNegativo === 'Positivo' ? 'green' : '#ff6b6b';
             const iconoTipo = tipoPositivoNegativo === 'Positivo' ? 
                 '<i class="fas fa-thumbs-up" style="color: green; margin-left: 5px;"></i>' :
-                '<i class="fas fa-thumbs-down" style="color: #8B0000; margin-left: 5px;"></i>';
+                '<i class="fas fa-thumbs-down" style="color: #ff6b6b; margin-left: 5px;"></i>';
             
             // Crear elemento para la nueva actividad
             const divActividad = document.createElement('div');
@@ -917,7 +918,7 @@
         if (tipo === 'success') {
             alerta.style.backgroundColor = '#4CAF50';
         } else {
-            alerta.style.backgroundColor = '#f44336';
+            alerta.style.backgroundColor = '#ff6b6b';
         }
         
         alerta.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${mensaje}`;
