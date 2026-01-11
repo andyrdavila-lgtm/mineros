@@ -1,960 +1,919 @@
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
-import os
-import sys
-import time
-from functools import wraps
-from sqlalchemy.exc import OperationalError, ProgrammingError
-from sqlalchemy import or_, and_
+{% extends "inicio.html" %}
 
-app = Flask(__name__)
-
-# Configuración
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
-
-# Configuración de base de datos - Versión robusta
-def get_database_url():
-    for env_var in ['DATABASE_URL', 'POSTGRESQL_URL', 'PG_URL', 'POSTGRES_URL']:
-        db_url = os.environ.get(env_var)
-        if db_url:
-            print(f"📦 Encontrada variable {env_var}: {db_url[:50]}...")
-            if db_url.startswith('postgres://'):
-                db_url = db_url.replace('postgres://', 'postgresql://', 1)
-            return db_url
+{% block content %}
+<div class="dashboard-main-container">
+    <h1 class="content-title">
+        <i class="fas fa-chart-line"></i> Dashboard Administrativo - Actividades por Aspecto
+    </h1>
     
-    print("⚠️  ADVERTENCIA: No se encontró DATABASE_URL. Usando SQLite.")
-    return 'sqlite:///app.db'
-
-app.config['SQLALCHEMY_DATABASE_URI'] = get_database_url()
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-
-# ==================== MODELOS DE BASE DE DATOS ====================
-
-# Modelo de usuario
-class User(db.Model):
-    __tablename__ = 'usuarios'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-    rol = db.Column(db.String(20), nullable=False, default='user')
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
-    
-    def check_password(self, password):
-        return check_password_hash(self.password, password)
-
-# Tabla: Aspectos Ambientales
-class AspectoAmbiental(db.Model):
-    __tablename__ = 'aspectos_ambientales'
-    id = db.Column(db.Integer, primary_key=True)
-    actividad = db.Column(db.String(500), nullable=False)
-    tipo = db.Column(db.String(200), nullable=False)  # Para FODA: 'Positivo' o 'Negativo'
-    aspecto = db.Column(db.String(500), nullable=False)  # Para FODA: POLITICO, ECONOMICO, etc.
-    fuente = db.Column(db.String(200), nullable=False)  # 'foda_ext' o 'canva' o 'foda_int'
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_by = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
-    
-    # Relación
-    creador = db.relationship('User', backref=db.backref('aspectos', lazy=True))
-
-# ==================== DECORADORES DE AUTENTICACIÓN ====================
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        user = User.query.get(session['user_id'])
-        if user.rol != 'admin':
-            return redirect(url_for('inicio'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-# ==================== FUNCIÓN DE INICIALIZACIÓN DE BD ====================
-
-def initialize_database():
-    """Intenta inicializar la base de datos con reintentos"""
-    max_retries = 3
-    retry_delay = 2
-    
-    for attempt in range(max_retries):
-        try:
-            print(f"🔄 Intento {attempt + 1} de {max_retries} para inicializar BD...")
+    <!-- Filtros -->
+    <div class="filtros-section">
+        <div class="filtros-header">
+            <h2><i class="fas fa-filter"></i> Filtros de Búsqueda</h2>
+            <button class="btn-limpiar" onclick="limpiarFiltros()">
+                <i class="fas fa-eraser"></i> Limpiar Filtros
+            </button>
+        </div>
+        
+        <div class="filtros-grid">
+            <!-- Filtro por Tipo -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-balance-scale"></i> Tipo de Actividad</h3>
+                <div class="tipo-filtro-options">
+                    <button class="tipo-filtro-btn all-tipo selected" onclick="seleccionarFiltroTipo('all')">
+                        Todos
+                    </button>
+                    <button class="tipo-filtro-btn positivo" onclick="seleccionarFiltroTipo('Positivo')">
+                        <i class="fas fa-thumbs-up"></i> Positivas
+                    </button>
+                    <button class="tipo-filtro-btn negativo" onclick="seleccionarFiltroTipo('Negativo')">
+                        <i class="fas fa-thumbs-down"></i> Negativas
+                    </button>
+                </div>
+            </div>
             
-            # Crear todas las tablas
-            db.create_all()
-            print("✅ Tablas creadas exitosamente")
+            <!-- Filtro por Bloque CANVA -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-layer-group"></i> Bloque/Aspecto</h3>
+                <select id="filtro-bloque" class="select-filtro" onchange="aplicarFiltros()">
+                    <option value="all">Todos los bloques</option>
+                    {% for bloque in bloques_canva %}
+                    <option value="{{ bloque.nombre }}">{{ loop.index }}. {{ bloque.nombre }}</option>
+                    {% endfor %}
+                    <!-- Opciones para FODA -->
+                    <option value="POLITICO">POLITICO</option>
+                    <option value="ECONOMICO">ECONOMICO</option>
+                    <option value="SOCIAL">SOCIAL</option>
+                    <option value="TECNOLOGICO">TECNOLOGICO</option>
+                    <option value="ECOLOGICO">ECOLOGICO</option>
+                    <option value="LEGAL">LEGAL</option>
+                </select>
+            </div>
             
-            # Lista de usuarios a crear
-            usuarios = [
-                # Administradores (4 usuarios)
-                {"username": "MINERA.ADMIN", "password": "MINERA.ADMIN", "rol": "admin"},
-                {"username": "ANDRES", "password": "ANDRES", "rol": "admin"},
-                {"username": "RICARDO", "password": "RICARDO", "rol": "admin"},
-                {"username": "ALEJANDRO", "password": "ALEJANDRO", "rol": "admin"},
-                
-                # Usuarios normales (5 usuarios)
-                {"username": "Minera1", "password": "Minera1", "rol": "user"},
-                {"username": "Minera2", "password": "Minera2", "rol": "user"},
-                {"username": "Minera3", "password": "Minera3", "rol": "user"},
-                {"username": "Minera4", "password": "Minera4", "rol": "user"},
-                {"username": "Minera5", "password": "Minera5", "rol": "user"},
-            ]
+            <!-- Filtro por Fuente -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-database"></i> Fuente</h3>
+                <select id="filtro-fuente" class="select-filtro" onchange="aplicarFiltros()">
+                    <option value="all">Todas las fuentes</option>
+                    <option value="canva">CANVA</option>
+                    <option value="foda_ext">FODA Externo</option>
+                    <option value="foda_int">FODA Interno</option>
+                    <option value="manual">Manual</option>
+                    <option value="importado">Importado</option>
+                </select>
+            </div>
             
-            usuarios_creados = 0
-            usuarios_existentes = 0
-            
-            # Crear cada usuario si no existe
-            for usuario_info in usuarios:
-                username = usuario_info["username"]
-                user_exists = User.query.filter_by(username=username).first()
-                
-                if not user_exists:
-                    nuevo_usuario = User(
-                        username=username,
-                        rol=usuario_info["rol"]
-                    )
-                    nuevo_usuario.set_password(usuario_info["password"])
-                    db.session.add(nuevo_usuario)
-                    usuarios_creados += 1
-                    print(f"  ✅ Usuario '{username}' creado (rol: {usuario_info['rol']})")
-                else:
-                    usuarios_existentes += 1
-            
-            # NO crear datos de ejemplo - la BD se alimentará desde la aplicación
-            
-            # Commit todos los cambios
-            if usuarios_creados > 0:
-                db.session.commit()
-                print(f"✅ {usuarios_creados} usuarios nuevos creados")
-            
-            print(f"📊 Total de usuarios en sistema: {User.query.count()}")
-            print(f"📊 Total de aspectos en sistema: {AspectoAmbiental.query.count()}")
-            
-            return True
-            
-        except OperationalError as e:
-            print(f"❌ Error de conexión (Intento {attempt + 1}): {e}")
-            if attempt < max_retries - 1:
-                time.sleep(retry_delay)
-            else:
-                print("🚨 No se pudo conectar a la base de datos después de varios intentos")
-                return False
-                
-        except Exception as e:
-            print(f"❌ Error inesperado: {type(e).__name__}: {e}")
-            db.session.rollback()
-            return False
-    
-    return False
-
-# ==================== RUTAS PRINCIPALES ====================
-
-@app.route('/')
-def index():
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        
-        try:
-            user = User.query.filter_by(username=username).first()
-            
-            if user and user.check_password(password):
-                session['user_id'] = user.id
-                session['username'] = user.username
-                session['rol'] = user.rol
-                
-                if user.rol == 'admin':
-                    return redirect(url_for('admin'))
-                else:
-                    return redirect(url_for('inicio'))
-            else:
-                return render_template('inicio.html', error='Usuario o contraseña incorrectos')
-        except Exception as e:
-            print(f"Error en login: {e}")
-            return render_template('inicio.html', error='Error de conexión a la base de datos')
-    
-    return render_template('inicio.html')
-
-@app.route('/inicio')
-@login_required
-def inicio():
-    # Obtener estadísticas para el dashboard
-    total_aspectos = AspectoAmbiental.query.count()
-    aspectos_recientes = AspectoAmbiental.query.order_by(
-        AspectoAmbiental.created_at.desc()
-    ).limit(5).all()
-    
-    # Obtener actividades del CANVA recientes
-    aspectos_canva = AspectoAmbiental.query.filter_by(fuente='canva').order_by(
-        AspectoAmbiental.created_at.desc()
-    ).limit(5).all()
-    
-    # Obtener actividades de FODA Externo recientes
-    aspectos_foda = AspectoAmbiental.query.filter_by(fuente='foda_ext').order_by(
-        AspectoAmbiental.created_at.desc()
-    ).limit(5).all()
-    
-    return render_template('inicio.html', 
-                         total_aspectos=total_aspectos,
-                         aspectos_recientes=aspectos_recientes,
-                         aspectos_canva=aspectos_canva,
-                         aspectos_foda=aspectos_foda)
-
-@app.route('/admin')
-@admin_required
-def admin():
-    usuarios = User.query.all()
-    aspectos = AspectoAmbiental.query.order_by(AspectoAmbiental.created_at.desc()).all()
-    
-    # Estadísticas detalladas
-    total_actividades_canva = AspectoAmbiental.query.filter_by(fuente='canva').count()
-    total_actividades_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').count()
-    total_actividades_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').count()
-    
-    return render_template('admin.html', 
-                         usuarios=usuarios, 
-                         aspectos=aspectos,
-                         total_usuarios=len(usuarios),
-                         total_aspectos=len(aspectos),
-                         total_canva=total_actividades_canva,
-                         total_foda_ext=total_actividades_foda_ext,
-                         total_foda_int=total_actividades_foda_int)
-
-# ==================== RUTAS PARA ASPECTOS AMBIENTALES ====================
-
-@app.route('/aspectos')
-@login_required
-def listar_aspectos():
-    """Lista todos los aspectos ambientales"""
-    aspectos = AspectoAmbiental.query.order_by(AspectoAmbiental.created_at.desc()).all()
-    return render_template('aspectos.html', aspectos=aspectos)
-
-@app.route('/aspectos/crear', methods=['GET', 'POST'])
-@login_required
-def crear_aspecto():
-    """Crear un nuevo aspecto ambiental"""
-    if request.method == 'POST':
-        try:
-            nuevo_aspecto = AspectoAmbiental(
-                actividad=request.form.get('actividad'),
-                tipo=request.form.get('tipo'),
-                aspecto=request.form.get('aspecto'),
-                fuente=request.form.get('fuente'),
-                created_by=session['user_id']
-            )
-            db.session.add(nuevo_aspecto)
-            db.session.commit()
-            return redirect(url_for('listar_aspectos'))
-        except Exception as e:
-            db.session.rollback()
-            return render_template('crear_aspecto.html', error=str(e))
-    
-    return render_template('crear_aspecto.html')
-
-@app.route('/aspectos/<int:id>/editar', methods=['GET', 'POST'])
-@login_required
-def editar_aspecto(id):
-    """Editar un aspecto ambiental existente"""
-    aspecto = AspectoAmbiental.query.get_or_404(id)
-    
-    if request.method == 'POST':
-        try:
-            aspecto.actividad = request.form.get('actividad')
-            aspecto.tipo = request.form.get('tipo')
-            aspecto.aspecto = request.form.get('aspecto')
-            aspecto.fuente = request.form.get('fuente')
-            db.session.commit()
-            return redirect(url_for('listar_aspectos'))
-        except Exception as e:
-            db.session.rollback()
-            return render_template('editar_aspecto.html', aspecto=aspecto, error=str(e))
-    
-    return render_template('editar_aspecto.html', aspecto=aspecto)
-
-@app.route('/aspectos/<int:id>/eliminar', methods=['POST'])
-@login_required
-def eliminar_aspecto(id):
-    """Eliminar un aspecto ambiental"""
-    if session.get('rol') != 'admin':
-        return jsonify({'error': 'No autorizado'}), 403
-    
-    aspecto = AspectoAmbiental.query.get_or_404(id)
-    db.session.delete(aspecto)
-    db.session.commit()
-    return redirect(url_for('listar_aspectos'))
-
-# API para aspectos ambientales (JSON)
-@app.route('/api/aspectos')
-@login_required
-def api_aspectos():
-    """API para obtener aspectos en formato JSON"""
-    # Filtrar por fuente si se especifica
-    fuente = request.args.get('fuente')
-    
-    query = AspectoAmbiental.query
-    
-    if fuente:
-        query = query.filter_by(fuente=fuente)
-    
-    aspectos = query.order_by(AspectoAmbiental.created_at.desc()).all()
-    
-    return jsonify([{
-        'id': a.id,
-        'actividad': a.actividad,
-        'tipo': a.tipo,
-        'aspecto': a.aspecto,
-        'fuente': a.fuente,
-        'created_at': a.created_at.isoformat() if a.created_at else None,
-        'updated_at': a.updated_at.isoformat() if a.updated_at else None,
-        'creador': a.creador.username if a.creador else None
-    } for a in aspectos])
-
-# ==================== RUTAS ESPECÍFICAS PARA FODA EXTERNO ====================
-
-@app.route('/fodaext')
-@login_required
-def fodaext():
-    """Página para análisis FODA Externo"""
-    try:
-        # Obtener aspectos para FODA Externo (fuente = 'foda_ext') para la matriz
-        aspectos_lista = AspectoAmbiental.query.filter_by(
-            fuente='foda_ext'
-        ).order_by(
-            AspectoAmbiental.aspecto,  # Primero orden por aspecto
-            AspectoAmbiental.created_at.desc()  # Luego por fecha
-        ).all()
-        
-        # Obtener historial mixto (foda_ext y canva) - últimos 20
-        historial_actividades = AspectoAmbiental.query.filter(
-            or_(
-                AspectoAmbiental.fuente == 'foda_ext',
-                AspectoAmbiental.fuente == 'canva'
-            )
-        ).order_by(
-            AspectoAmbiental.created_at.desc()
-        ).limit(20).all()
-        
-        # Crear diccionario para estadísticas
-        estadisticas = {
-            'total': len(aspectos_lista),
-            'positivos': len([a for a in aspectos_lista if a.tipo == 'Positivo']),
-            'negativos': len([a for a in aspectos_lista if a.tipo == 'Negativo']),
-            'historial_total': len(historial_actividades)
-        }
-        
-        return render_template('fodaext.html', 
-                             aspectos_lista=aspectos_lista,
-                             historial_actividades=historial_actividades,
-                             estadisticas=estadisticas)
-        
-    except Exception as e:
-        print(f"Error en fodaext: {e}")
-        return render_template('fodaext.html', 
-                             aspectos_lista=[], 
-                             historial_actividades=[],
-                             estadisticas={'total': 0, 'positivos': 0, 'negativos': 0, 'historial_total': 0})
-
-@app.route('/guardar_foda_ext', methods=['POST'])
-@login_required
-def guardar_foda_ext():
-    """Guardar un aspecto para FODA Externo - Versión mejorada"""
-    try:
-        if not request.is_json:
-            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
-        
-        data = request.get_json()
-        
-        # Validar campos requeridos
-        if not data.get('actividad'):
-            return jsonify({'success': False, 'message': 'La actividad es obligatoria'}), 400
-        
-        if not data.get('tipo') or data.get('tipo') not in ['Positivo', 'Negativo']:
-            return jsonify({'success': False, 'message': 'Tipo inválido'}), 400
-        
-        if not data.get('aspecto') or data.get('aspecto') not in [
-            'POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL'
-        ]:
-            return jsonify({'success': False, 'message': 'Aspecto inválido'}), 400
-        
-        # Crear nuevo aspecto
-        nuevo_aspecto = AspectoAmbiental(
-            actividad=data['actividad'].strip(),
-            tipo=data['tipo'],
-            aspecto=data['aspecto'],
-            fuente='foda_ext',  # Siempre foda_ext para esta funcionalidad
-            created_by=session['user_id']
-        )
-        
-        db.session.add(nuevo_aspecto)
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'message': '✅ Actividad FODA guardada correctamente',
-            'data': {
-                'id': nuevo_aspecto.id,
-                'actividad': nuevo_aspecto.actividad,
-                'tipo': nuevo_aspecto.tipo,
-                'aspecto': nuevo_aspecto.aspecto,
-                'fuente': nuevo_aspecto.fuente,
-                'created_at': nuevo_aspecto.created_at.strftime('%d/%m/%Y %H:%M')
-            }
-        })
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error al guardar actividad fodaext: {e}")
-        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
-
-@app.route('/guardar_matriz_foda', methods=['POST'])
-@login_required
-def guardar_matriz_foda():
-    """Guardar actividades arrastradas desde CANVA a la matriz FODA"""
-    try:
-        if not request.is_json:
-            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
-        
-        data = request.get_json()
-        actividades = data.get('actividades', [])
-        
-        if not actividades:
-            return jsonify({'success': False, 'message': 'No hay actividades para guardar'}), 400
-        
-        actividades_guardadas = 0
-        
-        for actividad_data in actividades:
-            # Validar campos requeridos
-            if not actividad_data.get('actividad'):
-                continue
-            
-            if not actividad_data.get('tipo') or actividad_data.get('tipo') not in ['Positivo', 'Negativo']:
-                continue
-            
-            if not actividad_data.get('aspecto_nuevo') or actividad_data.get('aspecto_nuevo') not in [
-                'POLITICO', 'ECONOMICO', 'SOCIAL', 'TECNOLOGICO', 'ECOLOGICO', 'LEGAL'
-            ]:
-                continue
-            
-            # Crear nuevo registro en la tabla de AspectoAmbiental
-            nueva_actividad = AspectoAmbiental(
-                actividad=actividad_data['actividad'],
-                tipo=actividad_data['tipo'],
-                aspecto=actividad_data['aspecto_nuevo'],
-                fuente='foda_ext',
-                created_by=session['user_id']
-            )
-            db.session.add(nueva_actividad)
-            actividades_guardadas += 1
-        
-        if actividades_guardadas > 0:
-            db.session.commit()
-            return jsonify({
-                'success': True, 
-                'message': f'✅ {actividades_guardadas} actividades guardadas en la matriz FODA'
-            })
-        else:
-            return jsonify({
-                'success': False, 
-                'message': 'No se pudo guardar ninguna actividad (datos inválidos)'
-            }), 400
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error al guardar matriz FODA: {str(e)}")
-        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
-
-@app.route('/eliminar_foda_ext/<int:id>', methods=['POST'])
-@login_required
-def eliminar_foda_ext(id):
-    """Eliminar una actividad de FODA Externo"""
-    try:
-        # Verificar que el usuario es admin o el creador del registro
-        aspecto = AspectoAmbiental.query.get_or_404(id)
-        
-        # Solo admin puede eliminar (o el creador en algunos casos)
-        if session.get('rol') != 'admin' and aspecto.created_by != session.get('user_id'):
-            return jsonify({'success': False, 'message': 'No autorizado'}), 403
-        
-        # Verificar que es un registro de FODA Externo
-        if aspecto.fuente != 'foda_ext':
-            return jsonify({'success': False, 'message': 'No es un registro de FODA Externo'}), 400
-        
-        db.session.delete(aspecto)
-        db.session.commit()
-        
-        return jsonify({'success': True, 'message': 'Actividad eliminada correctamente'})
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error al eliminar fodaext: {e}")
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-# ==================== RUTAS ESPECÍFICAS PARA FODA INTERNO ====================
-
-@app.route('/fodaint')
-@login_required
-def fodaint():
-    """Página para análisis FODA Interno"""
-    # Similar a fodaext pero para interno
-    aspectos_lista = AspectoAmbiental.query.filter_by(
-        fuente='foda_int'
-    ).order_by(AspectoAmbiental.created_at.desc()).all()
-    
-    return render_template('fodaint.html', aspectos_lista=aspectos_lista)
-
-# ==================== RUTAS ESPECÍFICAS PARA FODA CRUZADO ====================
-
-@app.route('/cruzado')
-@login_required
-def cruzado():
-    """Página para análisis FODA Cruzado"""
-    # Aquí podríamos combinar datos de foda_int y foda_ext
-    aspectos_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').all()
-    aspectos_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').all()
-    
-    return render_template('cruzado.html', 
-                         aspectos_foda_ext=aspectos_foda_ext,
-                         aspectos_foda_int=aspectos_foda_int)
-
-# ==================== RUTAS ESPECÍFICAS PARA CANVA ====================
-
-@app.route('/canvas')
-@login_required
-def canvas():
-    # Definir los bloques del CANVA
-    bloques_canva = [
-        {'nombre': 'Mapeo de Actores y Comunidades Afectadas', 'icono': 'fas fa-users'},
-        {'nombre': 'Propuesta de Valor', 'icono': 'fas fa-gem'},
-        {'nombre': 'Canales', 'icono': 'fas fa-broadcast-tower'},
-        {'nombre': 'Relación con Actores', 'icono': 'fas fa-handshake'},
-        {'nombre': 'Fuentes de Ingreso', 'icono': 'fas fa-money-bill-wave'},
-        {'nombre': 'Recursos Clave', 'icono': 'fas fa-tools'},
-        {'nombre': 'Actividades Clave', 'icono': 'fas fa-tasks'},
-        {'nombre': 'Socios Clave', 'icono': 'fas fa-handshake'},
-        {'nombre': 'Estructura de Costes', 'icono': 'fas fa-calculator'}
-    ]
-    
-    # Obtener actividades con fuente='canva'
-    aspectos_canva = AspectoAmbiental.query.filter_by(fuente='canva').order_by(
-        AspectoAmbiental.created_at.desc()
-    ).all()
-    
-    # Obtener estadísticas
-    total_actividades = AspectoAmbiental.query.filter_by(fuente='canva').count()
-    
-    # Contar positivas y negativas basado en el campo "aspecto"
-    positivas = AspectoAmbiental.query.filter(
-        AspectoAmbiental.fuente == 'canva',
-        AspectoAmbiental.aspecto.like('Positivo:%')
-    ).count()
-    
-    negativas = AspectoAmbiental.query.filter(
-        AspectoAmbiental.fuente == 'canva',
-        AspectoAmbiental.aspecto.like('Negativo:%')
-    ).count()
-    
-    return render_template('canvas.html',
-                         bloques_canva=bloques_canva,
-                         aspectos_canva=aspectos_canva,
-                         total_actividades=total_actividades,
-                         positivas=positivas,
-                         negativas=negativas)
-
-@app.route('/guardar_actividad_canva', methods=['POST'])
-@login_required
-def guardar_actividad_canva():
-    """Guardar una actividad del CANVA"""
-    try:
-        if not request.is_json:
-            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
-        
-        data = request.get_json()
-        
-        # Validar campos requeridos
-        if not data.get('actividad'):
-            return jsonify({'success': False, 'message': 'La actividad es obligatoria'}), 400
-        
-        if not data.get('tipo'):
-            return jsonify({'success': False, 'message': 'El tipo de bloque es obligatorio'}), 400
-        
-        if not data.get('aspecto'):
-            return jsonify({'success': False, 'message': 'El aspecto (Positivo/Negativo) es obligatorio'}), 400
-        
-        # Crear nuevo aspecto ambiental específico para CANVA
-        nuevo_aspecto = AspectoAmbiental(
-            actividad=data['actividad'].strip(),
-            tipo=data['tipo'],  # Este será el bloque CANVA (ej: "Mapeo de Actores...")
-            aspecto=data['aspecto'],  # Este será "Positivo: ..." o "Negativo: ..."
-            fuente='canva',  # Marcamos que viene del CANVA
-            created_by=session['user_id']
-        )
-        
-        db.session.add(nuevo_aspecto)
-        db.session.commit()
-        
-        return jsonify({
-            'success': True,
-            'message': '✅ Actividad CANVA guardada correctamente',
-            'data': {
-                'id': nuevo_aspecto.id,
-                'actividad': nuevo_aspecto.actividad,
-                'tipo': nuevo_aspecto.tipo,
-                'aspecto': nuevo_aspecto.aspecto,
-                'fuente': nuevo_aspecto.fuente,
-                'created_at': nuevo_aspecto.created_at.strftime('%d/%m/%Y %H:%M')
-            }
-        })
-        
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error al guardar actividad canva: {e}")
-        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
-
-@app.route('/limpiar_canva', methods=['POST'])
-@login_required
-def limpiar_canva():
-    """Limpiar todas las actividades del CANVA (solo administradores)"""
-    # Solo administradores pueden limpiar el CANVA
-    if session.get('rol') != 'admin':
-        return jsonify({'success': False, 'message': 'No autorizado. Solo administradores pueden limpiar el CANVA.'}), 403
-    
-    try:
-        # Eliminar todas las actividades con fuente='canva'
-        num_eliminadas = AspectoAmbiental.query.filter_by(fuente='canva').count()
-        AspectoAmbiental.query.filter_by(fuente='canva').delete()
-        db.session.commit()
-        return jsonify({
-            'success': True, 
-            'message': f'✅ CANVA limpiado correctamente ({num_eliminadas} actividades eliminadas)'
-        })
-    except Exception as e:
-        db.session.rollback()
-        print(f"Error al limpiar canva: {e}")
-        return jsonify({'success': False, 'message': str(e)}), 500
-
-# ==================== RUTAS ADICIONALES ====================
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('login'))
-
-# ==================== RUTAS DE ADMINISTRACIÓN Y SISTEMA ====================
-
-@app.route('/init-db')
-def init_db():
-    """Inicializar base de datos"""
-    try:
-        if initialize_database():
-            usuarios = User.query.all()
-            aspectos = AspectoAmbiental.query.all()
-            
-            html_response = '''
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Base de Datos Inicializada</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <style>
-                    * {
-                        box-sizing: border-box;
-                        margin: 0;
-                        padding: 0;
-                    }
-                    
-                    body {
-                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                        background: linear-gradient(135deg, #1B4079 0%, #4D7C8A 100%);
-                        min-height: 100vh;
-                        padding: 20px;
-                        color: white;
-                        line-height: 1.6;
-                    }
-                    
-                    .container {
-                        max-width: 800px;
-                        margin: 0 auto;
-                        background: rgba(255, 255, 255, 0.1);
-                        backdrop-filter: blur(10px);
-                        border-radius: 15px;
-                        padding: 20px;
-                        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                    }
-                    
-                    h1 { 
-                        color: #CBDF90; 
-                        text-align: center;
-                        margin-bottom: 20px;
-                        font-size: 1.8rem;
-                    }
-                    
-                    .success { 
-                        background: rgba(76, 175, 80, 0.2);
-                        border: 2px solid #4CAF50;
-                        border-radius: 10px;
-                        padding: 15px;
-                        margin: 20px 0;
-                    }
-                    
-                    .stats-grid {
-                        display: grid;
-                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-                        gap: 15px;
-                        margin: 20px 0;
-                    }
-                    
-                    .stat-card {
-                        background: rgba(255, 255, 255, 0.1);
-                        padding: 15px;
-                        border-radius: 8px;
-                        text-align: center;
-                        transition: transform 0.3s;
-                    }
-                    
-                    .stat-card:hover {
-                        transform: translateY(-5px);
-                        background: rgba(255, 255, 255, 0.15);
-                    }
-                    
-                    .stat-number {
-                        font-size: 2rem;
-                        font-weight: bold;
-                        display: block;
-                        margin-bottom: 5px;
-                        color: #CBDF90;
-                    }
-                    
-                    .stat-label {
-                        font-size: 0.9rem;
-                        opacity: 0.9;
-                    }
-                    
-                    .btn {
-                        display: block;
-                        width: 100%;
-                        background: #4CAF50;
-                        color: white;
-                        text-decoration: none;
-                        padding: 15px;
-                        border-radius: 8px;
-                        margin: 25px 0;
-                        text-align: center;
-                        font-weight: bold;
-                        font-size: 1.1rem;
-                        transition: background 0.3s, transform 0.3s;
-                        border: none;
-                        cursor: pointer;
-                    }
-                    
-                    .btn:hover { 
-                        background: #45a049;
-                        transform: translateY(-2px);
-                    }
-                    
-                    .info-box {
-                        background: rgba(255, 193, 7, 0.2);
-                        border: 2px solid #FFC107;
-                        border-radius: 10px;
-                        padding: 15px;
-                        margin-top: 20px;
-                    }
-                    
-                    @media (max-width: 768px) {
-                        .container {
-                            padding: 15px;
-                            margin: 10px;
-                        }
-                        
-                        h1 {
-                            font-size: 1.5rem;
-                        }
-                        
-                        .stats-grid {
-                            grid-template-columns: 1fr;
-                        }
-                        
-                        .stat-number {
-                            font-size: 1.8rem;
-                        }
-                    }
-                    
-                    @media (max-width: 480px) {
-                        body {
-                            padding: 10px;
-                        }
-                        
-                        .container {
-                            padding: 12px;
-                        }
-                        
-                        h1 {
-                            font-size: 1.3rem;
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="container">
-                    <h1>✅ Base de Datos Inicializada</h1>
-                    
-                    <div class="success">
-                        <h2 style="margin-bottom: 10px;">Sistema CURIMINING Listo</h2>
-                        <p>La base de datos ha sido inicializada exitosamente.</p>
+            <!-- Filtro por Fecha -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-calendar-alt"></i> Rango de Fechas</h3>
+                <div class="fecha-filtro">
+                    <div class="fecha-input">
+                        <label for="fecha-desde">Desde:</label>
+                        <input type="date" id="fecha-desde" class="date-input" onchange="aplicarFiltros()">
                     </div>
-                    
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <span class="stat-number">''' + str(len(usuarios)) + '''</span>
-                            <span class="stat-label">👥 Usuarios</span>
-                        </div>
-                        <div class="stat-card">
-                            <span class="stat-number">''' + str(len(aspectos)) + '''</span>
-                            <span class="stat-label">📊 Aspectos</span>
-                        </div>
-                    </div>
-                    
-                    <div class="info-box">
-                        <p><strong>⚠️ NOTA:</strong> Se han creado usuarios de prueba. Los datos se alimentarán desde la aplicación.</p>
-                        <p style="margin-top: 10px;"><strong>🔑 Credenciales de administrador:</strong></p>
-                        <p>Usuario: <strong>MINERA.ADMIN</strong></p>
-                        <p>Contraseña: <strong>MINERA.ADMIN</strong></p>
-                    </div>
-                    
-                    <a href="/login" class="btn">🚀 Ir al Login</a>
-                    
-                    <div style="text-align: center; margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
-                        <p>Sistema CURIMINING v2.0 - Desarrollado por O&R Business Consulting Group</p>
+                    <div class="fecha-input">
+                        <label for="fecha-hasta">Hasta:</label>
+                        <input type="date" id="fecha-hasta" class="date-input" onchange="aplicarFiltros()">
                     </div>
                 </div>
-            </body>
-            </html>
-            '''
+            </div>
             
-            return html_response
-        else:
-            return '''
-            <h1 style="color: red; text-align: center; margin-top: 50px;">❌ Error inicializando base de datos</h1>
-            <p style="text-align: center;">Verifica la conexión a la base de datos PostgreSQL.</p>
-            <p style="text-align: center;"><a href="/">Volver</a></p>
-            '''
-    except Exception as e:
-        return f'''
-        <h1 style="color: red; text-align: center; margin-top: 50px;">❌ Error crítico</h1>
-        <p style="text-align: center;"><strong>Error:</strong> {str(e)}</p>
-        <p style="text-align: center;"><a href="/">Volver</a></p>
-        '''
-
-@app.route('/check')
-def check():
-    """Verificar estado del sistema"""
-    try:
-        # Verificar conexión a base de datos
-        db.session.execute("SELECT 1")
-        db_status = 'conectada'
+            <!-- Filtro por Palabra Clave -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-search"></i> Palabra Clave</h3>
+                <div class="search-box">
+                    <input type="text" id="filtro-busqueda" class="search-input" 
+                           placeholder="Buscar en actividades..." onkeyup="aplicarFiltros()">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+            </div>
+            
+            <!-- Ordenamiento -->
+            <div class="filtro-box">
+                <h3><i class="fas fa-sort"></i> Ordenar por</h3>
+                <select id="ordenar-por" class="select-filtro" onchange="aplicarFiltros()">
+                    <option value="fecha_desc">Fecha (más reciente primero)</option>
+                    <option value="fecha_asc">Fecha (más antiguo primero)</option>
+                    <option value="actividad_asc">Actividad (A-Z)</option>
+                    <option value="actividad_desc">Actividad (Z-A)</option>
+                    <option value="tipo_asc">Tipo (A-Z)</option>
+                </select>
+            </div>
+        </div>
         
-        # Contar registros
-        user_count = User.query.count()
-        aspecto_count = AspectoAmbiental.query.count()
-        aspecto_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').count()
-        aspecto_canva = AspectoAmbiental.query.filter_by(fuente='canva').count()
-        aspecto_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').count()
+        <div class="filtros-actions">
+            <button class="btn-aplicar" onclick="aplicarFiltros()">
+                <i class="fas fa-check-circle"></i> Aplicar Filtros
+            </button>
+            <button class="btn-exportar" onclick="exportarDatos()">
+                <i class="fas fa-file-export"></i> Exportar Datos
+            </button>
+        </div>
+    </div>
+    
+    <!-- Resumen Estadístico -->
+    <div class="estadisticas-section">
+        <h2><i class="fas fa-chart-pie"></i> Resumen Estadístico</h2>
+        <div class="estadisticas-grid">
+            <div class="estadistica-card total">
+                <div class="estadistica-icon">
+                    <i class="fas fa-list-alt"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Total Actividades</h3>
+                    <div class="estadistica-valor" id="total-actividades">{{ total_actividades }}</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card positivas">
+                <div class="estadistica-icon">
+                    <i class="fas fa-thumbs-up"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Actividades Positivas</h3>
+                    <div class="estadistica-valor" id="total-positivas">{{ actividades_positivas }}</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card negativas">
+                <div class="estadistica-icon">
+                    <i class="fas fa-thumbs-down"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Actividades Negativas</h3>
+                    <div class="estadistica-valor" id="total-negativas">{{ actividades_negativas }}</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card usuarios">
+                <div class="estadistica-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Usuarios</h3>
+                    <div class="estadistica-valor" id="total-usuarios">{{ usuarios_count }}</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card canva">
+                <div class="estadistica-icon">
+                    <i class="fas fa-th-large"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>CANVA</h3>
+                    <div class="estadistica-valor" id="total-canva">{{ total_actividades_canva }}</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card foda-ext">
+                <div class="estadistica-icon">
+                    <i class="fas fa-external-link-alt"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>FODA Externo</h3>
+                    <div class="estadistica-valor" id="total-foda-ext">{{ total_actividades_foda_ext }}</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card foda-int">
+                <div class="estadistica-icon">
+                    <i class="fas fa-internal-link"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>FODA Interno</h3>
+                    <div class="estadistica-valor" id="total-foda-int">{{ total_actividades_foda_int }}</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card recientes">
+                <div class="estadistica-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Últimas 24h</h3>
+                    <div class="estadistica-valor" id="total-recientes">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabla de Actividades -->
+    <div class="tabla-section">
+        <div class="tabla-header">
+            <h2><i class="fas fa-table"></i> Lista de Actividades</h2>
+            <div class="tabla-info">
+                <span id="registros-mostrados">Mostrando 0 de 0 registros</span>
+                <div class="paginacion-control">
+                    <button class="paginacion-btn" onclick="cambiarPagina(-1)">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </button>
+                    <span class="pagina-actual" id="pagina-actual">Página 1</span>
+                    <button class="paginacion-btn" onclick="cambiarPagina(1)">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
         
-    except Exception as e:
-        db_status = f'error: {str(e)[:100]}'
-        user_count = 0
-        aspecto_count = 0
-        aspecto_foda_ext = 0
-        aspecto_canva = 0
-        aspecto_foda_int = 0
+        <div class="table-container">
+            <table class="dashboard-table" id="tabla-actividades">
+                <thead>
+                    <tr>
+                        <th width="5%">ID</th>
+                        <th width="25%">Actividad</th>
+                        <th width="10%">Tipo</th>
+                        <th width="15%">Bloque/Aspecto</th>
+                        <th width="15%">Descripción</th>
+                        <th width="10%">Fuente</th>
+                        <th width="15%">Fecha</th>
+                        <th width="5%">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-body">
+                    <!-- Los datos se cargarán dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="tabla-footer">
+            <div class="resultados-por-pagina">
+                <label for="resultados-pagina">Resultados por página:</label>
+                <select id="resultados-pagina" class="select-paginacion" onchange="cambiarResultadosPorPagina()">
+                    <option value="10">10</option>
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+            
+            <button class="btn-refrescar" onclick="cargarDatos()">
+                <i class="fas fa-sync-alt"></i> Refrescar Datos
+            </button>
+        </div>
+    </div>
     
-    return jsonify({
-        'status': 'ok',
-        'timestamp': datetime.utcnow().isoformat(),
-        'database': db_status,
-        'users': user_count,
-        'aspectos_total': aspecto_count,
-        'aspectos_foda_ext': aspecto_foda_ext,
-        'aspectos_canva': aspecto_canva,
-        'aspectos_foda_int': aspecto_foda_int,
-        'port': os.environ.get('PORT', '3000'),
-        'python_version': sys.version.split()[0]
-    })
+    <!-- Gráficos de Distribución -->
+    <div class="graficos-section">
+        <h2><i class="fas fa-chart-bar"></i> Distribución de Actividades</h2>
+        <div class="graficos-grid">
+            <div class="grafico-card">
+                <h3><i class="fas fa-chart-pie"></i> Por Fuente</h3>
+                <div class="grafico-container">
+                    <canvas id="grafico-fuente"></canvas>
+                </div>
+            </div>
+            
+            <div class="grafico-card">
+                <h3><i class="fas fa-chart-bar"></i> Por Tipo</h3>
+                <div class="grafico-container">
+                    <canvas id="grafico-tipo"></canvas>
+                </div>
+            </div>
+            
+            <div class="grafico-card">
+                <h3><i class="fas fa-chart-line"></i> Por Día (Últimos 7 días)</h3>
+                <div class="grafico-container">
+                    <canvas id="grafico-fecha"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-# ==================== MANEJO DE ERRORES ====================
-
-@app.errorhandler(404)
-def page_not_found(e):
-    return render_template('404.html'), 404
-
-@app.errorhandler(500)
-def internal_server_error(e):
-    return render_template('500.html'), 500
-
-# ==================== INICIALIZACIÓN ====================
-
-print("=" * 60)
-print("🚀 INICIANDO SISTEMA DE GESTIÓN AMBIENTAL MINERA - CURIMINING")
-print("=" * 60)
-print("📊 Versión: 2.1 (Responsive + Historial Mixto)")
-print("📅 Fecha: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print("=" * 60)
-print("📱 Características:")
-print("  ✅ Responsive total (mobile, tablet, desktop)")
-print("  ✅ Historial mixto (foda_ext + canvas)")
-print("  ✅ Orden por aspecto: POLITICO, ECONOMICO, SOCIAL, TECNOLOGICO, ECOLOGICO, LEGAL")
-print("  ✅ 9 usuarios pre-creados")
-print("=" * 60)
-
-# Inicializar base de datos
-with app.app_context():
-    try:
-        print("🔄 Inicializando base de datos...")
-        if initialize_database():
-            print("✅ Base de datos inicializada correctamente")
-            print("✅ Sistema optimizado para todos los dispositivos")
-        else:
-            print("⚠️  Advertencia: Problemas con la inicialización de BD")
-        print("✅ Sistema listo para recibir conexiones")
-    except Exception as e:
-        print(f"❌ Error crítico: {e}")
-
-print("=" * 60)
-
-# ==================== EJECUCIÓN ====================
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 3000))
-    print(f"🌐 Servidor ejecutándose en: http://0.0.0.0:{port}")
-    print(f"📱 Modo: Responsive Completo")
-    print(f"📏 Soporte: Mobile (320px+) | Tablet (768px+) | Desktop (1024px+)")
-    print("=" * 60)
+<style>
+    /* Estilos del dashboard (los mismos que antes) */
+    .dashboard-main-container {
+        padding: 20px;
+        background: #f5f7fa;
+        min-height: 100vh;
+    }
     
-    # Configurar para producción
-    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    .content-title {
+        color: #0c2461;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #4a69bd;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
     
-    app.run(
-        host='0.0.0.0', 
-        port=port, 
-        debug=debug_mode,
-        threaded=True  # Mejor rendimiento para múltiples conexiones
-    )
+    /* ... (mantén todos los estilos CSS del dashboard que proporcioné anteriormente) ... */
+    
+    /* Añadir estilos para badges de fuente */
+    .badge-fuente {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .badge-fuente.canva {
+        background-color: #0c2461;
+        color: white;
+    }
+    
+    .badge-fuente.foda_ext {
+        background-color: #4CAF50;
+        color: white;
+    }
+    
+    .badge-fuente.foda_int {
+        background-color: #2196F3;
+        color: white;
+    }
+    
+    .badge-fuente.manual {
+        background-color: #FF9800;
+        color: white;
+    }
+    
+    .badge-fuente.importado {
+        background-color: #9C27B0;
+        color: white;
+    }
+    
+    /* Estilos para botones de acción */
+    .acciones-celda {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .btn-accion {
+        width: 30px;
+        height: 30px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+    
+    .btn-accion:hover {
+        transform: scale(1.1);
+    }
+    
+    .btn-editar {
+        background-color: #4a69bd;
+        color: white;
+    }
+    
+    .btn-eliminar {
+        background-color: #ff6b6b;
+        color: white;
+    }
+</style>
+
+<script>
+    // Variables globales
+    let actividadesData = [];
+    let actividadesFiltradas = [];
+    let paginaActual = 1;
+    let resultadosPorPagina = 25;
+    let filtroTipo = 'all';
+    let filtroBloque = 'all';
+    let filtroFuente = 'all';
+    let filtroFechaDesde = '';
+    let filtroFechaHasta = '';
+    let filtroBusqueda = '';
+    let ordenarPor = 'fecha_desc';
+    
+    // Cargar datos al iniciar
+    document.addEventListener('DOMContentLoaded', function() {
+        cargarDatos();
+        actualizarEstadisticas();
+        establecerFechasPorDefecto();
+        inicializarGraficos();
+    });
+    
+    // Establecer fechas por defecto (últimos 30 días)
+    function establecerFechasPorDefecto() {
+        const hoy = new Date();
+        const hace30Dias = new Date();
+        hace30Dias.setDate(hoy.getDate() - 30);
+        
+        document.getElementById('fecha-desde').value = hace30Dias.toISOString().split('T')[0];
+        document.getElementById('fecha-hasta').value = hoy.toISOString().split('T')[0];
+        
+        filtroFechaDesde = document.getElementById('fecha-desde').value;
+        filtroFechaHasta = document.getElementById('fecha-hasta').value;
+    }
+    
+    // Cargar datos desde la API
+    function cargarDatos() {
+        const tablaBody = document.getElementById('tabla-body');
+        tablaBody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 40px;">
+                    <div class="loading"></div>
+                    <p>Cargando datos desde la base de datos...</p>
+                </td>
+            </tr>
+        `;
+        
+        // Obtener valores de filtros
+        filtroTipo = obtenerFiltroTipoSeleccionado();
+        filtroBloque = document.getElementById('filtro-bloque').value;
+        filtroFuente = document.getElementById('filtro-fuente').value;
+        filtroFechaDesde = document.getElementById('fecha-desde').value;
+        filtroFechaHasta = document.getElementById('fecha-hasta').value;
+        filtroBusqueda = document.getElementById('filtro-busqueda').value;
+        ordenarPor = document.getElementById('ordenar-por').value;
+        
+        // Preparar datos para la petición
+        const datosFiltro = {
+            tipo_filtro: filtroTipo,
+            bloque_filtro: filtroBloque,
+            fuente_filtro: filtroFuente,
+            fecha_desde: filtroFechaDesde,
+            fecha_hasta: filtroFechaHasta,
+            busqueda: filtroBusqueda,
+            orden_por: ordenarPor,
+            pagina: paginaActual,
+            por_pagina: resultadosPorPagina
+        };
+        
+        // Hacer petición a la API
+        fetch('/api/admin/filtrar_actividades', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(datosFiltro)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                actividadesData = data.actividades;
+                actividadesFiltradas = actividadesData;
+                actualizarTabla(data);
+                actualizarGraficos();
+            } else {
+                mostrarAlerta('❌ Error al cargar datos: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarAlerta('❌ Error de conexión al servidor.', 'error');
+        });
+    }
+    
+    // Actualizar estadísticas desde la API
+    function actualizarEstadisticas() {
+        fetch('/api/admin/estadisticas')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const stats = data.estadisticas;
+                    
+                    // Actualizar tarjetas de estadísticas
+                    document.getElementById('total-actividades').textContent = stats.total_actividades;
+                    document.getElementById('total-canva').textContent = stats.actividades_canva;
+                    document.getElementById('total-foda-ext').textContent = stats.actividades_foda_ext;
+                    document.getElementById('total-foda-int').textContent = stats.actividades_foda_int;
+                    document.getElementById('total-positivas').textContent = stats.positivas_canva + stats.positivas_foda_ext;
+                    document.getElementById('total-negativas').textContent = stats.negativas_canva + stats.negativas_foda_ext;
+                    document.getElementById('total-recientes').textContent = stats.actividades_recientes_7dias;
+                    document.getElementById('total-usuarios').textContent = stats.usuarios_total;
+                    
+                    // Actualizar gráfico de bloques
+                    actualizarGraficoBloques(data.bloques_estadisticas);
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar estadísticas:', error);
+            });
+    }
+    
+    // Obtener el filtro de tipo seleccionado
+    function obtenerFiltroTipoSeleccionado() {
+        const botones = document.querySelectorAll('.tipo-filtro-btn.selected');
+        for (let boton of botones) {
+            if (boton.classList.contains('all-tipo')) return 'all';
+            if (boton.classList.contains('positivo')) return 'Positivo';
+            if (boton.classList.contains('negativo')) return 'Negativo';
+        }
+        return 'all';
+    }
+    
+    // Seleccionar filtro de tipo
+    function seleccionarFiltroTipo(tipo) {
+        // Remover selección de todos los botones
+        document.querySelectorAll('.tipo-filtro-btn').forEach(btn => {
+            btn.classList.remove('selected');
+        });
+        
+        // Seleccionar el botón correspondiente
+        if (tipo === 'all') {
+            document.querySelector('.tipo-filtro-btn.all-tipo').classList.add('selected');
+        } else if (tipo === 'Positivo') {
+            document.querySelector('.tipo-filtro-btn.positivo').classList.add('selected');
+        } else if (tipo === 'Negativo') {
+            document.querySelector('.tipo-filtro-btn.negativo').classList.add('selected');
+        }
+        
+        aplicarFiltros();
+    }
+    
+    // Aplicar filtros y actualizar tabla
+    function aplicarFiltros() {
+        paginaActual = 1;
+        cargarDatos();
+    }
+    
+    // Actualizar tabla con datos
+    function actualizarTabla(data) {
+        const tablaBody = document.getElementById('tabla-body');
+        const actividades = data.actividades;
+        const total = data.total;
+        const totalPaginas = data.total_paginas;
+        
+        if (actividades.length === 0) {
+            tablaBody.innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 15px; color: #dee2e6;"></i>
+                        <p>No se encontraron actividades con los filtros aplicados.</p>
+                        <button class="btn-limpiar" onclick="limpiarFiltros()" style="margin-top: 15px;">
+                            <i class="fas fa-eraser"></i> Limpiar Filtros
+                        </button>
+                    </td>
+                </tr>
+            `;
+        } else {
+            // Generar HTML para las filas
+            let html = '';
+            actividades.forEach(actividad => {
+                const colorTipo = actividad.tipo === 'Positivo' ? '#4CAF50' : '#ff6b6b';
+                
+                html += `
+                    <tr>
+                        <td>${actividad.id}</td>
+                        <td>${actividad.actividad}</td>
+                        <td style="color: ${colorTipo}; font-weight: 600;">${actividad.tipo}</td>
+                        <td>${actividad.bloque}</td>
+                        <td>${actividad.aspecto}</td>
+                        <td>
+                            <span class="badge-fuente ${actividad.fuente}">
+                                ${actividad.fuente}
+                            </span>
+                        </td>
+                        <td>${formatearFecha(actividad.fecha)}</td>
+                        <td class="acciones-celda">
+                            <button class="btn-accion btn-editar" onclick="editarActividad(${actividad.id})" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-accion btn-eliminar" onclick="eliminarActividad(${actividad.id})" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tablaBody.innerHTML = html;
+        }
+        
+        // Actualizar información de paginación
+        const inicio = ((paginaActual - 1) * resultadosPorPagina) + 1;
+        const fin = Math.min(paginaActual * resultadosPorPagina, total);
+        
+        document.getElementById('registros-mostrados').textContent = 
+            `Mostrando ${inicio}-${fin} de ${total} registros`;
+        document.getElementById('pagina-actual').textContent = `Página ${paginaActual} de ${totalPaginas}`;
+    }
+    
+    // Formatear fecha para mostrar
+    function formatearFecha(fechaStr) {
+        if (!fechaStr) return '';
+        const fecha = new Date(fechaStr);
+        return fecha.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+    
+    // Cambiar página
+    function cambiarPagina(direccion) {
+        const totalPaginas = Math.ceil(actividadesFiltradas.length / resultadosPorPagina);
+        
+        if (direccion === -1 && paginaActual > 1) {
+            paginaActual--;
+        } else if (direccion === 1 && paginaActual < totalPaginas) {
+            paginaActual++;
+        }
+        
+        cargarDatos();
+    }
+    
+    // Cambiar resultados por página
+    function cambiarResultadosPorPagina() {
+        resultadosPorPagina = parseInt(document.getElementById('resultados-pagina').value);
+        paginaActual = 1;
+        cargarDatos();
+    }
+    
+    // Limpiar todos los filtros
+    function limpiarFiltros() {
+        // Restablecer filtros
+        seleccionarFiltroTipo('all');
+        document.getElementById('filtro-bloque').value = 'all';
+        document.getElementById('filtro-fuente').value = 'all';
+        document.getElementById('filtro-busqueda').value = '';
+        document.getElementById('ordenar-por').value = 'fecha_desc';
+        
+        // Restablecer fechas a los últimos 30 días
+        establecerFechasPorDefecto();
+        
+        // Aplicar filtros limpios
+        aplicarFiltros();
+        
+        mostrarAlerta('✅ Filtros limpiados correctamente.', 'success');
+    }
+    
+    // Inicializar gráficos
+    function inicializarGraficos() {
+        // Configuración común para gráficos
+        Chart.defaults.font.family = "'Segoe UI', 'Helvetica Neue', Arial, sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#666';
+        
+        // Gráfico de fuente
+        const ctxFuente = document.getElementById('grafico-fuente').getContext('2d');
+        window.graficoFuente = new Chart(ctxFuente, {
+            type: 'doughnut',
+            data: {
+                labels: ['CANVA', 'FODA Externo', 'FODA Interno', 'Manual', 'Importado'],
+                datasets: [{
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: ['#0c2461', '#4CAF50', '#2196F3', '#FF9800', '#9C27B0'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de tipo
+        const ctxTipo = document.getElementById('grafico-tipo').getContext('2d');
+        window.graficoTipo = new Chart(ctxTipo, {
+            type: 'pie',
+            data: {
+                labels: ['Positivas', 'Negativas'],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ['#4CAF50', '#ff6b6b'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // Gráfico de fecha
+        const ctxFecha = document.getElementById('grafico-fecha').getContext('2d');
+        window.graficoFecha = new Chart(ctxFecha, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Actividades por día',
+                    data: [],
+                    borderColor: '#4a69bd',
+                    backgroundColor: 'rgba(74, 105, 189, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Actualizar gráfico de bloques
+    function actualizarGraficoBloques(bloquesData) {
+        // Si hay un gráfico de barras para bloques, actualízalo aquí
+        // Por ahora, solo actualizamos las estadísticas generales
+    }
+    
+    // Actualizar gráficos con datos filtrados
+    function actualizarGraficos() {
+        if (!window.graficoFuente) return;
+        
+        // Calcular distribución por fuente
+        const fuentes = ['canva', 'foda_ext', 'foda_int', 'manual', 'importado'];
+        const datosFuentes = fuentes.map(fuente => 
+            actividadesFiltradas.filter(a => a.fuente === fuente).length
+        );
+        
+        window.graficoFuente.data.datasets[0].data = datosFuentes;
+        window.graficoFuente.update();
+        
+        // Calcular distribución por tipo
+        const positivas = actividadesFiltradas.filter(a => a.tipo === 'Positivo').length;
+        const negativas = actividadesFiltradas.filter(a => a.tipo === 'Negativo').length;
+        
+        window.graficoTipo.data.datasets[0].data = [positivas, negativas];
+        window.graficoTipo.update();
+        
+        // Calcular distribución por fecha (últimos 7 días)
+        const ultimos7Dias = [];
+        const hoy = new Date();
+        
+        for (let i = 6; i >= 0; i--) {
+            const fecha = new Date();
+            fecha.setDate(hoy.getDate() - i);
+            const fechaStr = fecha.toISOString().split('T')[0];
+            ultimos7Dias.push(fechaStr);
+        }
+        
+        const actividadesPorFecha = {};
+        ultimos7Dias.forEach(fecha => {
+            actividadesPorFecha[fecha] = 0;
+        });
+        
+        actividadesFiltradas.forEach(actividad => {
+            if (actividad.fecha) {
+                const fechaActividad = actividad.fecha.split(' ')[0];
+                if (actividadesPorFecha.hasOwnProperty(fechaActividad)) {
+                    actividadesPorFecha[fechaActividad]++;
+                }
+            }
+        });
+        
+        window.graficoFecha.data.labels = ultimos7Dias.map(fecha => {
+            const d = new Date(fecha);
+            return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+        });
+        window.graficoFecha.data.datasets[0].data = ultimos7Dias.map(fecha => actividadesPorFecha[fecha]);
+        window.graficoFecha.update();
+    }
+    
+    // Exportar datos a CSV
+    function exportarDatos() {
+        mostrarAlerta('📊 Preparando exportación de datos...', 'success');
+        
+        // Preparar datos para la petición
+        const datosFiltro = {
+            tipo_filtro: filtroTipo,
+            bloque_filtro: filtroBloque,
+            fuente_filtro: filtroFuente,
+            fecha_desde: filtroFechaDesde,
+            fecha_hasta: filtroFechaHasta,
+            busqueda: filtroBusqueda,
+            orden_por: ordenarPor
+        };
+        
+        // Hacer petición a la API de exportación
+        fetch('/api/admin/exportar_datos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(datosFiltro)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.blob();
+            }
+            throw new Error('Error en la exportación');
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `actividades_exportadas_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            mostrarAlerta('✅ Datos exportados correctamente.', 'success');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarAlerta('❌ Error al exportar datos.', 'error');
+        });
+    }
+    
+    // Editar actividad
+    function editarActividad(id) {
+        mostrarAlerta('✏️ Función de edición en desarrollo...', 'info');
+        // Aquí podrías abrir un modal o redirigir a la página de edición
+    }
+    
+    // Eliminar actividad
+    function eliminarActividad(id) {
+        if (confirm('⚠️ ¿Está seguro de que desea eliminar esta actividad?\n\nEsta acción no se puede deshacer.')) {
+            fetch(`/aspectos/${id}/eliminar`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    mostrarAlerta('✅ Actividad eliminada correctamente.', 'success');
+                    cargarDatos(); // Recargar datos
+                    actualizarEstadisticas(); // Actualizar estadísticas
+                } else {
+                    mostrarAlerta('❌ Error: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarAlerta('❌ Error de conexión al servidor.', 'error');
+            });
+        }
+    }
+    
+    // Función para mostrar alertas
+    function mostrarAlerta(mensaje, tipo) {
+        let alerta = document.getElementById('alerta-flotante');
+        
+        if (!alerta) {
+            alerta = document.createElement('div');
+            alerta.id = 'alerta-flotante';
+            alerta.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transition: all 0.3s ease;
+                transform: translateX(100%);
+                opacity: 0;
+                max-width: 400px;
+            `;
+            document.body.appendChild(alerta);
+        }
+        
+        if (tipo === 'success') {
+            alerta.style.backgroundColor = '#4CAF50';
+        } else if (tipo === 'error') {
+            alerta.style.backgroundColor = '#ff6b6b';
+        } else if (tipo === 'info') {
+            alerta.style.backgroundColor = '#2196F3';
+        } else {
+            alerta.style.backgroundColor = '#FF9800';
+        }
+        
+        alerta.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${mensaje}`;
+        
+        setTimeout(() => {
+            alerta.style.transform = 'translateX(0)';
+            alerta.style.opacity = '1';
+        }, 10);
+        
+        setTimeout(() => {
+            alerta.style.transform = 'translateX(100%)';
+            alerta.style.opacity = '0';
+        }, 4000);
+    }
+</script>
+{% endblock %}
