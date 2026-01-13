@@ -87,6 +87,45 @@ class EstrategiaFodaCruzado(db.Model):
     # Relación
     creador = db.relationship('User', backref=db.backref('estrategias_foda', lazy=True))
 
+# ==================== MODELOS PARA ACTIVIDADES Y TAREAS ====================
+
+# Modelo para Actividades de Estrategias
+class ActividadEstrategia(db.Model):
+    __tablename__ = 'actividades_estrategia'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    estrategia_id = db.Column(db.Integer, db.ForeignKey('estrategias_foda_cruzado.id'), nullable=False)
+    nombre = db.Column(db.String(200), nullable=False)
+    descripcion = db.Column(db.Text, nullable=True)
+    responsable = db.Column(db.String(100), nullable=True)
+    fecha_inicio = db.Column(db.Date, nullable=True)
+    fecha_fin = db.Column(db.Date, nullable=True)
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    creador_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    
+    # Relaciones
+    estrategia = db.relationship('EstrategiaFodaCruzado', backref=db.backref('actividades_estrategia', lazy=True, cascade='all, delete-orphan'))
+    creador = db.relationship('User', backref=db.backref('actividades_estrategia_creadas', lazy=True))
+
+# Modelo para Tareas de Actividades
+class TareaActividad(db.Model):
+    __tablename__ = 'tareas_actividad'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    actividad_id = db.Column(db.Integer, db.ForeignKey('actividades_estrategia.id'), nullable=False)
+    nombre = db.Column(db.String(200), nullable=False)
+    descripcion = db.Column(db.Text, nullable=True)
+    responsable = db.Column(db.String(100), nullable=True)
+    fecha_inicio = db.Column(db.Date, nullable=True)
+    fecha_fin = db.Column(db.Date, nullable=True)
+    estado = db.Column(db.String(20), default='pendiente')  # pendiente, en_progreso, completada
+    fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
+    creador_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
+    
+    # Relaciones
+    actividad = db.relationship('ActividadEstrategia', backref=db.backref('tareas_actividad', lazy=True, cascade='all, delete-orphan'))
+    creador = db.relationship('User', backref=db.backref('tareas_actividad_creadas', lazy=True))
+
 # ==================== DECORADORES DE AUTENTICACIÓN ====================
 
 def login_required(f):
@@ -158,6 +197,17 @@ def initialize_database():
                 print("ℹ️  Continuando sin migración de columnas...")
             # ==================== FIN DE MIGRACIÓN ====================
             
+            # Verificar que las nuevas tablas de actividades y tareas existen
+            try:
+                # Intentar contar actividades y tareas
+                actividades_count = ActividadEstrategia.query.count()
+                tareas_count = TareaActividad.query.count()
+                print(f"📊 Total de actividades de estrategias: {actividades_count}")
+                print(f"📊 Total de tareas: {tareas_count}")
+            except Exception as count_error:
+                print(f"⚠️  Nota: No se pudieron contar actividades/tareas: {count_error}")
+                print("ℹ️  Las tablas se crearán automáticamente cuando se agregue la primera actividad.")
+            
             # Lista de usuarios a crear
             usuarios = [
                 # Administradores (4 usuarios)
@@ -204,7 +254,7 @@ def initialize_database():
             print(f"📊 Total de aspectos en sistema: {AspectoAmbiental.query.count()}")
             
             try:
-                # Intentar contar estrategias FODA (puede fallar si la tabla no tiene columnas)
+                # Intentar contar estrategias FODA
                 estrategias_count = EstrategiaFodaCruzado.query.count()
                 print(f"📊 Total de estrategias FODA cruzado: {estrategias_count}")
             except Exception as count_error:
@@ -994,6 +1044,7 @@ def api_estrategias_foda_con_eje():
         estrategias_data = []
         for e in estrategias:
             estrategias_data.append({
+                'id': e.id,
                 'tipo_cruce': e.tipo_cruce,
                 'elemento_interno_id': e.elemento_interno_id,
                 'elemento_interno_tipo': e.elemento_interno_tipo,
@@ -1004,7 +1055,7 @@ def api_estrategias_foda_con_eje():
                 'estrategia': e.estrategia,
                 'eje_id': e.eje_id,
                 'eje_texto': e.eje_texto,
-                'fecha': e.fecha_creacion.isoformat() if e.fecha_creacion else None,
+                'fecha_creacion': e.fecha_creacion.isoformat() if e.fecha_creacion else None,
                 'creador': e.creador.username if e.creador else None
             })
         
@@ -1179,6 +1230,209 @@ def limpiar_canva():
         print(f"Error al limpiar canva: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
+# ==================== RUTAS API PARA ACTIVIDADES Y TAREAS ====================
+
+@app.route('/api/actividades_estrategia/<int:estrategia_id>')
+@login_required
+def api_actividades_estrategia(estrategia_id):
+    """API para obtener actividades de una estrategia"""
+    try:
+        # Verificar que la estrategia existe
+        estrategia = EstrategiaFodaCruzado.query.get(estrategia_id)
+        if not estrategia:
+            return jsonify({'success': False, 'message': 'La estrategia no existe'}), 404
+        
+        actividades = ActividadEstrategia.query.filter_by(
+            estrategia_id=estrategia_id
+        ).order_by(
+            ActividadEstrategia.fecha_creacion.desc()
+        ).all()
+        
+        actividades_data = []
+        for a in actividades:
+            actividades_data.append({
+                'id': a.id,
+                'estrategia_id': a.estrategia_id,
+                'nombre': a.nombre,
+                'descripcion': a.descripcion,
+                'responsable': a.responsable,
+                'fecha_inicio': a.fecha_inicio.isoformat() if a.fecha_inicio else None,
+                'fecha_fin': a.fecha_fin.isoformat() if a.fecha_fin else None,
+                'fecha_creacion': a.fecha_creacion.isoformat() if a.fecha_creacion else None,
+                'creador': a.creador.username if a.creador else None
+            })
+        
+        return jsonify({'success': True, 'actividades': actividades_data})
+        
+    except Exception as e:
+        print(f"Error en api_actividades_estrategia: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/agregar_actividad', methods=['POST'])
+@login_required
+def api_agregar_actividad():
+    """API para agregar una actividad a una estrategia"""
+    try:
+        if not request.is_json:
+            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
+        
+        data = request.get_json()
+        
+        # Validar campos requeridos
+        if not data.get('estrategia_id'):
+            return jsonify({'success': False, 'message': 'El ID de la estrategia es obligatorio'}), 400
+        
+        if not data.get('nombre'):
+            return jsonify({'success': False, 'message': 'El nombre de la actividad es obligatorio'}), 400
+        
+        # Verificar que la estrategia existe
+        estrategia = EstrategiaFodaCruzado.query.get(data['estrategia_id'])
+        if not estrategia:
+            return jsonify({'success': False, 'message': 'La estrategia no existe'}), 404
+        
+        # Crear nueva actividad
+        nueva_actividad = ActividadEstrategia(
+            estrategia_id=data['estrategia_id'],
+            nombre=data['nombre'].strip(),
+            descripcion=data.get('descripcion', '').strip(),
+            responsable=data.get('responsable', '').strip(),
+            fecha_inicio=datetime.strptime(data['fecha_inicio'], '%Y-%m-%d').date() if data.get('fecha_inicio') else None,
+            fecha_fin=datetime.strptime(data['fecha_fin'], '%Y-%m-%d').date() if data.get('fecha_fin') else None,
+            creador_id=session['user_id']
+        )
+        
+        db.session.add(nueva_actividad)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '✅ Actividad agregada correctamente',
+            'actividad_id': nueva_actividad.id
+        })
+        
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Formato de fecha inválido. Use YYYY-MM-DD'}), 400
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error en api_agregar_actividad: {e}")
+        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
+
+@app.route('/api/eliminar_actividad/<int:actividad_id>', methods=['DELETE'])
+@login_required
+def api_eliminar_actividad(actividad_id):
+    """API para eliminar una actividad y sus tareas"""
+    try:
+        actividad = ActividadEstrategia.query.get_or_404(actividad_id)
+        
+        # Verificar permisos: admin o el creador de la actividad
+        if session.get('rol') != 'admin' and actividad.creador_id != session.get('user_id'):
+            return jsonify({'success': False, 'message': 'No autorizado'}), 403
+        
+        # Eliminar la actividad (las tareas se eliminarán en cascada por la relación)
+        db.session.delete(actividad)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Actividad eliminada correctamente'})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error en api_eliminar_actividad: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/tareas_actividad/<int:actividad_id>')
+@login_required
+def api_tareas_actividad(actividad_id):
+    """API para obtener tareas de una actividad"""
+    try:
+        # Verificar que la actividad existe
+        actividad = ActividadEstrategia.query.get(actividad_id)
+        if not actividad:
+            return jsonify({'success': False, 'message': 'La actividad no existe'}), 404
+        
+        tareas = TareaActividad.query.filter_by(
+            actividad_id=actividad_id
+        ).order_by(
+            TareaActividad.fecha_creacion.desc()
+        ).all()
+        
+        tareas_data = []
+        for t in tareas:
+            tareas_data.append({
+                'id': t.id,
+                'actividad_id': t.actividad_id,
+                'nombre': t.nombre,
+                'descripcion': t.descripcion,
+                'responsable': t.responsable,
+                'fecha_inicio': t.fecha_inicio.isoformat() if t.fecha_inicio else None,
+                'fecha_fin': t.fecha_fin.isoformat() if t.fecha_fin else None,
+                'estado': t.estado,
+                'fecha_creacion': t.fecha_creacion.isoformat() if t.fecha_creacion else None,
+                'creador': t.creador.username if t.creador else None
+            })
+        
+        return jsonify({'success': True, 'tareas': tareas_data})
+        
+    except Exception as e:
+        print(f"Error en api_tareas_actividad: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/agregar_tarea', methods=['POST'])
+@login_required
+def api_agregar_tarea():
+    """API para agregar una tarea a una actividad"""
+    try:
+        if not request.is_json:
+            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
+        
+        data = request.get_json()
+        
+        # Validar campos requeridos
+        if not data.get('actividad_id'):
+            return jsonify({'success': False, 'message': 'El ID de la actividad es obligatorio'}), 400
+        
+        if not data.get('nombre'):
+            return jsonify({'success': False, 'message': 'El nombre de la tarea es obligatorio'}), 400
+        
+        # Verificar que la actividad existe
+        actividad = ActividadEstrategia.query.get(data['actividad_id'])
+        if not actividad:
+            return jsonify({'success': False, 'message': 'La actividad no existe'}), 404
+        
+        # Validar estado
+        estado_valido = data.get('estado', 'pendiente')
+        if estado_valido not in ['pendiente', 'en_progreso', 'completada']:
+            estado_valido = 'pendiente'
+        
+        # Crear nueva tarea
+        nueva_tarea = TareaActividad(
+            actividad_id=data['actividad_id'],
+            nombre=data['nombre'].strip(),
+            descripcion=data.get('descripcion', '').strip(),
+            responsable=data.get('responsable', '').strip(),
+            fecha_inicio=datetime.strptime(data['fecha_inicio'], '%Y-%m-%d').date() if data.get('fecha_inicio') else None,
+            fecha_fin=datetime.strptime(data['fecha_fin'], '%Y-%m-%d').date() if data.get('fecha_fin') else None,
+            estado=estado_valido,
+            creador_id=session['user_id']
+        )
+        
+        db.session.add(nueva_tarea)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '✅ Tarea agregada correctamente',
+            'tarea_id': nueva_tarea.id
+        })
+        
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Formato de fecha inválido. Use YYYY-MM-DD'}), 400
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error en api_agregar_tarea: {e}")
+        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
+
 # ==================== RUTAS ADICIONALES ====================
 
 @app.route('/logout')
@@ -1222,7 +1476,24 @@ def migrate_db():
                 connection.execute("ALTER TABLE estrategias_foda_cruzado ADD COLUMN eje_texto VARCHAR(200)")
                 print("✅ Columna 'eje_texto' agregada")
             
-            # 3. Verificar otras tablas importantes
+            # 3. Verificar tablas de actividades y tareas
+            try:
+                print("\n🔍 Verificando tabla actividades_estrategia...")
+                actividades_count = ActividadEstrategia.query.count()
+                print(f"   📋 Total de actividades: {actividades_count}")
+            except Exception as e:
+                print(f"   ⚠️  Error al verificar actividades: {e}")
+                print("   ℹ️  La tabla se creará automáticamente al primer uso.")
+
+            try:
+                print("🔍 Verificando tabla tareas_actividad...")
+                tareas_count = TareaActividad.query.count()
+                print(f"   📋 Total de tareas: {tareas_count}")
+            except Exception as e:
+                print(f"   ⚠️  Error al verificar tareas: {e}")
+                print("   ℹ️  La tabla se creará automáticamente al primer uso.")
+            
+            # 4. Verificar otras tablas importantes
             print("\n🔍 Verificando tabla usuarios...")
             users_count = User.query.count()
             print(f"   👥 Total de usuarios: {users_count}")
@@ -1231,7 +1502,7 @@ def migrate_db():
             aspectos_count = AspectoAmbiental.query.count()
             print(f"   📊 Total de aspectos: {aspectos_count}")
             
-            # 4. Intentar contar estrategias para verificar que funciona
+            # 5. Intentar contar estrategias para verificar que funciona
             try:
                 estrategias_count = EstrategiaFodaCruzado.query.count()
                 print(f"   ♟️  Total de estrategias FODA: {estrategias_count}")
@@ -1281,6 +1552,7 @@ def migrate_db():
                     <div class="success">
                         <p>La estructura de la base de datos ha sido verificada y actualizada.</p>
                         <p>Las columnas <strong>eje_id</strong> y <strong>eje_texto</strong> han sido agregadas a la tabla <strong>estrategias_foda_cruzado</strong>.</p>
+                        <p>Las tablas <strong>actividades_estrategia</strong> y <strong>tareas_actividad</strong> han sido verificadas.</p>
                     </div>
                     <h3>Estructura Actual:</h3>
                     <pre>''' + "\n".join([f"- {col[0]} ({col[1]}, nullable: {col[2]})" for col in columns]) + '''</pre>
@@ -1507,7 +1779,7 @@ def init_db():
                     <div class="success">
                         <h2 style="margin-bottom: 10px;">Sistema CURIMINING Listo</h2>
                         <p>La base de datos ha sido inicializada exitosamente.</p>
-                        <p>Tablas verificadas: usuarios, aspectos_ambientales, estrategias_foda_cruzado</p>
+                        <p>Tablas verificadas: usuarios, aspectos_ambientales, estrategias_foda_cruzado, actividades_estrategia, tareas_actividad</p>
                     </div>
                     
                     ''' + (f'''
@@ -1580,6 +1852,14 @@ def check():
         except:
             estrategias_count = 0
         
+        # Intentar contar actividades y tareas
+        try:
+            actividades_count = ActividadEstrategia.query.count()
+            tareas_count = TareaActividad.query.count()
+        except:
+            actividades_count = 0
+            tareas_count = 0
+    
     except Exception as e:
         db_status = f'error: {str(e)[:100]}'
         user_count = 0
@@ -1588,6 +1868,8 @@ def check():
         aspecto_canva = 0
         aspecto_foda_int = 0
         estrategias_count = 0
+        actividades_count = 0
+        tareas_count = 0
     
     return jsonify({
         'status': 'ok',
@@ -1599,6 +1881,8 @@ def check():
         'aspectos_canva': aspecto_canva,
         'aspectos_foda_int': aspecto_foda_int,
         'estrategias_foda': estrategias_count,
+        'actividades_estrategia': actividades_count,
+        'tareas_actividad': tareas_count,
         'port': os.environ.get('PORT', '3000'),
         'python_version': sys.version.split()[0]
     })
@@ -1643,6 +1927,14 @@ def api_admin_estadisticas():
         except:
             estrategias_con_eje = 0
         
+        # Contar actividades y tareas de estrategias
+        try:
+            actividades_estrategia_count = ActividadEstrategia.query.count()
+            tareas_actividad_count = TareaActividad.query.count()
+        except:
+            actividades_estrategia_count = 0
+            tareas_actividad_count = 0
+        
         return jsonify({
             'success': True,
             'estadisticas': {
@@ -1652,6 +1944,8 @@ def api_admin_estadisticas():
                 'actividades_foda_int': total_actividades_foda_int,
                 'estrategias_foda_cruzado': estrategias_count,
                 'estrategias_con_eje': estrategias_con_eje,
+                'actividades_estrategia': actividades_estrategia_count,
+                'tareas_actividad': tareas_actividad_count,
                 'positivas_canva': AspectoAmbiental.query.filter_by(fuente='canva', tipo='Positivo').count(),
                 'negativas_canva': AspectoAmbiental.query.filter_by(fuente='canva', tipo='Negativo').count(),
                 'positivas_foda_ext': AspectoAmbiental.query.filter_by(fuente='foda_ext', tipo='Positivo').count(),
@@ -1896,6 +2190,14 @@ def admin_dashboard():
     except:
         estrategias_count = 0
     
+    # Contar actividades y tareas de estrategias
+    try:
+        actividades_estrategia_count = ActividadEstrategia.query.count()
+        tareas_actividad_count = TareaActividad.query.count()
+    except:
+        actividades_estrategia_count = 0
+        tareas_actividad_count = 0
+    
     # Definir bloques CANVA para los filtros
     bloques_canva = [
         {'nombre': 'Mapeo de Actores y Comunidades Afectadas', 'icono': 'fas fa-users'},
@@ -1916,6 +2218,8 @@ def admin_dashboard():
                          total_actividades_foda_ext=total_actividades_foda_ext,
                          total_actividades_foda_int=total_actividades_foda_int,
                          estrategias_count=estrategias_count,
+                         actividades_estrategia_count=actividades_estrategia_count,
+                         tareas_actividad_count=tareas_actividad_count,
                          actividades_positivas=actividades_positivas,
                          actividades_negativas=actividades_negativas,
                          bloques_canva=bloques_canva)
@@ -2075,6 +2379,7 @@ print("=" * 60)
 print("📱 Características:")
 print("  ✅ FODA Cruzado completo con sistema de ejes")
 print("  ✅ 2 nuevas páginas: Estrategias y Mapa de Red")
+print("  ✅ Sistema completo de actividades y tareas para estrategias")
 print("  ✅ 7 ejes estratégicos integrados")
 print("  ✅ Persistencia de estrategias con ejes")
 print("  ✅ Visualización de red interactiva")
@@ -2089,6 +2394,7 @@ with app.app_context():
         if initialize_database():
             print("✅ Base de datos inicializada correctamente")
             print("✅ Tablas creadas: usuarios, aspectos_ambientales, estrategias_foda_cruzado")
+            print("✅ Tablas adicionales: actividades_estrategia, tareas_actividad")
             print("✅ Campos de eje añadidos a estrategias_foda_cruzado")
         else:
             print("⚠️  Advertencia: Problemas con la inicialización de BD")
