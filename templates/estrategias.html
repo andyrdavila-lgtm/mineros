@@ -9,9 +9,11 @@
         <p class="content-subtitle">Desglose estratégico: De ejes a tácticas y actividades operativas</p>
     </div>
 
-    <div class="estrategias-container">
-        <!-- Panel izquierdo: Tabla de Ejes y Estrategias -->
-        <div class="panel-izquierdo">
+    <!-- Contenedor principal con diseño vertical -->
+    <div class="estrategias-container-vertical">
+        
+        <!-- Panel superior: Tabla de Ejes y Estrategias -->
+        <div class="panel-superior">
             <div class="panel-header">
                 <div class="panel-title-container">
                     <div class="panel-icon-badge">
@@ -22,10 +24,22 @@
                         <p class="panel-subtitle">Seleccione una estrategia para desglosarla</p>
                     </div>
                 </div>
-                <div class="panel-actions">
-                    <button class="btn-refresh" onclick="cargarEstrategias()">
-                        <i class="fas fa-sync-alt"></i> Actualizar
-                    </button>
+                <div class="panel-header-right">
+                    <div class="estadisticas-header">
+                        <span class="estadistica-header-item">
+                            <i class="fas fa-bullseye"></i>
+                            <span id="total-estrategias">0</span> estrategias
+                        </span>
+                        <span class="estadistica-header-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span id="estrategias-con-tacticas">0</span> con tácticas
+                        </span>
+                    </div>
+                    <div class="panel-actions">
+                        <button class="btn-refresh" onclick="cargarEstrategias()">
+                            <i class="fas fa-sync-alt"></i> Actualizar
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -70,23 +84,10 @@
                     </tbody>
                 </table>
             </div>
-            
-            <div class="panel-footer">
-                <div class="estadisticas">
-                    <span class="estadistica-item">
-                        <i class="fas fa-bullseye"></i>
-                        <span id="total-estrategias">0</span> estrategias
-                    </span>
-                    <span class="estadistica-item">
-                        <i class="fas fa-check-circle"></i>
-                        <span id="estrategias-con-tacticas">0</span> con tácticas
-                    </span>
-                </div>
-            </div>
         </div>
 
-        <!-- Panel derecho: Tácticas y Actividades -->
-        <div class="panel-derecho">
+        <!-- Panel inferior: Tácticas y Actividades -->
+        <div class="panel-inferior">
             <div class="panel-header">
                 <div class="panel-title-container">
                     <div class="panel-icon-badge bg-blue">
@@ -119,7 +120,7 @@
                         <i class="fas fa-chess-board"></i>
                     </div>
                     <h3>Estrategia no seleccionada</h3>
-                    <p>Seleccione una estrategia de la tabla para comenzar a planificar tácticas y actividades.</p>
+                    <p>Seleccione una estrategia de la tabla superior para comenzar a planificar tácticas y actividades.</p>
                     <div class="vacia-tips">
                         <div class="tip">
                             <i class="fas fa-lightbulb"></i>
@@ -133,6 +134,7 @@
                 </div>
 
                 <div class="estrategia-contenido" id="estrategia-contenido" style="display: none;">
+                    <!-- Estrategia seleccionada -->
                     <div class="estrategia-texto-container">
                         <div class="estrategia-texto-header">
                             <h3><i class="fas fa-quote-left"></i> Estrategia Seleccionada</h3>
@@ -141,67 +143,73 @@
                         <div class="estrategia-texto" id="estrategia-texto"></div>
                     </div>
                     
-                    <!-- Formulario para agregar táctica -->
-                    <div class="formulario-tactica">
-                        <div class="form-header">
-                            <h3><i class="fas fa-plus-circle"></i> Agregar Nueva Táctica</h3>
-                            <p class="form-subtitle">Desglose operativo de la estrategia en acciones concretas</p>
-                        </div>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="tactica-nombre" class="form-label">
-                                    <i class="fas fa-heading"></i> Nombre de la Táctica
-                                </label>
-                                <input type="text" id="tactica-nombre" class="form-input" 
-                                       placeholder="Ej: Implementar programa de capacitación continua">
-                                <div class="form-hint">Describa la táctica de forma clara y concisa</div>
+                    <!-- Contenedor principal para tácticas y actividades -->
+                    <div class="tacticas-actividades-container">
+                        
+                        <!-- Formulario para agregar táctica -->
+                        <div class="formulario-tactica">
+                            <div class="form-header">
+                                <h3><i class="fas fa-plus-circle"></i> Agregar Nueva Táctica</h3>
+                                <p class="form-subtitle">Desglose operativo de la estrategia en acciones concretas</p>
                             </div>
-                            <div class="form-group">
-                                <label for="tactica-descripcion" class="form-label">
-                                    <i class="fas fa-align-left"></i> Descripción Detallada
-                                </label>
-                                <textarea id="tactica-descripcion" class="form-textarea" rows="3" 
-                                          placeholder="Describa los alcances, metodología y objetivos específicos de esta táctica..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="tactica-responsable" class="form-label">
-                                    <i class="fas fa-user-tie"></i> Responsable Principal
-                                </label>
-                                <input type="text" id="tactica-responsable" class="form-input" 
-                                       placeholder="Nombre del líder responsable">
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="tactica-fecha-inicio" class="form-label">
-                                        <i class="fas fa-calendar-plus"></i> Fecha de Inicio
+                            <div class="form-grid-expanded">
+                                <div class="form-group-expanded">
+                                    <label for="tactica-nombre" class="form-label">
+                                        <i class="fas fa-heading"></i> Nombre de la Táctica
                                     </label>
-                                    <input type="date" id="tactica-fecha-inicio" class="form-input">
+                                    <input type="text" id="tactica-nombre" class="form-input-expanded" 
+                                           placeholder="Ej: Implementar programa de capacitación continua para fortalecer habilidades técnicas">
+                                    <div class="form-hint">Describa la táctica de forma clara y concisa</div>
                                 </div>
-                                <div class="form-group">
-                                    <label for="tactica-fecha-fin" class="form-label">
-                                        <i class="fas fa-calendar-check"></i> Fecha de Finalización
-                                    </label>
-                                    <input type="date" id="tactica-fecha-fin" class="form-input">
+                                <div class="form-row-expanded">
+                                    <div class="form-group-expanded">
+                                        <label for="tactica-descripcion" class="form-label">
+                                            <i class="fas fa-align-left"></i> Descripción Detallada
+                                        </label>
+                                        <textarea id="tactica-descripcion" class="form-textarea-expanded" rows="4" 
+                                                  placeholder="Describa los alcances, metodología y objetivos específicos de esta táctica..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-row-expanded">
+                                    <div class="form-group-expanded">
+                                        <label for="tactica-responsable" class="form-label">
+                                            <i class="fas fa-user-tie"></i> Responsable Principal
+                                        </label>
+                                        <input type="text" id="tactica-responsable" class="form-input-expanded" 
+                                               placeholder="Nombre del líder responsable y equipo involucrado">
+                                    </div>
+                                    <div class="form-group-expanded">
+                                        <label for="tactica-fecha-inicio" class="form-label">
+                                            <i class="fas fa-calendar-plus"></i> Fecha de Inicio
+                                        </label>
+                                        <input type="date" id="tactica-fecha-inicio" class="form-input-expanded">
+                                    </div>
+                                    <div class="form-group-expanded">
+                                        <label for="tactica-fecha-fin" class="form-label">
+                                            <i class="fas fa-calendar-check"></i> Fecha de Finalización
+                                        </label>
+                                        <input type="date" id="tactica-fecha-fin" class="form-input-expanded">
+                                    </div>
                                 </div>
                             </div>
+                            <button class="btn-agregar-tactica" onclick="agregarTactica()">
+                                <i class="fas fa-plus"></i> Agregar Táctica
+                            </button>
                         </div>
-                        <button class="btn-agregar-tactica" onclick="agregarTactica()">
-                            <i class="fas fa-plus"></i> Agregar Táctica
-                        </button>
-                    </div>
 
-                    <!-- Lista de tácticas -->
-                    <div class="lista-tacticas" id="lista-tacticas">
-                        <div class="lista-header">
-                            <h3><i class="fas fa-list-ul"></i> Tácticas Asignadas</h3>
-                            <div class="lista-filtros">
-                                <button class="btn-filtro activo" data-filtro="todas">Todas</button>
-                                <button class="btn-filtro" data-filtro="vigentes">Vigentes</button>
-                                <button class="btn-filtro" data-filtro="completadas">Completadas</button>
+                        <!-- Lista de tácticas con más espacio -->
+                        <div class="lista-tacticas-expanded">
+                            <div class="lista-header">
+                                <h3><i class="fas fa-list-ul"></i> Tácticas Asignadas</h3>
+                                <div class="lista-filtros">
+                                    <button class="btn-filtro activo" data-filtro="todas">Todas</button>
+                                    <button class="btn-filtro" data-filtro="vigentes">Vigentes</button>
+                                    <button class="btn-filtro" data-filtro="completadas">Completadas</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="tacticas-container" id="tacticas-container">
-                            <!-- Las tácticas se cargarán aquí -->
+                            <div class="tacticas-container-expanded" id="tacticas-container">
+                                <!-- Las tácticas se cargarán aquí -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -213,7 +221,7 @@
 <!-- Modal para agregar actividades -->
 <div class="modal" id="modal-actividad">
     <div class="modal-overlay" onclick="cerrarModalActividad()"></div>
-    <div class="modal-container">
+    <div class="modal-container-expanded">
         <div class="modal-header">
             <div class="modal-icon">
                 <i class="fas fa-tasks"></i>
@@ -226,60 +234,62 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="modal-body">
-            <div class="form-grid">
-                <div class="form-group">
+        <div class="modal-body-expanded">
+            <div class="form-grid-modal">
+                <div class="form-group-expanded">
                     <label for="actividad-nombre" class="form-label">
                         <i class="fas fa-heading"></i> Nombre de la Actividad
                     </label>
-                    <input type="text" id="actividad-nombre" class="form-input" 
-                           placeholder="Ej: Contactar y contratar facilitadores certificados">
+                    <input type="text" id="actividad-nombre" class="form-input-expanded" 
+                           placeholder="Ej: Contactar y contratar facilitadores certificados para capacitación técnica">
                 </div>
-                <div class="form-group">
+                <div class="form-group-expanded">
                     <label for="actividad-descripcion" class="form-label">
                         <i class="fas fa-align-left"></i> Descripción Detallada
                     </label>
-                    <textarea id="actividad-descripcion" class="form-textarea" rows="3" 
-                              placeholder="Describa la actividad paso a paso, incluyendo recursos necesarios..."></textarea>
+                    <textarea id="actividad-descripcion" class="form-textarea-expanded" rows="4" 
+                              placeholder="Describa la actividad paso a paso, incluyendo recursos necesarios, metodología y resultados esperados..."></textarea>
                 </div>
-                <div class="form-group">
-                    <label for="actividad-responsable" class="form-label">
-                        <i class="fas fa-user-check"></i> Responsable
-                    </label>
-                    <input type="text" id="actividad-responsable" class="form-input" 
-                           placeholder="Nombre del ejecutor principal">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
+                <div class="form-row-expanded">
+                    <div class="form-group-expanded">
+                        <label for="actividad-responsable" class="form-label">
+                            <i class="fas fa-user-check"></i> Responsable
+                        </label>
+                        <input type="text" id="actividad-responsable" class="form-input-expanded" 
+                               placeholder="Nombre del ejecutor principal y equipo de apoyo">
+                    </div>
+                    <div class="form-group-expanded">
                         <label for="actividad-fecha-inicio" class="form-label">
                             <i class="fas fa-play-circle"></i> Inicio Planificado
                         </label>
-                        <input type="date" id="actividad-fecha-inicio" class="form-input">
+                        <input type="date" id="actividad-fecha-inicio" class="form-input-expanded">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group-expanded">
                         <label for="actividad-fecha-fin" class="form-label">
                             <i class="fas fa-flag-checkered"></i> Finalización Estimada
                         </label>
-                        <input type="date" id="actividad-fecha-fin" class="form-input">
+                        <input type="date" id="actividad-fecha-fin" class="form-input-expanded">
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="actividad-estado" class="form-label">
-                        <i class="fas fa-chart-line"></i> Estado de Avance
-                    </label>
-                    <select id="actividad-estado" class="form-select">
-                        <option value="pendiente">🟡 Pendiente - Por iniciar</option>
-                        <option value="en_progreso">🔵 En Progreso - En ejecución</option>
-                        <option value="completada">🟢 Completada - Finalizada</option>
-                        <option value="atrasada">🔴 Atrasada - Requiere atención</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="actividad-recursos" class="form-label">
-                        <i class="fas fa-toolbox"></i> Recursos Requeridos
-                    </label>
-                    <textarea id="actividad-recursos" class="form-textarea" rows="2" 
-                              placeholder="Liste los recursos necesarios (humanos, materiales, financieros)..."></textarea>
+                <div class="form-row-expanded">
+                    <div class="form-group-expanded">
+                        <label for="actividad-estado" class="form-label">
+                            <i class="fas fa-chart-line"></i> Estado de Avance
+                        </label>
+                        <select id="actividad-estado" class="form-select-expanded">
+                            <option value="pendiente">🟡 Pendiente - Por iniciar</option>
+                            <option value="en_progreso">🔵 En Progreso - En ejecución</option>
+                            <option value="completada">🟢 Completada - Finalizada</option>
+                            <option value="atrasada">🔴 Atrasada - Requiere atención</option>
+                        </select>
+                    </div>
+                    <div class="form-group-expanded">
+                        <label for="actividad-recursos" class="form-label">
+                            <i class="fas fa-toolbox"></i> Recursos Requeridos
+                        </label>
+                        <textarea id="actividad-recursos" class="form-textarea-expanded" rows="3" 
+                                  placeholder="Liste los recursos necesarios (humanos, materiales, financieros)..."></textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -300,10 +310,13 @@
         background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
         min-height: calc(100vh - 60px);
         height: auto;
+        display: flex;
+        flex-direction: column;
     }
 
     .estrategias-header {
         margin-bottom: 20px;
+        flex-shrink: 0;
     }
 
     .content-title {
@@ -327,24 +340,17 @@
         font-weight: 500;
     }
 
-    .estrategias-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+    /* Diseño vertical principal */
+    .estrategias-container-vertical {
+        display: flex;
+        flex-direction: column;
         gap: 20px;
-        height: calc(100vh - 150px);
-        min-height: 700px;
+        flex: 1;
+        min-height: 0; /* Importante para el scroll interno */
     }
 
-    @media (max-width: 1200px) {
-        .estrategias-container {
-            grid-template-columns: 1fr;
-            height: auto;
-            min-height: auto;
-        }
-    }
-
-    /* Panel izquierdo optimizado */
-    .panel-izquierdo {
+    /* Panel superior - Tabla de estrategias */
+    .panel-superior {
         background: white;
         border-radius: 16px;
         box-shadow: 0 10px 25px rgba(12, 36, 97, 0.08);
@@ -352,9 +358,26 @@
         flex-direction: column;
         overflow: hidden;
         border: 1px solid #e2e8f0;
-        height: 100%;
+        flex: 0 0 40%; /* 40% de la altura */
+        min-height: 300px;
+        max-height: 50vh;
     }
 
+    /* Panel inferior - Tácticas y actividades */
+    .panel-inferior {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(12, 36, 97, 0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        flex: 0 0 60%; /* 60% de la altura */
+        min-height: 400px;
+        max-height: 60vh;
+    }
+
+    /* Cabeceras comunes */
     .panel-header {
         padding: 20px;
         border-bottom: 1px solid #f1f5f9;
@@ -363,6 +386,36 @@
         align-items: flex-start;
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         flex-shrink: 0;
+    }
+
+    .panel-header-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+    }
+
+    .estadisticas-header {
+        display: flex;
+        gap: 20px;
+    }
+
+    .estadistica-header-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #475569;
+        font-weight: 500;
+        background: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .estadistica-header-item i {
+        color: #0c2461;
+        font-size: 14px;
     }
 
     .panel-title-container {
@@ -431,6 +484,7 @@
         transform: translateY(0);
     }
 
+    /* Filtros */
     .filtros-panel {
         padding: 15px 20px;
         border-bottom: 1px solid #f1f5f9;
@@ -476,12 +530,12 @@
         outline: none;
     }
 
+    /* Tabla de estrategias */
     .tabla-container {
         flex: 1;
         overflow-y: auto;
         padding: 0;
-        min-height: 300px;
-        max-height: calc(100vh - 400px);
+        min-height: 200px;
     }
 
     .tabla-estrategias {
@@ -489,7 +543,6 @@
         border-collapse: separate;
         border-spacing: 0;
         font-size: 13px;
-        min-height: 100px;
     }
 
     .tabla-estrategias thead {
@@ -532,10 +585,6 @@
         padding: 16px;
         vertical-align: middle;
         border-bottom: 1px solid #f1f5f9;
-        max-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     .tabla-estrategias td:nth-child(3) {
@@ -546,20 +595,8 @@
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         line-height: 1.4;
-        white-space: normal;
         word-wrap: break-word;
-        max-width: none;
         text-overflow: ellipsis;
-    }
-
-    .tabla-estrategias td:first-child {
-        border-top-left-radius: 8px;
-        border-bottom-left-radius: 8px;
-    }
-
-    .tabla-estrategias td:last-child {
-        border-top-right-radius: 8px;
-        border-bottom-right-radius: 8px;
     }
 
     .eje-badge {
@@ -608,6 +645,7 @@
         transform: scale(1.05);
     }
 
+    /* Información de estrategia seleccionada */
     .estrategia-seleccionada-info {
         margin-left: auto;
         text-align: right;
@@ -674,49 +712,7 @@
         color: #64748b;
     }
 
-    .panel-footer {
-        padding: 15px 20px;
-        border-top: 1px solid #f1f5f9;
-        background: #f8fafc;
-        flex-shrink: 0;
-    }
-
-    .estadisticas {
-        display: flex;
-        gap: 20px;
-    }
-
-    .estadistica-item {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 13px;
-        color: #475569;
-        font-weight: 500;
-    }
-
-    .estadistica-item i {
-        color: #0c2461;
-        font-size: 14px;
-    }
-
-    #total-estrategias, #estrategias-con-tacticas {
-        font-weight: 700;
-        color: #0c2461;
-    }
-
-    /* Panel derecho optimizado */
-    .panel-derecho {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(12, 36, 97, 0.08);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        border: 1px solid #e2e8f0;
-        height: 100%;
-    }
-
+    /* Contenido de estrategia */
     .estrategia-detalle {
         flex: 1;
         display: flex;
@@ -803,7 +799,7 @@
         overflow: hidden;
     }
 
-    /* Estrategia texto optimizado */
+    /* Texto de estrategia */
     .estrategia-texto-container {
         background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
         border-radius: 12px;
@@ -845,7 +841,7 @@
         line-height: 1.6;
         white-space: pre-wrap;
         word-wrap: break-word;
-        max-height: 150px;
+        max-height: 200px;
         overflow-y: auto;
         padding: 15px;
         background: white;
@@ -854,7 +850,17 @@
         margin-top: 10px;
     }
 
-    /* Formulario Táctica optimizado */
+    /* Contenedor principal para tácticas y actividades */
+    .tacticas-actividades-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    /* Formulario de táctica expandido */
     .formulario-tactica {
         background: linear-gradient(135deg, #ffffff 0%, #fdfdfe 100%);
         border-radius: 12px;
@@ -862,7 +868,8 @@
         border: 2px solid #e2e8f0;
         transition: all 0.3s;
         flex-shrink: 0;
-        max-height: 350px;
+        min-height: 250px;
+        max-height: 300px;
         overflow-y: auto;
     }
 
@@ -891,28 +898,34 @@
         margin: 0;
     }
 
-    .form-grid {
+    /* Formularios expandidos */
+    .form-grid-expanded {
         display: flex;
         flex-direction: column;
         gap: 15px;
         margin-bottom: 20px;
     }
 
-    .form-row {
+    .form-row-expanded {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 15px;
     }
 
-    @media (max-width: 1400px) {
-        .form-row {
-            grid-template-columns: 1fr;
+    @media (min-width: 768px) {
+        .form-row-expanded {
+            grid-template-columns: repeat(3, 1fr);
+        }
+        
+        .form-row-expanded .form-group-expanded:nth-child(2) {
+            grid-column: span 2;
         }
     }
 
-    .form-group {
+    .form-group-expanded {
         display: flex;
         flex-direction: column;
+        min-height: 90px;
     }
 
     .form-label {
@@ -929,7 +942,7 @@
         color: #3b82f6;
     }
 
-    .form-input, .form-textarea, .form-select {
+    .form-input-expanded, .form-textarea-expanded, .form-select-expanded {
         padding: 12px;
         border: 2px solid #e2e8f0;
         border-radius: 10px;
@@ -937,17 +950,19 @@
         transition: all 0.3s;
         background: white;
         font-family: inherit;
+        flex: 1;
+        min-height: 46px;
     }
 
-    .form-input:focus, .form-textarea:focus, .form-select:focus {
+    .form-input-expanded:focus, .form-textarea-expanded:focus, .form-select-expanded:focus {
         border-color: #3b82f6;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         outline: none;
     }
 
-    .form-textarea {
+    .form-textarea-expanded {
         resize: vertical;
-        min-height: 80px;
+        min-height: 100px;
     }
 
     .form-hint {
@@ -985,8 +1000,8 @@
         transform: translateY(0);
     }
 
-    /* Lista de Tácticas optimizada */
-    .lista-tacticas {
+    /* Lista de tácticas expandida */
+    .lista-tacticas-expanded {
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -1045,17 +1060,17 @@
         color: white;
     }
 
-    .tacticas-container {
+    .tacticas-container-expanded {
         flex: 1;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
         gap: 15px;
         padding-right: 5px;
-        max-height: calc(100vh - 650px);
         min-height: 200px;
     }
 
+    /* Elementos de táctica */
     .tactica-item {
         background: white;
         border-radius: 12px;
@@ -1084,6 +1099,7 @@
         margin: 0;
         flex: 1;
         line-height: 1.5;
+        min-height: 24px;
     }
 
     .tactica-acciones {
@@ -1145,6 +1161,7 @@
         border-left: 4px solid #3b82f6;
         max-height: 150px;
         overflow-y: auto;
+        min-height: 60px;
     }
 
     .tactica-metadata {
@@ -1163,6 +1180,7 @@
         padding: 6px 12px;
         background: #f1f5f9;
         border-radius: 20px;
+        min-height: 32px;
     }
 
     .metadata-item i {
@@ -1175,8 +1193,10 @@
         overflow-y: auto;
         border-top: 1px solid #e2e8f0;
         padding-top: 15px;
+        min-height: 60px;
     }
 
+    /* Actividades */
     .actividad-item {
         background: white;
         border-radius: 8px;
@@ -1189,6 +1209,7 @@
         gap: 15px;
         align-items: start;
         transition: all 0.3s;
+        min-height: 100px;
     }
 
     .actividad-item:hover {
@@ -1205,6 +1226,7 @@
         font-size: 14px;
         color: #334155;
         font-weight: 600;
+        min-height: 20px;
     }
 
     .actividad-info p {
@@ -1212,6 +1234,7 @@
         color: #64748b;
         font-size: 13px;
         line-height: 1.5;
+        min-height: 40px;
     }
 
     .actividad-detalles {
@@ -1220,6 +1243,7 @@
         gap: 15px;
         font-size: 11px;
         color: #94a3b8;
+        min-height: 20px;
     }
 
     .actividad-estado {
@@ -1231,6 +1255,7 @@
         letter-spacing: 0.3px;
         min-width: 90px;
         text-align: center;
+        height: fit-content;
     }
 
     .actividad-estado.pendiente {
@@ -1253,7 +1278,21 @@
         color: white;
     }
 
-    /* Modal de Actividades */
+    .contador-actividades {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 20px;
+        height: 20px;
+        background: #3b82f6;
+        color: white;
+        border-radius: 50%;
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    /* Modal expandido */
     .modal {
         display: none;
         position: fixed;
@@ -1278,7 +1317,7 @@
         backdrop-filter: blur(8px);
     }
 
-    .modal-container {
+    .modal-container-expanded {
         position: fixed;
         top: 50%;
         left: 50%;
@@ -1286,7 +1325,7 @@
         background: white;
         border-radius: 16px;
         width: 90%;
-        max-width: 600px;
+        max-width: 800px;
         max-height: 90vh;
         overflow: hidden;
         box-shadow: 0 25px 50px rgba(12, 36, 97, 0.2);
@@ -1358,10 +1397,16 @@
         transform: rotate(90deg);
     }
 
-    .modal-body {
+    .modal-body-expanded {
         padding: 20px;
         max-height: calc(90vh - 180px);
         overflow-y: auto;
+    }
+
+    .form-grid-modal {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
     }
 
     .modal-footer {
@@ -1403,41 +1448,6 @@
         background: #e2e8f0;
     }
 
-    /* Scrollbars personalizados optimizados */
-    .tabla-container::-webkit-scrollbar,
-    .tacticas-container::-webkit-scrollbar,
-    .lista-actividades::-webkit-scrollbar,
-    .estrategia-texto::-webkit-scrollbar,
-    .formulario-tactica::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .tabla-container::-webkit-scrollbar-track,
-    .tacticas-container::-webkit-scrollbar-track,
-    .lista-actividades::-webkit-scrollbar-track,
-    .estrategia-texto::-webkit-scrollbar-track,
-    .formulario-tactica::-webkit-scrollbar-track {
-        background: #f1f5f9;
-        border-radius: 3px;
-    }
-
-    .tabla-container::-webkit-scrollbar-thumb,
-    .tacticas-container::-webkit-scrollbar-thumb,
-    .lista-actividades::-webkit-scrollbar-thumb,
-    .estrategia-texto::-webkit-scrollbar-thumb,
-    .formulario-tactica::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
-        border-radius: 3px;
-    }
-
-    .tabla-container::-webkit-scrollbar-thumb:hover,
-    .tacticas-container::-webkit-scrollbar-thumb:hover,
-    .lista-actividades::-webkit-scrollbar-thumb:hover,
-    .estrategia-texto::-webkit-scrollbar-thumb:hover,
-    .formulario-tactica::-webkit-scrollbar-thumb:hover {
-        background: #94a3b8;
-    }
-
     /* Estados de expansión para tácticas */
     .tactica-item.expanded .tactica-detalle {
         max-height: none;
@@ -1465,33 +1475,53 @@
         color: #0c2461;
     }
 
-    /* Contador de actividades visible */
-    .contador-actividades {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        height: 20px;
-        background: #3b82f6;
-        color: white;
-        border-radius: 50%;
-        font-size: 10px;
-        font-weight: 600;
-        margin-left: 8px;
+    /* Scrollbars personalizados */
+    .tabla-container::-webkit-scrollbar,
+    .tacticas-container-expanded::-webkit-scrollbar,
+    .lista-actividades::-webkit-scrollbar,
+    .estrategia-texto::-webkit-scrollbar,
+    .formulario-tactica::-webkit-scrollbar,
+    .modal-body-expanded::-webkit-scrollbar {
+        width: 8px;
     }
 
-    /* Responsive Design mejorado */
-    @media (max-width: 1400px) {
-        .estrategias-container {
-            height: calc(100vh - 130px);
+    .tabla-container::-webkit-scrollbar-track,
+    .tacticas-container-expanded::-webkit-scrollbar-track,
+    .lista-actividades::-webkit-scrollbar-track,
+    .estrategia-texto::-webkit-scrollbar-track,
+    .formulario-tactica::-webkit-scrollbar-track,
+    .modal-body-expanded::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 4px;
+    }
+
+    .tabla-container::-webkit-scrollbar-thumb,
+    .tacticas-container-expanded::-webkit-scrollbar-thumb,
+    .lista-actividades::-webkit-scrollbar-thumb,
+    .estrategia-texto::-webkit-scrollbar-thumb,
+    .formulario-tactica::-webkit-scrollbar-thumb,
+    .modal-body-expanded::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 4px;
+    }
+
+    .tabla-container::-webkit-scrollbar-thumb:hover,
+    .tacticas-container-expanded::-webkit-scrollbar-thumb:hover,
+    .lista-actividades::-webkit-scrollbar-thumb:hover,
+    .estrategia-texto::-webkit-scrollbar-thumb:hover,
+    .formulario-tactica::-webkit-scrollbar-thumb:hover,
+    .modal-body-expanded::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .panel-superior, .panel-inferior {
+            max-height: none;
         }
         
-        .tabla-container {
-            max-height: calc(100vh - 350px);
-        }
-        
-        .tacticas-container {
-            max-height: calc(100vh - 600px);
+        .form-row-expanded {
+            grid-template-columns: 1fr;
         }
     }
 
@@ -1500,22 +1530,15 @@
             padding: 15px;
         }
         
-        .estrategias-container {
-            grid-template-columns: 1fr;
-            height: auto;
-            gap: 15px;
-        }
-        
-        .panel-izquierdo,
-        .panel-derecho {
-            height: auto;
-            min-height: 500px;
-        }
-        
         .panel-header {
             flex-direction: column;
             gap: 15px;
             padding: 15px;
+        }
+        
+        .panel-header-right {
+            width: 100%;
+            align-items: flex-start;
         }
         
         .estrategia-seleccionada-info {
@@ -1529,15 +1552,7 @@
             padding: 15px;
         }
         
-        .tabla-container {
-            max-height: 400px;
-        }
-        
-        .tacticas-container {
-            max-height: 400px;
-        }
-        
-        .modal-container {
+        .modal-container-expanded {
             width: 95%;
             border-radius: 12px;
         }
@@ -1554,24 +1569,21 @@
             top: 15px;
             right: 15px;
         }
-    }
-
-    /* Ajustes para pantallas muy grandes */
-    @media (min-width: 1600px) {
-        .estrategias-container {
-            height: calc(100vh - 120px);
+        
+        .lista-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
         }
         
-        .tabla-container {
-            max-height: calc(100vh - 370px);
+        .tactica-header {
+            flex-direction: column;
+            gap: 10px;
         }
         
-        .tacticas-container {
-            max-height: calc(100vh - 620px);
-        }
-        
-        .estrategias-main-container {
-            padding: 25px 40px;
+        .tactica-acciones {
+            width: 100%;
+            justify-content: flex-start;
         }
     }
 
@@ -1594,30 +1606,12 @@
     .actividad-item {
         animation: fadeIn 0.3s ease forwards;
     }
-
-    /* Clase para modo compacto */
-    .compact-mode .estrategia-texto-container {
-        padding: 15px;
-    }
-
-    .compact-mode .estrategia-texto {
-        max-height: 100px;
-        font-size: 13px;
-    }
-
-    .compact-mode .formulario-tactica {
-        max-height: 300px;
-        padding: 15px;
-    }
-
-    .compact-mode .tacticas-container {
-        max-height: calc(100vh - 700px);
-    }
 </style>
 
 <script>
     // Variables globales
     let estrategias = [];
+    let estrategiasUnicas = []; // Almacenará las estrategias únicas
     let estrategiaSeleccionadaId = null;
     let tacticaActualParaActividad = null;
     let tacticas = {};
@@ -1646,16 +1640,21 @@
     document.addEventListener('DOMContentLoaded', function() {
         cargarEstrategias();
         configurarFiltrosTacticas();
-        ajustarDiseñoPorAltura();
+        configurarTextareasAutoexpansibles();
         
-        // Asegurar que los textareas sean responsivos
-        document.querySelectorAll('.form-textarea').forEach(textarea => {
+        // Ajustar altura inicial
+        ajustarAlturasPaneles();
+    });
+
+    // Configurar textareas auto-expansibles
+    function configurarTextareasAutoexpansibles() {
+        document.querySelectorAll('.form-textarea-expanded').forEach(textarea => {
             textarea.addEventListener('input', function() {
                 this.style.height = 'auto';
                 this.style.height = (this.scrollHeight) + 'px';
             });
         });
-    });
+    }
 
     // Configurar filtros de tácticas
     function configurarFiltrosTacticas() {
@@ -1666,6 +1665,24 @@
                 filtrarTacticas(this.dataset.filtro);
             });
         });
+    }
+
+    // Ajustar alturas de los paneles
+    function ajustarAlturasPaneles() {
+        const alturaVentana = window.innerHeight;
+        const alturaDisponible = alturaVentana - 200; // Restar encabezados y márgenes
+        
+        // Panel superior (40%)
+        const panelSuperior = document.querySelector('.panel-superior');
+        if (panelSuperior) {
+            panelSuperior.style.minHeight = Math.max(300, alturaDisponible * 0.4) + 'px';
+        }
+        
+        // Panel inferior (60%)
+        const panelInferior = document.querySelector('.panel-inferior');
+        if (panelInferior) {
+            panelInferior.style.minHeight = Math.max(400, alturaDisponible * 0.6) + 'px';
+        }
     }
 
     // Cargar estrategias desde la base de datos
@@ -1680,6 +1697,10 @@
             .then(data => {
                 if (data.success) {
                     estrategias = data.estrategias;
+                    
+                    // Procesar estrategias para eliminar duplicados
+                    procesarEstrategiasUnicas();
+                    
                     actualizarTablaEstrategias();
                     actualizarEstadisticas();
                 } else {
@@ -1697,9 +1718,69 @@
             });
     }
 
+    // Procesar estrategias para eliminar duplicados
+    function procesarEstrategiasUnicas() {
+        // Usar un Map para agrupar por combinación única de eje, tipo y texto de estrategia
+        const estrategiasMap = new Map();
+        
+        estrategias.forEach(estrategia => {
+            // Crear una clave única basada en eje_id, tipo_cruce y estrategia
+            const clave = `${estrategia.eje_id}_${estrategia.tipo_cruce}_${estrategia.estrategia}`;
+            
+            if (!estrategiasMap.has(clave)) {
+                // Si no existe, crear una nueva entrada con IDs relacionados
+                estrategiasMap.set(clave, {
+                    ...estrategia,
+                    ids_relacionados: [estrategia.id],
+                    // Para mostrar elementos FODA combinados
+                    elementos_internos: [{
+                        id: estrategia.elemento_interno_id,
+                        tipo: estrategia.elemento_interno_tipo,
+                        texto: estrategia.elemento_interno_texto
+                    }],
+                    elementos_externos: [{
+                        id: estrategia.elemento_externo_id,
+                        tipo: estrategia.elemento_externo_tipo,
+                        texto: estrategia.elemento_externo_texto
+                    }]
+                });
+            } else {
+                // Si ya existe, agregar el ID a la lista de relacionados
+                const existente = estrategiasMap.get(clave);
+                existente.ids_relacionados.push(estrategia.id);
+                
+                // Agregar elementos únicos a las listas
+                const internoExiste = existente.elementos_internos.some(
+                    e => e.id === estrategia.elemento_interno_id
+                );
+                if (!internoExiste) {
+                    existente.elementos_internos.push({
+                        id: estrategia.elemento_interno_id,
+                        tipo: estrategia.elemento_interno_tipo,
+                        texto: estrategia.elemento_interno_texto
+                    });
+                }
+                
+                const externoExiste = existente.elementos_externos.some(
+                    e => e.id === estrategia.elemento_externo_id
+                );
+                if (!externoExiste) {
+                    existente.elementos_externos.push({
+                        id: estrategia.elemento_externo_id,
+                        tipo: estrategia.elemento_externo_tipo,
+                        texto: estrategia.elemento_externo_texto
+                    });
+                }
+            }
+        });
+        
+        // Convertir el Map a array y asignar a estrategiasUnicas
+        estrategiasUnicas = Array.from(estrategiasMap.values());
+    }
+
     // Actualizar estadísticas
     function actualizarEstadisticas() {
-        document.getElementById('total-estrategias').textContent = estrategias.length;
+        document.getElementById('total-estrategias').textContent = estrategiasUnicas.length;
         
         // Contar estrategias con tácticas
         let conTacticas = 0;
@@ -1714,7 +1795,7 @@
         const cuerpoTabla = document.getElementById('cuerpo-tabla-estrategias');
         cuerpoTabla.innerHTML = '';
 
-        if (estrategias.length === 0) {
+        if (estrategiasUnicas.length === 0) {
             cuerpoTabla.innerHTML = `
                 <tr>
                     <td colspan="4" style="text-align: center; padding: 50px;">
@@ -1729,10 +1810,11 @@
             return;
         }
 
-        estrategias.forEach(estrategia => {
+        estrategiasUnicas.forEach(estrategia => {
             const fila = document.createElement('tr');
-            fila.dataset.id = estrategia.id;
-            fila.onclick = () => seleccionarEstrategia(estrategia.id);
+            // Usar el primer ID de los relacionados
+            fila.dataset.id = estrategia.ids_relacionados[0];
+            fila.onclick = () => seleccionarEstrategia(estrategia.ids_relacionados[0]);
 
             const tipoColor = tipoColors[estrategia.tipo_cruce] || '#0c2461';
             const ejeTexto = mapEjes[estrategia.eje_id] || estrategia.eje_id;
@@ -1751,10 +1833,14 @@
                 <td>
                     <div style="font-weight: 500; line-height: 1.5; color: #334155; font-size: 13px;">
                         ${estrategia.estrategia.substring(0, 120)}${estrategia.estrategia.length > 120 ? '...' : ''}
+                        ${estrategia.ids_relacionados.length > 1 ? 
+                          `<div style="margin-top: 5px; font-size: 11px; color: #64748b;">
+                            <i class="fas fa-layer-group"></i> Combinada de ${estrategia.ids_relacionados.length} elementos FODA
+                          </div>` : ''}
                     </div>
                 </td>
                 <td>
-                    <button class="btn-seleccionar" onclick="seleccionarEstrategia(${estrategia.id}); event.stopPropagation();">
+                    <button class="btn-seleccionar" onclick="seleccionarEstrategia(${estrategia.ids_relacionados[0]}); event.stopPropagation();">
                         <i class="fas fa-arrow-right"></i> Detalles
                     </button>
                 </td>
@@ -1779,7 +1865,10 @@
 
         filas.forEach(fila => {
             if (fila.dataset.id) {
-                const estrategia = estrategias.find(e => e.id == fila.dataset.id);
+                // Buscar la estrategia única que contiene este ID
+                const estrategia = estrategiasUnicas.find(e => 
+                    e.ids_relacionados.includes(parseInt(fila.dataset.id))
+                );
                 if (!estrategia) return;
 
                 const pasaEje = filtroEje === 'all' || estrategia.eje_id === filtroEje;
@@ -1790,10 +1879,15 @@
         });
     }
 
+    // Buscar estrategia por ID en las estrategias únicas
+    function buscarEstrategiaPorId(id) {
+        return estrategiasUnicas.find(e => e.ids_relacionados.includes(parseInt(id)));
+    }
+
     // Seleccionar una estrategia
     function seleccionarEstrategia(id) {
         estrategiaSeleccionadaId = id;
-        const estrategia = estrategias.find(e => e.id == id);
+        const estrategia = buscarEstrategiaPorId(id);
 
         if (!estrategia) return;
 
@@ -1816,33 +1910,79 @@
         // Mostrar contenido de la estrategia
         document.getElementById('estrategia-vacia').style.display = 'none';
         document.getElementById('estrategia-contenido').style.display = 'block';
-        document.getElementById('estrategia-texto').textContent = estrategia.estrategia;
+        
+        // Construir texto completo con elementos FODA
+        let textoCompleto = estrategia.estrategia;
+        
+        // Agregar información de elementos FODA si hay múltiples
+        if (estrategia.ids_relacionados.length > 1) {
+            textoCompleto += "\n\n--- Elementos FODA relacionados ---\n";
+            
+            // Elementos internos
+            if (estrategia.elementos_internos.length > 0) {
+                textoCompleto += "\n🔍 Elementos Internos:\n";
+                estrategia.elementos_internos.forEach((elem, index) => {
+                    textoCompleto += `• ${elem.tipo === 'fortaleza' ? '✅' : '⚠️'} ${elem.texto}\n`;
+                });
+            }
+            
+            // Elementos externos
+            if (estrategia.elementos_externos.length > 0) {
+                textoCompleto += "\n🌐 Elementos Externos:\n";
+                estrategia.elementos_externos.forEach((elem, index) => {
+                    textoCompleto += `• ${elem.tipo === 'oportunidad' ? '🎯' : '⚠️'} ${elem.texto}\n`;
+                });
+            }
+        }
+        
+        document.getElementById('estrategia-texto').textContent = textoCompleto;
         document.getElementById('estrategia-len').textContent = `${estrategia.estrategia.length} caracteres`;
 
-        // Cargar tácticas de esta estrategia
-        cargarTacticas(id);
+        // Cargar tácticas de esta estrategia (usar todos los IDs relacionados)
+        cargarTacticasCombinadas(estrategia.ids_relacionados);
     }
 
-    // Cargar tácticas para una estrategia
-    function cargarTacticas(estrategiaId) {
-        fetch(`/api/actividades_estrategia/${estrategiaId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    tacticas[estrategiaId] = data.actividades;
-                    actualizarListaTacticas(estrategiaId);
-                    actualizarContadores(estrategiaId);
-                } else {
-                    tacticas[estrategiaId] = [];
-                    actualizarListaTacticas(estrategiaId);
-                    actualizarContadores(estrategiaId);
-                }
+    // Cargar tácticas combinadas para múltiples IDs de estrategia
+    function cargarTacticasCombinadas(idsEstrategia) {
+        // Crear un array de promesas para obtener tácticas de cada ID
+        const promesasTacticas = idsEstrategia.map(id => 
+            fetch(`/api/actividades_estrategia/${id}`)
+                .then(response => response.json())
+                .then(data => data.success ? data.actividades : [])
+                .catch(error => {
+                    console.error(`Error al cargar tácticas para estrategia ${id}:`, error);
+                    return [];
+                })
+        );
+
+        // Esperar a que todas las promesas se resuelvan
+        Promise.all(promesasTacticas)
+            .then(resultados => {
+                // Combinar todas las tácticas en un solo array
+                const todasTacticas = resultados.flat();
+                
+                // Filtrar duplicados (por nombre o ID)
+                const tacticasUnicas = [];
+                const tacticasVistas = new Set();
+                
+                todasTacticas.forEach(tactica => {
+                    const clave = tactica.nombre.toLowerCase().trim();
+                    if (!tacticasVistas.has(clave)) {
+                        tacticasVistas.add(clave);
+                        tacticasUnicas.push(tactica);
+                    }
+                });
+                
+                // Almacenar tácticas usando el primer ID como clave
+                tacticas[idsEstrategia[0]] = tacticasUnicas;
+                actualizarListaTacticas(idsEstrategia[0]);
+                actualizarContadores(idsEstrategia[0]);
             })
             .catch(error => {
-                console.error('Error al cargar tácticas:', error);
-                tacticas[estrategiaId] = [];
-                actualizarListaTacticas(estrategiaId);
-                actualizarContadores(estrategiaId);
+                console.error('Error al cargar tácticas combinadas:', error);
+                tacticas[idsEstrategia[0]] = [];
+                actualizarListaTacticas(idsEstrategia[0]);
+                actualizarContadores(idsEstrategia[0]);
             });
     }
 
@@ -1896,11 +2036,11 @@
     function actualizarHTMLTactica(tactica) {
         const actividadesCount = actividadesCache[tactica.id] ? actividadesCache[tactica.id].length : 0;
         const fechaInicio = tactica.fecha_inicio ? 
-            new Date(tactica.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 
-            'No def.';
+            new Date(tactica.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+            'No definida';
         const fechaFin = tactica.fecha_fin ? 
-            new Date(tactica.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 
-            'No def.';
+            new Date(tactica.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+            'No definida';
 
         return `
             <div class="tactica-header">
@@ -1993,8 +2133,16 @@
             return;
         }
 
+        // Encontrar la estrategia para obtener todos los IDs relacionados
+        const estrategia = buscarEstrategiaPorId(estrategiaSeleccionadaId);
+        if (!estrategia) {
+            mostrarNotificacion('❌ Error: Estrategia no encontrada', 'error');
+            return;
+        }
+
+        // Crear táctica para el primer ID de estrategia
         const tactica = {
-            estrategia_id: estrategiaSeleccionadaId,
+            estrategia_id: estrategia.ids_relacionados[0], // Usar el primer ID
             nombre: nombre,
             descripcion: descripcion,
             responsable: responsable,
@@ -2023,7 +2171,7 @@
                 document.getElementById('tactica-fecha-fin').value = '';
                 
                 // Recargar tácticas
-                cargarTacticas(estrategiaSeleccionadaId);
+                cargarTacticasCombinadas(estrategia.ids_relacionados);
                 actualizarEstadisticas();
             } else {
                 mostrarNotificacion('❌ Error: ' + data.message, 'error');
@@ -2051,8 +2199,13 @@
         .then(data => {
             if (data.success) {
                 mostrarNotificacion('✅ Táctica eliminada correctamente', 'success');
-                cargarTacticas(estrategiaSeleccionadaId);
-                actualizarEstadisticas();
+                
+                // Encontrar la estrategia para recargar
+                const estrategia = buscarEstrategiaPorId(estrategiaSeleccionadaId);
+                if (estrategia) {
+                    cargarTacticasCombinadas(estrategia.ids_relacionados);
+                    actualizarEstadisticas();
+                }
             } else {
                 mostrarNotificacion('❌ Error: ' + data.message, 'error');
             }
@@ -2068,6 +2221,15 @@
         tacticaActualParaActividad = tacticaId;
         document.getElementById('modal-actividad').classList.add('active');
         document.body.style.overflow = 'hidden';
+        
+        // Ajustar altura del textarea
+        setTimeout(() => {
+            const textareaDesc = document.getElementById('actividad-descripcion');
+            if (textareaDesc) {
+                textareaDesc.style.height = 'auto';
+                textareaDesc.style.height = (textareaDesc.scrollHeight) + 'px';
+            }
+        }, 100);
     }
 
     function cerrarModalActividad() {
@@ -2153,9 +2315,13 @@
                     // Actualizar HTML de la táctica para mostrar contador
                     const tacticaItem = document.querySelector(`.tactica-item[data-id="${tacticaId}"]`);
                     if (tacticaItem) {
-                        const tactica = tacticas[estrategiaSeleccionadaId].find(t => t.id == tacticaId);
-                        if (tactica) {
-                            tacticaItem.innerHTML = actualizarHTMLTactica(tactica);
+                        // Buscar la táctica en las tácticas almacenadas
+                        const estrategia = buscarEstrategiaPorId(estrategiaSeleccionadaId);
+                        if (estrategia && tacticas[estrategia.ids_relacionados[0]]) {
+                            const tactica = tacticas[estrategia.ids_relacionados[0]].find(t => t.id == tacticaId);
+                            if (tactica) {
+                                tacticaItem.innerHTML = actualizarHTMLTactica(tactica);
+                            }
                         }
                     }
                 }
@@ -2189,11 +2355,11 @@
 
             // Formatear fechas
             const fechaInicio = actividad.fecha_inicio ? 
-                new Date(actividad.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 
-                'No def.';
+                new Date(actividad.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+                'No definida';
             const fechaFin = actividad.fecha_fin ? 
-                new Date(actividad.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 
-                'No def.';
+                new Date(actividad.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+                'No definida';
 
             // Texto del estado
             let estadoTexto = '';
@@ -2221,28 +2387,6 @@
             container.appendChild(actividadDiv);
         });
     }
-
-    // Función para ajustar diseño en tiempo real según altura disponible
-    function ajustarDiseñoPorAltura() {
-        const alturaVentana = window.innerHeight;
-        const panelDerecho = document.querySelector('.panel-derecho');
-        
-        if (alturaVentana < 800) {
-            panelDerecho.classList.add('compact-mode');
-        } else {
-            panelDerecho.classList.remove('compact-mode');
-        }
-        
-        // Ajustar altura máxima de contenedores
-        const alturaDisponible = alturaVentana - 250;
-        const tacticasContainer = document.querySelector('.tacticas-container');
-        if (tacticasContainer) {
-            tacticasContainer.style.maxHeight = Math.max(200, alturaDisponible - 400) + 'px';
-        }
-    }
-
-    // Escuchar cambios de tamaño de ventana
-    window.addEventListener('resize', ajustarDiseñoPorAltura);
 
     // Función para mostrar notificaciones mejoradas
     function mostrarNotificacion(mensaje, tipo) {
@@ -2316,5 +2460,8 @@
             alerta.style.opacity = '0';
         }, 4000);
     }
+
+    // Escuchar cambios de tamaño de ventana
+    window.addEventListener('resize', ajustarAlturasPaneles);
 </script>
 {% endblock %}
