@@ -763,6 +763,12 @@
         max-width: 80px;
     }
     
+    .nodo-subtitle {
+        font-size: 9px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 2px;
+    }
+    
     /* Estrategias (lunas) - REDONDAS Y CONECTADAS */
     .estrategias-orbitales {
         position: absolute;
@@ -793,7 +799,6 @@
     }
     
     .nodo-estrategia .nodo-content {
-        background: radial-gradient(circle, rgba(46, 204, 113, 0.9), rgba(39, 174, 96, 0.8));
         border: 2px solid rgba(255, 255, 255, 0.3);
         padding: 12px;
         border-radius: 50%;
@@ -814,7 +819,6 @@
         width: 25px;
         height: 25px;
         background: rgba(255, 255, 255, 0.9);
-        color: #27ae60;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -863,7 +867,6 @@
     }
     
     .nodo-actividad .nodo-content {
-        background: radial-gradient(circle, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.8));
         border: 2px solid rgba(255, 255, 255, 0.3);
         padding: 10px;
         border-radius: 50%;
@@ -884,7 +887,6 @@
         width: 20px;
         height: 20px;
         background: rgba(255, 255, 255, 0.9);
-        color: #c0392b;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -933,7 +935,6 @@
     }
     
     .nodo-tarea .nodo-content {
-        background: radial-gradient(circle, rgba(243, 156, 18, 0.9), rgba(211, 84, 0, 0.8));
         border: 1px solid rgba(255, 255, 255, 0.3);
         padding: 8px;
         border-radius: 50%;
@@ -954,7 +955,6 @@
         width: 16px;
         height: 16px;
         background: rgba(255, 255, 255, 0.9);
-        color: #d35400;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -1065,7 +1065,7 @@
 
 <script>
 // ================================
-// SISTEMA SOLAR CON FILTROS Y NAVEGACIÓN
+// SISTEMA SOLAR CON FILTROS Y NAVEGACIÓN - VERSIÓN CORREGIDA
 // ================================
 
 const SISTEMA_SOLAR = {
@@ -1118,12 +1118,12 @@ const CONFIG_ORBITAS = {
 // ================================
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚀 Inicializando Sistema Solar Estratégico...");
     inicializarSistema();
     crearEstrellas();
     crearAnillosOrbitales();
-    crearEjes();
     inicializarNavegacion();
-    cargarDatosBackend();
+    cargarDatosBackend(); // Cargar datos desde BD
 });
 
 function inicializarSistema() {
@@ -1188,99 +1188,170 @@ function crearAnillosOrbitales() {
     });
 }
 
-function crearEjes() {
+// ================================
+// CARGAR DATOS DEL BACKEND - VERSIÓN CORREGIDA
+// ================================
+
+function cargarDatosBackend() {
+    console.log("🔍 Iniciando carga de datos del backend...");
+    
+    // Cargar estrategias con eje
+    fetch('/api/estrategias_foda_con_eje')
+        .then(response => {
+            console.log("📡 Respuesta de estrategias recibida");
+            if (!response.ok) {
+                throw new Error('Error en la respuesta del servidor');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("✅ Datos de estrategias:", data);
+            if (data.success && data.estrategias) {
+                SISTEMA_SOLAR.estrategias = data.estrategias;
+                document.getElementById('total-estrategias').textContent = `${SISTEMA_SOLAR.estrategias.length} Lunas`;
+                console.log(`📊 ${SISTEMA_SOLAR.estrategias.length} estrategias cargadas`);
+                
+                // Crear ejes basados en las estrategias de la BD
+                crearEjesDesdeBD();
+                
+                // Cargar actividades
+                return fetch('/api/actividades');
+            } else {
+                throw new Error('Estructura de datos inválida');
+            }
+        })
+        .then(response => {
+            if (!response) return;
+            console.log("📡 Respuesta de actividades recibida");
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.success && data.actividades) {
+                SISTEMA_SOLAR.actividades = data.actividades;
+                document.getElementById('total-actividades').textContent = `${SISTEMA_SOLAR.actividades.length} Satélites`;
+                console.log(`📊 ${SISTEMA_SOLAR.actividades.length} actividades cargadas`);
+                
+                // Cargar tareas
+                return fetch('/api/tareas');
+            }
+        })
+        .then(response => {
+            if (!response) return;
+            console.log("📡 Respuesta de tareas recibida");
+            return response.json();
+        })
+        .then(data => {
+            if (data && data.success && data.tareas) {
+                SISTEMA_SOLAR.tareas = data.tareas;
+                document.getElementById('total-tareas').textContent = `${SISTEMA_SOLAR.tareas.length} Asteroides`;
+                console.log(`📊 ${SISTEMA_SOLAR.tareas.length} tareas cargadas`);
+                
+                // Crear todas las lunas, satélites y asteroides
+                crearEstrategias();
+                crearActividadesYtareas();
+                iniciarOrbitasPlanetas();
+            }
+        })
+        .catch(error => {
+            console.error('❌ Error al cargar datos del backend:', error);
+            mostrarErrorCarga();
+        });
+}
+
+function crearEjesDesdeBD() {
+    console.log("🔍 Creando ejes desde base de datos...");
+    
+    // Obtener ejes únicos de las estrategias
+    const ejesUnicos = {};
+    SISTEMA_SOLAR.estrategias.forEach(estrategia => {
+        if (estrategia.eje_id && estrategia.eje_texto) {
+            if (!ejesUnicos[estrategia.eje_id]) {
+                ejesUnicos[estrategia.eje_id] = {
+                    id: estrategia.eje_id,
+                    nombre: estrategia.eje_texto,
+                    icono: getIconoPorEjeId(estrategia.eje_id),
+                    color: getColorPorEjeId(estrategia.eje_id),
+                    descripcion: getDescripcionPorEjeId(estrategia.eje_id),
+                    estrategias: []
+                };
+            }
+            ejesUnicos[estrategia.eje_id].estrategias.push(estrategia);
+        }
+    });
+    
+    // Convertir a array
+    SISTEMA_SOLAR.ejes = Object.values(ejesUnicos);
+    console.log(`📊 ${SISTEMA_SOLAR.ejes.length} ejes encontrados:`, SISTEMA_SOLAR.ejes);
+    
+    // Actualizar UI
+    document.getElementById('total-ejes').textContent = `${SISTEMA_SOLAR.ejes.length} Ejes`;
+    
+    // Crear visualización de ejes
+    crearEjesVisuales();
+}
+
+function getIconoPorEjeId(ejeId) {
+    const iconos = {
+        'educacion': 'graduation-cap',
+        'salud': 'heartbeat',
+        'empleabilidad': 'briefcase',
+        'desarrollo_economico': 'chart-line',
+        'sostenibilidad_ambiental': 'tint',
+        'comunicacion': 'bullhorn',
+        'institucional': 'landmark'
+    };
+    return iconos[ejeId] || 'circle';
+}
+
+function getColorPorEjeId(ejeId) {
+    const colores = {
+        'educacion': '#3498db',
+        'salud': '#e74c3c',
+        'empleabilidad': '#2ecc71',
+        'desarrollo_economico': '#9b59b6',
+        'sostenibilidad_ambiental': '#1abc9c',
+        'comunicacion': '#f1c40f',
+        'institucional': '#e67e22'
+    };
+    return colores[ejeId] || '#95a5a6';
+}
+
+function getDescripcionPorEjeId(ejeId) {
+    const descripciones = {
+        'educacion': 'Mejora de infraestructura educativa y capacitación docente',
+        'salud': 'Equipamiento médico y mejoras en servicios de salud',
+        'empleabilidad': 'Formación técnica y oportunidades de empleo local',
+        'desarrollo_economico': 'Impulso al desarrollo económico comunitario',
+        'sostenibilidad_ambiental': 'Gestión sostenible del recurso hídrico y monitoreo ambiental',
+        'comunicacion': 'Sistema de comunicación comunitaria y transparencia',
+        'institucional': 'Cooperación técnica con GADs y niveles distritales'
+    };
+    return descripciones[ejeId] || 'Eje estratégico';
+}
+
+function crearEjesVisuales() {
     const container = document.getElementById('ejesOrbitales');
     container.innerHTML = '';
     
-    // Definir ejes estratégicos
-    SISTEMA_SOLAR.ejes = [
-        {
-            id: 'educacion',
-            nombre: 'EDUCACIÓN',
-            icono: 'graduation-cap',
-            color: '#3498db',
-            descripcion: 'Mejora de infraestructura educativa y capacitación docente',
-            distancia: CONFIG_ORBITAS.distanciasEjes[0],
-            velocidad: CONFIG_ORBITAS.velocidadesEjes[0],
-            tamano: CONFIG_ORBITAS.tamanoEjes[0],
-            anguloInicial: 0
-        },
-        {
-            id: 'salud',
-            nombre: 'SALUD',
-            icono: 'heartbeat',
-            color: '#e74c3c',
-            descripcion: 'Equipamiento médico y mejoras en servicios de salud',
-            distancia: CONFIG_ORBITAS.distanciasEjes[1],
-            velocidad: CONFIG_ORBITAS.velocidadesEjes[1],
-            tamano: CONFIG_ORBITAS.tamanoEjes[1],
-            anguloInicial: 51.4
-        },
-        {
-            id: 'empleabilidad',
-            nombre: 'EMPLEABILIDAD',
-            icono: 'briefcase',
-            color: '#2ecc71',
-            descripcion: 'Formación técnica y oportunidades de empleo local',
-            distancia: CONFIG_ORBITAS.distanciasEjes[2],
-            velocidad: CONFIG_ORBITAS.velocidadesEjes[2],
-            tamano: CONFIG_ORBITAS.tamanoEjes[2],
-            anguloInicial: 102.8
-        },
-        {
-            id: 'desarrollo_economico',
-            nombre: 'DESARROLLO ECONÓMICO',
-            icono: 'chart-line',
-            color: '#9b59b6',
-            descripcion: 'Impulso al desarrollo económico comunitario',
-            distancia: CONFIG_ORBITAS.distanciasEjes[3],
-            velocidad: CONFIG_ORBITAS.velocidadesEjes[3],
-            tamano: CONFIG_ORBITAS.tamanoEjes[3],
-            anguloInicial: 154.2
-        },
-        {
-            id: 'sostenibilidad_ambiental',
-            nombre: 'SOSTENIBILIDAD AMBIENTAL',
-            icono: 'tint',
-            color: '#1abc9c',
-            descripcion: 'Gestión sostenible del recurso hídrico y monitoreo ambiental',
-            distancia: CONFIG_ORBITAS.distanciasEjes[4],
-            velocidad: CONFIG_ORBITAS.velocidadesEjes[4],
-            tamano: CONFIG_ORBITAS.tamanoEjes[4],
-            anguloInicial: 205.6
-        },
-        {
-            id: 'comunicacion',
-            nombre: 'COMUNICACIÓN',
-            icono: 'bullhorn',
-            color: '#f1c40f',
-            descripcion: 'Sistema de comunicación comunitaria y transparencia',
-            distancia: CONFIG_ORBITAS.distanciasEjes[5],
-            velocidad: CONFIG_ORBITAS.velocidadesEjes[5],
-            tamano: CONFIG_ORBITAS.tamanoEjes[5],
-            anguloInicial: 257
-        },
-        {
-            id: 'institucional',
-            nombre: 'INSTITUCIONAL',
-            icono: 'landmark',
-            color: '#e67e22',
-            descripcion: 'Cooperación técnica con GADs y niveles distritales',
-            distancia: CONFIG_ORBITAS.distanciasEjes[6],
-            velocidad: CONFIG_ORBITAS.velocidadesEjes[6],
-            tamano: CONFIG_ORBITAS.tamanoEjes[6],
-            anguloInicial: 308.4
-        }
-    ];
+    if (SISTEMA_SOLAR.ejes.length === 0) {
+        console.log("⚠️ No hay ejes para mostrar");
+        return;
+    }
     
     // Crear cada planeta (eje) en su órbita
     SISTEMA_SOLAR.ejes.forEach((eje, index) => {
+        // Calcular posición orbital
+        const distancia = CONFIG_ORBITAS.distanciasEjes[Math.min(index, CONFIG_ORBITAS.distanciasEjes.length - 1)];
+        const tamano = CONFIG_ORBITAS.tamanoEjes[Math.min(index, CONFIG_ORBITAS.tamanoEjes.length - 1)];
+        const velocidad = CONFIG_ORBITAS.velocidadesEjes[Math.min(index, CONFIG_ORBITAS.velocidadesEjes.length - 1)];
+        const anguloInicial = (360 / SISTEMA_SOLAR.ejes.length) * index;
+        
         // Contenedor para el planeta
         const planetaContenedor = document.createElement('div');
         planetaContenedor.className = 'planeta-contenedor';
         planetaContenedor.id = `contenedor-${eje.id}`;
         planetaContenedor.dataset.ejeId = eje.id;
-        planetaContenedor.style.setProperty('--angulo-inicial', `${eje.anguloInicial}deg`);
+        planetaContenedor.style.setProperty('--angulo-inicial', `${anguloInicial}deg`);
         
         // Crear el planeta (nodo eje)
         const planetaDiv = document.createElement('div');
@@ -1288,14 +1359,14 @@ function crearEjes() {
         planetaDiv.id = `eje-${eje.id}`;
         planetaDiv.dataset.ejeId = eje.id;
         planetaDiv.dataset.tipo = 'eje';
-        planetaDiv.dataset.velocidad = eje.velocidad;
-        planetaDiv.dataset.angulo = eje.anguloInicial;
-        planetaDiv.style.setProperty('--distancia', `${eje.distancia}px`);
+        planetaDiv.dataset.velocidad = velocidad;
+        planetaDiv.dataset.angulo = anguloInicial;
+        planetaDiv.style.setProperty('--distancia', `${distancia}px`);
         
         // Tamaño del planeta
         planetaDiv.style.cssText = `
-            width: ${eje.tamano}px;
-            height: ${eje.tamano}px;
+            width: ${tamano}px;
+            height: ${tamano}px;
         `;
         
         planetaDiv.innerHTML = `
@@ -1304,6 +1375,7 @@ function crearEjes() {
                     <i class="fas fa-${eje.icono}"></i>
                 </div>
                 <div class="nodo-title">${eje.nombre}</div>
+                <div class="nodo-subtitle">${eje.estrategias.length} estrategias</div>
             </div>
         `;
         
@@ -1316,70 +1388,34 @@ function crearEjes() {
         // Añadir planeta al contenedor
         planetaContenedor.appendChild(planetaDiv);
         container.appendChild(planetaContenedor);
+        
+        console.log(`✅ Eje creado: ${eje.nombre} con ${eje.estrategias.length} estrategias`);
     });
-    
-    // Actualizar contador
-    document.getElementById('total-ejes').textContent = `${SISTEMA_SOLAR.ejes.length} Ejes`;
-}
-
-// ================================
-// CARGAR DATOS DEL BACKEND
-// ================================
-
-function cargarDatosBackend() {
-    // Cargar estrategias con eje
-    fetch('/api/estrategias_foda_con_eje')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                SISTEMA_SOLAR.estrategias = data.estrategias;
-                document.getElementById('total-estrategias').textContent = `${SISTEMA_SOLAR.estrategias.length} Lunas`;
-                
-                // Cargar actividades
-                return fetch('/api/actividades');
-            }
-            throw new Error('Error al cargar estrategias');
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                SISTEMA_SOLAR.actividades = data.actividades;
-                document.getElementById('total-actividades').textContent = `${SISTEMA_SOLAR.actividades.length} Satélites`;
-                
-                // Cargar tareas
-                return fetch('/api/tareas');
-            }
-            throw new Error('Error al cargar actividades');
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                SISTEMA_SOLAR.tareas = data.tareas;
-                document.getElementById('total-tareas').textContent = `${SISTEMA_SOLAR.tareas.length} Asteroides`;
-                
-                // Crear todas las lunas, satélites y asteroides
-                crearEstrategias();
-                iniciarOrbitasPlanetas();
-            }
-        })
-        .catch(error => {
-            console.error('Error al cargar datos del backend:', error);
-        });
 }
 
 function crearEstrategias() {
     const container = document.getElementById('estrategiasOrbitales');
     container.innerHTML = '';
     
-    const conexionesSVG = document.getElementById('conexionesSVG');
-    conexionesSVG.innerHTML = '';
+    if (SISTEMA_SOLAR.estrategias.length === 0) {
+        console.log("⚠️ No hay estrategias para mostrar");
+        return;
+    }
+    
+    console.log(`🎯 Creando ${SISTEMA_SOLAR.estrategias.length} estrategias...`);
     
     SISTEMA_SOLAR.estrategias.forEach((estrategia, index) => {
         const eje = SISTEMA_SOLAR.ejes.find(e => e.id === estrategia.eje_id);
-        if (!eje) return;
+        if (!eje) {
+            console.log(`⚠️ Estrategia ${estrategia.id} sin eje válido: ${estrategia.eje_id}`);
+            return;
+        }
         
         const ejeElement = document.getElementById(`eje-${eje.id}`);
-        if (!ejeElement) return;
+        if (!ejeElement) {
+            console.log(`⚠️ Elemento del eje no encontrado: eje-${eje.id}`);
+            return;
+        }
         
         // Contenedor para la luna (estrategia)
         const lunaContenedor = document.createElement('div');
@@ -1388,9 +1424,12 @@ function crearEstrategias() {
         lunaContenedor.dataset.estrategiaId = estrategia.id;
         lunaContenedor.dataset.ejeId = estrategia.eje_id;
         lunaContenedor.dataset.tipo = estrategia.tipo_cruce;
-        lunaContenedor.style.setProperty('--angulo-inicial', `${index * 72}deg`);
         
-        // Crear la luna (estrategia) - FORMA REDONDA ASEGURADA
+        // Ángulo inicial basado en el índice
+        const anguloInicial = (index * 137.5) % 360; // Ángulo áureo para distribución uniforme
+        lunaContenedor.style.setProperty('--angulo-inicial', `${anguloInicial}deg`);
+        
+        // Crear la luna (estrategia)
         const lunaDiv = document.createElement('div');
         lunaDiv.className = 'nodo nodo-estrategia';
         lunaDiv.id = `estrategia-${estrategia.id}`;
@@ -1407,19 +1446,14 @@ function crearEstrategias() {
         `;
         
         // Determinar color según tipo de cruce
-        let colorTipo = '#2ecc71'; // FO
-        switch(estrategia.tipo_cruce) {
-            case 'DO': colorTipo = '#3498db'; break;
-            case 'FA': colorTipo = '#e74c3c'; break;
-            case 'DA': colorTipo = '#f39c12'; break;
-        }
+        let colorTipo = getColorByTipo(estrategia.tipo_cruce);
         
         lunaDiv.innerHTML = `
             <div class="nodo-content" style="background: radial-gradient(circle, ${colorTipo}, ${oscurecerColor(colorTipo, 20)})">
                 <div class="nodo-icon" style="background: rgba(255,255,255,0.9); color: ${colorTipo}">
                     <i class="fas fa-moon"></i>
                 </div>
-                <div class="nodo-title">${estrategia.estrategia.substring(0, 20)}...</div>
+                <div class="nodo-title">${estrategia.tipo_cruce}: ${estrategia.estrategia.substring(0, 15)}...</div>
             </div>
         `;
         
@@ -1435,12 +1469,9 @@ function crearEstrategias() {
         
         // Crear conexión entre planeta y luna
         crearConexionPlanetaLuna(eje.id, estrategia.id);
-        
-        // Crear actividades para esta estrategia
-        crearActividadesParaEstrategia(estrategia.id);
     });
     
-    aplicarFiltros();
+    console.log(`✅ ${document.querySelectorAll('.nodo-estrategia').length} estrategias creadas`);
 }
 
 function crearConexionPlanetaLuna(ejeId, estrategiaId) {
@@ -1483,13 +1514,18 @@ function crearConexionPlanetaLuna(ejeId, estrategiaId) {
     requestAnimationFrame(actualizarLinea);
 }
 
-function crearActividadesParaEstrategia(estrategiaId) {
-    const actividades = SISTEMA_SOLAR.actividades.filter(a => a.estrategia_id == estrategiaId);
-    const container = document.getElementById('actividadesOrbitales');
+function crearActividadesYtareas() {
+    console.log("🔍 Creando actividades y tareas...");
     
-    actividades.forEach((actividad, index) => {
+    // Crear actividades
+    SISTEMA_SOLAR.actividades.forEach((actividad, index) => {
+        const estrategiaId = actividad.estrategia_id;
         const estrategiaElement = document.getElementById(`estrategia-${estrategiaId}`);
-        if (!estrategiaElement) return;
+        
+        if (!estrategiaElement) {
+            console.log(`⚠️ Actividad ${actividad.id} sin estrategia válida: ${estrategiaId}`);
+            return;
+        }
         
         // Contenedor para el satélite (actividad)
         const sateliteContenedor = document.createElement('div');
@@ -1497,7 +1533,10 @@ function crearActividadesParaEstrategia(estrategiaId) {
         sateliteContenedor.id = `contenedor-actividad-${actividad.id}`;
         sateliteContenedor.dataset.actividadId = actividad.id;
         sateliteContenedor.dataset.estrategiaId = estrategiaId;
-        sateliteContenedor.style.setProperty('--angulo-inicial', `${index * 90}deg`);
+        
+        // Ángulo inicial
+        const anguloInicial = (index * 90) % 360;
+        sateliteContenedor.style.setProperty('--angulo-inicial', `${anguloInicial}deg`);
         
         // Crear el satélite (actividad)
         const sateliteDiv = document.createElement('div');
@@ -1518,7 +1557,7 @@ function crearActividadesParaEstrategia(estrategiaId) {
                 <div class="nodo-icon">
                     <i class="fas fa-satellite"></i>
                 </div>
-                <div class="nodo-title">${actividad.nombre.substring(0, 12)}</div>
+                <div class="nodo-title">${actividad.nombre.substring(0, 10)}</div>
             </div>
         `;
         
@@ -1530,14 +1569,93 @@ function crearActividadesParaEstrategia(estrategiaId) {
         
         // Añadir satélite al contenedor
         sateliteContenedor.appendChild(sateliteDiv);
-        container.appendChild(sateliteContenedor);
+        document.getElementById('actividadesOrbitales').appendChild(sateliteContenedor);
         
         // Crear conexión entre luna y satélite
         crearConexionLunaSatelite(estrategiaId, actividad.id);
-        
-        // Crear tareas para esta actividad
-        crearTareasParaActividad(actividad.id);
     });
+    
+    // Crear tareas
+    SISTEMA_SOLAR.tareas.forEach((tarea, index) => {
+        const actividadId = tarea.actividad_id;
+        const actividadElement = document.getElementById(`actividad-${actividadId}`);
+        
+        if (!actividadElement) {
+            console.log(`⚠️ Tarea ${tarea.id} sin actividad válida: ${actividadId}`);
+            return;
+        }
+        
+        // Contenedor para el asteroide (tarea)
+        const asteroideContenedor = document.createElement('div');
+        asteroideContenedor.className = 'asteroide-contenedor';
+        asteroideContenedor.id = `contenedor-tarea-${tarea.id}`;
+        asteroideContenedor.dataset.tareaId = tarea.id;
+        asteroideContenedor.dataset.actividadId = actividadId;
+        asteroideContenedor.dataset.estado = tarea.estado;
+        
+        // Ángulo inicial
+        const anguloInicial = (index * 120) % 360;
+        asteroideContenedor.style.setProperty('--angulo-inicial', `${anguloInicial}deg`);
+        
+        // Crear el asteroide (tarea)
+        const asteroideDiv = document.createElement('div');
+        asteroideDiv.className = 'nodo nodo-tarea';
+        asteroideDiv.id = `tarea-${tarea.id}`;
+        asteroideDiv.dataset.tareaId = tarea.id;
+        asteroideDiv.dataset.tipo = 'tarea';
+        asteroideDiv.dataset.estado = tarea.estado;
+        asteroideDiv.style.setProperty('--distancia', `${CONFIG_ORBITAS.radioAsteroide}px`);
+        
+        // Determinar color según estado
+        let colorEstado = getColorByEstado(tarea.estado);
+        let iconoEstado = getIconoByEstado(tarea.estado);
+        
+        // Tamaño del asteroide
+        asteroideDiv.style.cssText = `
+            width: ${CONFIG_ORBITAS.tamanoTareas}px;
+            height: ${CONFIG_ORBITAS.tamanoTareas}px;
+        `;
+        
+        asteroideDiv.innerHTML = `
+            <div class="nodo-content" style="background: radial-gradient(circle, ${colorEstado}, ${oscurecerColor(colorEstado, 20)})">
+                <div class="nodo-icon" style="background: rgba(255,255,255,0.9); color: ${colorEstado}">
+                    <i class="fas ${iconoEstado}"></i>
+                </div>
+                <div class="nodo-title">${tarea.nombre.substring(0, 6)}</div>
+            </div>
+        `;
+        
+        // Eventos
+        asteroideDiv.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mostrarDetallesTarea(tarea.id);
+        });
+        
+        // Añadir asteroide al contenedor
+        asteroideContenedor.appendChild(asteroideDiv);
+        document.getElementById('tareasOrbitales').appendChild(asteroideContenedor);
+        
+        // Crear conexión entre satélite y asteroide
+        crearConexionSateliteAsteroide(actividadId, tarea.id);
+    });
+    
+    console.log(`✅ Actividades y tareas creadas`);
+}
+
+function getColorByEstado(estado) {
+    switch(estado) {
+        case 'completada': return '#2ecc71';
+        case 'en_progreso': return '#3498db';
+        default: return '#f39c12'; // pendiente
+    }
+}
+
+function getIconoByEstado(estado) {
+    switch(estado) {
+        case 'completada': return 'fa-check-circle';
+        case 'en_progreso': return 'fa-spinner';
+        default: return 'fa-clock'; // pendiente
+    }
 }
 
 function crearConexionLunaSatelite(estrategiaId, actividadId) {
@@ -1576,76 +1694,6 @@ function crearConexionLunaSatelite(estrategiaId, actividadId) {
     requestAnimationFrame(actualizarLinea);
 }
 
-function crearTareasParaActividad(actividadId) {
-    const tareas = SISTEMA_SOLAR.tareas.filter(t => t.actividad_id == actividadId);
-    const container = document.getElementById('tareasOrbitales');
-    
-    tareas.forEach((tarea, index) => {
-        const actividadElement = document.getElementById(`actividad-${actividadId}`);
-        if (!actividadElement) return;
-        
-        // Contenedor para el asteroide (tarea)
-        const asteroideContenedor = document.createElement('div');
-        asteroideContenedor.className = 'asteroide-contenedor';
-        asteroideContenedor.id = `contenedor-tarea-${tarea.id}`;
-        asteroideContenedor.dataset.tareaId = tarea.id;
-        asteroideContenedor.dataset.actividadId = actividadId;
-        asteroideContenedor.dataset.estado = tarea.estado;
-        asteroideContenedor.style.setProperty('--angulo-inicial', `${index * 120}deg`);
-        
-        // Crear el asteroide (tarea)
-        const asteroideDiv = document.createElement('div');
-        asteroideDiv.className = 'nodo nodo-tarea';
-        asteroideDiv.id = `tarea-${tarea.id}`;
-        asteroideDiv.dataset.tareaId = tarea.id;
-        asteroideDiv.dataset.tipo = 'tarea';
-        asteroideDiv.dataset.estado = tarea.estado;
-        asteroideDiv.style.setProperty('--distancia', `${CONFIG_ORBITAS.radioAsteroide}px`);
-        
-        // Determinar color según estado
-        let colorEstado = '#f39c12';
-        let iconoEstado = 'fa-clock';
-        switch(tarea.estado) {
-            case 'completada':
-                colorEstado = '#2ecc71';
-                iconoEstado = 'fa-check-circle';
-                break;
-            case 'en_progreso':
-                colorEstado = '#3498db';
-                iconoEstado = 'fa-spinner';
-                break;
-        }
-        
-        // Tamaño del asteroide
-        asteroideDiv.style.cssText = `
-            width: ${CONFIG_ORBITAS.tamanoTareas}px;
-            height: ${CONFIG_ORBITAS.tamanoTareas}px;
-        `;
-        
-        asteroideDiv.innerHTML = `
-            <div class="nodo-content" style="background: radial-gradient(circle, ${colorEstado}, ${oscurecerColor(colorEstado, 20)})">
-                <div class="nodo-icon" style="background: rgba(255,255,255,0.9); color: ${colorEstado}">
-                    <i class="fas ${iconoEstado}"></i>
-                </div>
-                <div class="nodo-title">${tarea.nombre.substring(0, 8)}</div>
-            </div>
-        `;
-        
-        // Eventos
-        asteroideDiv.addEventListener('click', function(e) {
-            e.stopPropagation();
-            mostrarDetallesTarea(tarea.id);
-        });
-        
-        // Añadir asteroide al contenedor
-        asteroideContenedor.appendChild(asteroideDiv);
-        container.appendChild(asteroideContenedor);
-        
-        // Crear conexión entre satélite y asteroide
-        crearConexionSateliteAsteroide(actividadId, tarea.id);
-    });
-}
-
 function crearConexionSateliteAsteroide(actividadId, tareaId) {
     const conexionesSVG = document.getElementById('conexionesSVG');
     
@@ -1680,6 +1728,21 @@ function crearConexionSateliteAsteroide(actividadId, tareaId) {
     
     conexionesSVG.appendChild(linea);
     requestAnimationFrame(actualizarLinea);
+}
+
+function mostrarErrorCarga() {
+    const sistemaSolar = document.getElementById('sistemaSolar');
+    sistemaSolar.innerHTML += `
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; z-index: 1000;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ff6b6b; margin-bottom: 20px;"></i>
+            <h3>Error al cargar datos</h3>
+            <p>No se pudieron cargar las estrategias de la base de datos.</p>
+            <p>Verifica la conexión o intenta recargar la página.</p>
+            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                <i class="fas fa-redo"></i> Recargar
+            </button>
+        </div>
+    `;
 }
 
 // ================================
@@ -2123,10 +2186,10 @@ function resetView() {
     SISTEMA_SOLAR.ejes.forEach((eje, index) => {
         const planeta = document.getElementById(`eje-${eje.id}`);
         if (planeta) {
-            planeta.dataset.angulo = eje.anguloInicial;
+            planeta.dataset.angulo = (360 / SISTEMA_SOLAR.ejes.length) * index;
             const contenedor = document.getElementById(`contenedor-${eje.id}`);
             if (contenedor) {
-                contenedor.style.setProperty('--angulo-inicial', `${eje.anguloInicial}deg`);
+                contenedor.style.setProperty('--angulo-inicial', `${(360 / SISTEMA_SOLAR.ejes.length) * index}deg`);
             }
         }
     });
@@ -2138,7 +2201,7 @@ function toggleAnimaciones() {
     
     if (SISTEMA_SOLAR.animacionesActivas) {
         icon.className = 'fas fa-pause';
-        iniciarOrbitas();
+        iniciarOrbitasPlanetas();
     } else {
         icon.className = 'fas fa-play';
     }
@@ -2151,7 +2214,7 @@ function iniciarOrbitas() {
 }
 
 // ================================
-// FUNCIONES DE DETALLES (MANTENER)
+// FUNCIONES DE DETALLES
 // ================================
 
 function mostrarDetalleObjetivo() {
@@ -2298,19 +2361,19 @@ function mostrarDetallesEje(ejeId) {
                     <div class="parametros-grid">
                         <div class="parametro">
                             <div class="parametro-label">Distancia al Sol</div>
-                            <div class="parametro-valor">${eje.distancia}px</div>
+                            <div class="parametro-valor">${CONFIG_ORBITAS.distanciasEjes[SISTEMA_SOLAR.ejes.findIndex(e => e.id === ejeId)] || 400}px</div>
                         </div>
                         <div class="parametro">
                             <div class="parametro-label">Velocidad Orbital</div>
-                            <div class="parametro-valor">${eje.velocidad}</div>
+                            <div class="parametro-valor">${CONFIG_ORBITAS.velocidadesEjes[SISTEMA_SOLAR.ejes.findIndex(e => e.id === ejeId)] || 0.5}</div>
                         </div>
                         <div class="parametro">
                             <div class="parametro-label">Tamaño</div>
-                            <div class="parametro-valor">${eje.tamano}px</div>
+                            <div class="parametro-valor">${CONFIG_ORBITAS.tamanoEjes[SISTEMA_SOLAR.ejes.findIndex(e => e.id === ejeId)] || 100}px</div>
                         </div>
                         <div class="parametro">
-                            <div class="parametro-label">Posición Inicial</div>
-                            <div class="parametro-valor">${eje.anguloInicial}°</div>
+                            <div class="parametro-label">Estrategias</div>
+                            <div class="parametro-valor">${estrategiasDelEje.length}</div>
                         </div>
                     </div>
                 </div>
@@ -2464,19 +2527,15 @@ function mostrarDetallesActividad(actividadId) {
                     <h4><i class="fas fa-meteor"></i> Tareas</h4>
                     <div class="lista-elementos">
                         ${tareasDeActividad.map(tarea => {
-                            let colorEstado = '#f39c12';
-                            let iconoEstado = 'fa-clock';
+                            let colorEstado = getColorByEstado(tarea.estado);
+                            let iconoEstado = getIconoByEstado(tarea.estado);
                             let textoEstado = 'Pendiente';
                             
                             switch(tarea.estado) {
                                 case 'completada':
-                                    colorEstado = '#2ecc71';
-                                    iconoEstado = 'fa-check-circle';
                                     textoEstado = 'Completada';
                                     break;
                                 case 'en_progreso':
-                                    colorEstado = '#3498db';
-                                    iconoEstado = 'fa-spinner';
                                     textoEstado = 'En progreso';
                                     break;
                             }
@@ -2514,19 +2573,15 @@ function mostrarDetallesTarea(tareaId) {
     const titulo = document.getElementById('detalleTitulo');
     const contenido = document.getElementById('detalleContenido');
     
-    let colorEstado = '#f39c12';
-    let iconoEstado = 'fa-clock';
+    let colorEstado = getColorByEstado(tarea.estado);
+    let iconoEstado = getIconoByEstado(tarea.estado);
     let textoEstado = 'Pendiente';
     
     switch(tarea.estado) {
         case 'completada':
-            colorEstado = '#2ecc71';
-            iconoEstado = 'fa-check-circle';
             textoEstado = 'Completada';
             break;
         case 'en_progreso':
-            colorEstado = '#3498db';
-            iconoEstado = 'fa-spinner';
             textoEstado = 'En progreso';
             break;
     }
@@ -2595,7 +2650,7 @@ function getColorByTipo(tipo) {
 
 // Iniciar animaciones al cargar
 window.addEventListener('load', function() {
-    iniciarOrbitasPlanetas();
+    // Las animaciones se inician desde cargarDatosBackend()
 });
 </script>
 {% endblock %}
