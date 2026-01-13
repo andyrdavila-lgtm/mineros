@@ -1,62 +1,126 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Barra de Ejes Fija -->
-<div class="ejes-sticky-bar">
-    <div class="ejes-header">
-        <div class="ejes-titulo">
-            <i class="fas fa-bullseye"></i>
-            <h2>EJES ESTRATÉGICOS</h2>
+<!-- Barra de Navegación Contextual Mejorada -->
+<div class="context-nav-container">
+    <!-- Pestaña de Ejes - Lateral Izquierda -->
+    <div class="context-tab left-tab" id="ejes-tab">
+        <div class="tab-handle" onclick="toggleEjesTab()">
+            <i class="fas fa-layer-group"></i>
+            <span class="tab-label">EJES</span>
         </div>
-        <div class="ejes-lista">
-            <div class="eje-item">
-                <i class="fas fa-graduation-cap"></i>
-                <span>EDUCACIÓN</span>
+        <div class="tab-content" id="ejes-content">
+            <div class="tab-header">
+                <h3><i class="fas fa-bullseye"></i> EJES ESTRATÉGICOS</h3>
+                <button class="tab-close" onclick="toggleEjesTab()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="eje-item">
-                <i class="fas fa-heartbeat"></i>
-                <span>SALUD</span>
-            </div>
-            <div class="eje-item">
-                <i class="fas fa-briefcase"></i>
-                <span>EMPLEABILIDAD</span>
-            </div>
-            <div class="eje-item">
-                <i class="fas fa-chart-line"></i>
-                <span>DESARROLLO ECONÓMICO</span>
-            </div>
-            <div class="eje-item">
-                <i class="fas fa-tint"></i>
-                <span>SOSTENIBILIDAD AMBIENTAL (AGUA)</span>
-            </div>
-            <div class="eje-item">
-                <i class="fas fa-bullhorn"></i>
-                <span>COMUNICACIÓN</span>
-            </div>
-            <div class="eje-item">
-                <i class="fas fa-landmark"></i>
-                <span>INSTITUCIONAL</span>
+            <div class="ejes-grid">
+                <div class="eje-card" data-eje="educacion">
+                    <div class="eje-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="eje-info">
+                        <h4>EDUCACIÓN</h4>
+                        <p>Desarrollo educativo y capacitación</p>
+                    </div>
+                </div>
+                <div class="eje-card" data-eje="salud">
+                    <div class="eje-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="eje-info">
+                        <h4>SALUD</h4>
+                        <p>Bienestar y servicios de salud</p>
+                    </div>
+                </div>
+                <div class="eje-card" data-eje="empleabilidad">
+                    <div class="eje-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="eje-info">
+                        <h4>EMPLEABILIDAD</h4>
+                        <p>Oportunidades laborales</p>
+                    </div>
+                </div>
+                <div class="eje-card" data-eje="desarrollo">
+                    <div class="eje-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="eje-info">
+                        <h4>DESARROLLO ECONÓMICO</h4>
+                        <p>Crecimiento económico local</p>
+                    </div>
+                </div>
+                <div class="eje-card" data-eje="agua">
+                    <div class="eje-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <div class="eje-info">
+                        <h4>SOSTENIBILIDAD AMBIENTAL</h4>
+                        <p>Gestión del recurso hídrico</p>
+                    </div>
+                </div>
+                <div class="eje-card" data-eje="comunicacion">
+                    <div class="eje-icon">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <div class="eje-info">
+                        <h4>COMUNICACIÓN</h4>
+                        <p>Transparencia y diálogo</p>
+                    </div>
+                </div>
+                <div class="eje-card" data-eje="institucional">
+                    <div class="eje-icon">
+                        <i class="fas fa-landmark"></i>
+                    </div>
+                    <div class="eje-info">
+                        <h4>INSTITUCIONAL</h4>
+                        <p>Fortalecimiento institucional</p>
+                    </div>
+                </div>
             </div>
         </div>
-        <button class="ejes-toggle" onclick="toggleEjesBar()">
-            <i class="fas fa-chevron-up"></i>
-        </button>
     </div>
-</div>
 
-<!-- Panel de Objetivo Estratégico Fijo -->
-<div class="objetivo-sticky-panel">
-    <div class="objetivo-header">
-        <div class="objetivo-titulo">
-            <i class="fas fa-flag-checkered"></i>
-            <h3>OBJETIVO ESTRATÉGICO</h3>
-            <button class="objetivo-toggle" onclick="toggleObjetivoPanel()">
-                <i class="fas fa-chevron-down"></i>
-            </button>
+    <!-- Pestaña de Objetivo - Lateral Derecha -->
+    <div class="context-tab right-tab" id="objetivo-tab">
+        <div class="tab-handle" onclick="toggleObjetivoTab()">
+            <i class="fas fa-bullseye"></i>
+            <span class="tab-label">OBJETIVO</span>
         </div>
-        <div class="objetivo-contenido">
-            <div class="objetivo-texto">
-                Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras, a través de la repotenciación de sistemas comunitarios y el monitoreo estricto de su calidad; este compromiso se complementa con la mejora de equipamiento en salud, la intervención en infraestructura sanitaria y lúdica de 4 unidades educativas, la reubicación estratégica de al menos el 60% del personal local hacia nuevos departamentos, y una cooperación técnica con los GADs y niveles distritales, todo dinamizado por un sistema de comunicación comunitaria que transparente la propuesta de valor y los beneficios del proyecto en el AID y AII.
+        <div class="tab-content" id="objetivo-content">
+            <div class="tab-header">
+                <h3><i class="fas fa-flag-checkered"></i> OBJETIVO ESTRATÉGICO</h3>
+                <button class="tab-close" onclick="toggleObjetivoTab()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="objetivo-compacto">
+                <div class="objetivo-resumen">
+                    <h4>Proyecto El Domo</h4>
+                    <p>Viabilidad y respaldo social mediante gestión integral del recurso hídrico</p>
+                </div>
+                <div class="objetivo-detalle">
+                    <p>Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras...</p>
+                    <a href="#" class="ver-mas" onclick="mostrarObjetivoCompleto()">Ver objetivo completo</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para objetivo completo -->
+    <div class="modal-objetivo" id="modal-objetivo">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-flag-checkered"></i> OBJETIVO ESTRATÉGICO COMPLETO</h3>
+                <button class="modal-close" onclick="cerrarModalObjetivo()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras, a través de la repotenciación de sistemas comunitarios y el monitoreo estricto de su calidad; este compromiso se complementa con la mejora de equipamiento en salud, la intervención en infraestructura sanitaria y lúdica de 4 unidades educativas, la reubicación estratégica de al menos el 60% del personal local hacia nuevos departamentos, y una cooperación técnica con los GADs y niveles distritales, todo dinamizado por un sistema de comunicación comunitaria que transparente la propuesta de valor y los beneficios del proyecto en el AID y AII.</p>
             </div>
         </div>
     </div>
@@ -362,210 +426,342 @@
 </div>
 
 <style>
-    /* Estilos para la barra de ejes fija */
-    .ejes-sticky-bar {
+    /* Contenedor de navegación contextual */
+    .context-nav-container {
         position: fixed;
-        top: 60px; /* Ajusta según la altura de tu menú */
+        top: 0;
         left: 0;
         right: 0;
+        z-index: 1000;
+        pointer-events: none;
+    }
+    
+    /* Pestañas laterales */
+    .context-tab {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 1001;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: auto;
+    }
+    
+    .left-tab {
+        left: 0;
+    }
+    
+    .right-tab {
+        right: 0;
+    }
+    
+    /* Manejador de pestaña */
+    .tab-handle {
         background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
         color: white;
-        z-index: 1000;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-        transition: all 0.3s ease;
-        transform: translateY(0);
-        border-bottom: 3px solid #4a69bd;
-    }
-    
-    .ejes-sticky-bar.collapsed {
-        transform: translateY(-100%);
-    }
-    
-    .ejes-header {
-        padding: 12px 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 20px;
-        position: relative;
-    }
-    
-    .ejes-titulo {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 180px;
-    }
-    
-    .ejes-titulo h2 {
-        font-size: 16px;
-        font-weight: 700;
-        margin: 0;
-        color: white;
-        white-space: nowrap;
-    }
-    
-    .ejes-titulo i {
-        font-size: 20px;
-        color: #4a69bd;
-        background: white;
-        padding: 8px;
-        border-radius: 50%;
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .ejes-lista {
-        display: flex;
-        flex: 1;
-        justify-content: space-between;
-        gap: 15px;
-        overflow-x: auto;
-        padding: 5px 0;
-    }
-    
-    .eje-item {
+        padding: 15px 10px;
+        border-radius: 0 8px 8px 0;
+        cursor: pointer;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 6px;
-        min-width: 120px;
-        padding: 8px 12px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
+        gap: 5px;
+        box-shadow: 0 4px 20px rgba(12, 36, 97, 0.3);
         transition: all 0.3s ease;
-        cursor: pointer;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        width: 60px;
     }
     
-    .eje-item:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    .right-tab .tab-handle {
+        border-radius: 8px 0 0 8px;
     }
     
-    .eje-item i {
-        font-size: 18px;
-        color: #6a89cc;
+    .tab-handle:hover {
+        width: 70px;
+        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
+        box-shadow: 0 6px 25px rgba(12, 36, 97, 0.4);
     }
     
-    .eje-item span {
-        font-size: 12px;
+    .tab-handle i {
+        font-size: 20px;
+    }
+    
+    .tab-label {
+        font-size: 11px;
         font-weight: 600;
-        text-align: center;
-        line-height: 1.2;
-    }
-    
-    .ejes-toggle {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        height: 80px;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-left: 10px;
     }
     
-    .ejes-toggle:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
+    /* Contenido de pestaña */
+    .tab-content {
+        position: absolute;
+        top: 0;
+        width: 320px;
+        background: white;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+        border-radius: 0 12px 12px 0;
+        transform: translateX(-100%);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        pointer-events: none;
+        max-height: 80vh;
+        overflow-y: auto;
     }
     
-    /* Estilos para el panel de objetivo fijo */
-    .objetivo-sticky-panel {
-        position: fixed;
-        bottom: 0;
-        left: 0;
+    .right-tab .tab-content {
+        left: auto;
         right: 0;
-        background: linear-gradient(135deg, #1a5276 0%, #2c3e50 100%);
+        transform: translateX(100%);
+        border-radius: 12px 0 0 12px;
+    }
+    
+    .tab-content.active {
+        transform: translateX(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+    
+    .right-tab .tab-content.active {
+        transform: translateX(0);
+    }
+    
+    /* Cabecera de pestaña */
+    .tab-header {
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
         color: white;
-        z-index: 1000;
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
-        transition: all 0.3s ease;
-        transform: translateY(0);
-        border-top: 3px solid #3498db;
-    }
-    
-    .objetivo-sticky-panel.collapsed {
-        transform: translateY(100%);
-    }
-    
-    .objetivo-header {
-        padding: 15px 20px;
-    }
-    
-    .objetivo-titulo {
+        padding: 20px;
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        margin-bottom: 15px;
+        align-items: center;
+        border-radius: 0 12px 0 0;
     }
     
-    .objetivo-titulo h3 {
-        font-size: 16px;
-        font-weight: 700;
+    .tab-header h3 {
         margin: 0;
-        color: white;
+        font-size: 16px;
+        font-weight: 600;
         display: flex;
         align-items: center;
         gap: 10px;
     }
     
-    .objetivo-titulo i {
-        font-size: 18px;
-        color: #3498db;
-        background: white;
-        padding: 6px;
-        border-radius: 50%;
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .objetivo-contenido {
-        max-height: 200px;
-        overflow-y: auto;
-        padding-right: 10px;
-    }
-    
-    .objetivo-texto {
-        font-size: 13px;
-        line-height: 1.6;
-        color: #ecf0f1;
-        text-align: justify;
-        padding: 10px;
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 8px;
-        border-left: 3px solid #3498db;
-    }
-    
-    .objetivo-toggle {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+    .tab-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
         color: white;
         width: 32px;
         height: 32px;
         border-radius: 50%;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
         transition: all 0.3s ease;
     }
     
-    .objetivo-toggle:hover {
+    .tab-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+    
+    /* Grid de ejes */
+    .ejes-grid {
+        padding: 20px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .eje-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: 1px solid #e9ecef;
+    }
+    
+    .eje-card:hover {
+        background: #e9ecef;
+        transform: translateX(5px);
+        border-color: #4a69bd;
+    }
+    
+    .eje-card.active {
+        background: linear-gradient(135deg, rgba(12, 36, 97, 0.1) 0%, rgba(30, 55, 153, 0.1) 100%);
+        border-color: #4a69bd;
+    }
+    
+    .eje-icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    
+    .eje-info h4 {
+        margin: 0 0 5px 0;
+        font-size: 14px;
+        color: #0c2461;
+        font-weight: 600;
+    }
+    
+    .eje-info p {
+        margin: 0;
+        font-size: 12px;
+        color: #666;
+        line-height: 1.4;
+    }
+    
+    /* Contenido de objetivo */
+    .objetivo-compacto {
+        padding: 20px;
+    }
+    
+    .objetivo-resumen {
+        background: linear-gradient(135deg, rgba(26, 82, 118, 0.1) 0%, rgba(44, 62, 80, 0.1) 100%);
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 4px solid #1a5276;
+    }
+    
+    .objetivo-resumen h4 {
+        margin: 0 0 8px 0;
+        color: #1a5276;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .objetivo-resumen p {
+        margin: 0;
+        font-size: 12px;
+        color: #2c3e50;
+        line-height: 1.4;
+    }
+    
+    .objetivo-detalle p {
+        font-size: 13px;
+        line-height: 1.5;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    
+    .ver-mas {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #1a5276;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 8px 15px;
+        background: rgba(26, 82, 118, 0.1);
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .ver-mas:hover {
+        background: rgba(26, 82, 118, 0.2);
+        transform: translateX(5px);
+    }
+    
+    /* Modal de objetivo completo */
+    .modal-objetivo {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .modal-objetivo.active {
+        display: flex;
+        opacity: 1;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        max-width: 800px;
+        width: 100%;
+        max-height: 80vh;
+        overflow: hidden;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+    }
+    
+    .modal-objetivo.active .modal-content {
+        transform: translateY(0);
+    }
+    
+    .modal-header {
+        background: linear-gradient(135deg, #1a5276 0%, #2c3e50 100%);
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .modal-close {
         background: rgba(255, 255, 255, 0.2);
-        transform: scale(1.1);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+    
+    .modal-body {
+        padding: 30px;
+        font-size: 14px;
+        line-height: 1.8;
+        color: #333;
+        text-align: justify;
+        max-height: calc(80vh - 80px);
+        overflow-y: auto;
     }
     
     /* Estilos principales del contenido FODA */
@@ -573,58 +769,7 @@
         padding: 20px;
         background: #f5f7fa;
         min-height: 100vh;
-        margin-top: 140px; /* Ajusta según la altura de la barra de ejes */
-        margin-bottom: 260px; /* Ajusta según la altura del panel de objetivo */
-        transition: margin 0.3s ease;
-    }
-    
-    /* Scrollbar personalizada para el objetivo */
-    .objetivo-contenido::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    .objetivo-contenido::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 3px;
-    }
-    
-    .objetivo-contenido::-webkit-scrollbar-thumb {
-        background: rgba(52, 152, 219, 0.6);
-        border-radius: 3px;
-    }
-    
-    .objetivo-contenido::-webkit-scrollbar-thumb:hover {
-        background: rgba(52, 152, 219, 0.8);
-    }
-    
-    /* Scrollbar para la barra de ejes */
-    .ejes-lista::-webkit-scrollbar {
-        height: 4px;
-    }
-    
-    .ejes-lista::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-    }
-    
-    .ejes-lista::-webkit-scrollbar-thumb {
-        background: rgba(106, 137, 204, 0.6);
-        border-radius: 2px;
-    }
-    
-    .ejes-lista::-webkit-scrollbar-thumb:hover {
-        background: rgba(106, 137, 204, 0.8);
-    }
-    
-    /* Efectos de resaltado para ejes */
-    .eje-item.active {
-        background: rgba(52, 152, 219, 0.3);
-        border-color: #3498db;
-        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-    }
-    
-    .eje-item.active i {
-        color: white;
+        transition: margin 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
     .content-title {
@@ -1374,188 +1519,286 @@
         color: #FF9800;
     }
     
+    /* Scrollbar personalizada */
+    .tab-content::-webkit-scrollbar,
+    .modal-body::-webkit-scrollbar,
+    .celda-lista::-webkit-scrollbar,
+    .lista-estrategias::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .tab-content::-webkit-scrollbar-track,
+    .modal-body::-webkit-scrollbar-track,
+    .celda-lista::-webkit-scrollbar-track,
+    .lista-estrategias::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+    
+    .tab-content::-webkit-scrollbar-thumb,
+    .modal-body::-webkit-scrollbar-thumb,
+    .celda-lista::-webkit-scrollbar-thumb,
+    .lista-estrategias::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .tab-content::-webkit-scrollbar-thumb:hover,
+    .modal-body::-webkit-scrollbar-thumb:hover,
+    .celda-lista::-webkit-scrollbar-thumb:hover,
+    .lista-estrategias::-webkit-scrollbar-thumb:hover {
+        background: #a1a1a1;
+    }
+    
+    /* Efectos de animación para los ejes */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .eje-card {
+        animation: slideIn 0.3s ease forwards;
+        opacity: 0;
+    }
+    
+    .eje-card:nth-child(1) { animation-delay: 0.1s; }
+    .eje-card:nth-child(2) { animation-delay: 0.2s; }
+    .eje-card:nth-child(3) { animation-delay: 0.3s; }
+    .eje-card:nth-child(4) { animation-delay: 0.4s; }
+    .eje-card:nth-child(5) { animation-delay: 0.5s; }
+    .eje-card:nth-child(6) { animation-delay: 0.6s; }
+    .eje-card:nth-child(7) { animation-delay: 0.7s; }
+    
     /* Responsive */
     @media (max-width: 1200px) {
-        .ejes-lista {
-            gap: 10px;
+        .context-tab {
+            display: none;
         }
         
-        .eje-item {
-            min-width: 110px;
-            padding: 6px 8px;
+        .foda-cruzado-main-container {
+            margin: 0 !important;
         }
         
-        .eje-item span {
-            font-size: 11px;
-        }
-        
-        .objetivo-texto {
-            font-size: 12px;
+        .modal-content {
+            max-width: 95%;
         }
     }
     
+    /* Para tablets */
     @media (max-width: 992px) {
-        .ejes-header {
-            flex-direction: column;
-            gap: 10px;
-            padding: 10px 15px;
+        .matriz-foda-section,
+        .cruce-foda-section,
+        .estadisticas-section {
+            padding: 20px;
         }
         
-        .ejes-titulo {
-            width: 100%;
-            justify-content: center;
+        .cruce-container {
+            gap: 20px;
         }
         
-        .ejes-lista {
-            width: 100%;
-            justify-content: flex-start;
-        }
-        
-        .foda-cruzado-main-container {
-            margin-top: 200px;
+        .estadisticas-grid {
+            gap: 15px;
         }
     }
     
+    /* Para móviles */
     @media (max-width: 768px) {
-        .ejes-sticky-bar {
-            top: 56px; /* Ajusta para móviles */
-        }
-        
-        .eje-item {
-            min-width: 100px;
-            padding: 5px 6px;
-        }
-        
-        .eje-item span {
-            font-size: 10px;
-        }
-        
-        .objetivo-texto {
-            font-size: 11px;
-            line-height: 1.5;
-        }
-        
         .foda-cruzado-main-container {
-            margin-top: 220px;
-            margin-bottom: 280px;
+            padding: 15px;
+        }
+        
+        .content-title {
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+        
+        .matriz-foda-section h2,
+        .cruce-foda-section h2,
+        .estadisticas-section h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .celda-titulo {
+            font-size: 14px;
+        }
+        
+        .cruce-tipo-selector h3,
+        .cruce-form h3,
+        .estrategias-guardadas h3 {
+            font-size: 14px;
+        }
+        
+        .btn-guardar,
+        .btn-limpiar {
+            padding: 10px 15px;
+            font-size: 13px;
         }
     }
 </style>
 
 <script>
-    // Variables globales
+    // Variables globales del FODA
     let tipoCruceActual = 'fo';
     let elementoInternoId = null;
     let elementoExternoId = null;
     let estrategiasGuardadas = [];
-    let ejesBarCollapsed = false;
-    let objetivoPanelCollapsed = false;
+    
+    // Variables de las pestañas
+    let ejesTabAbierta = false;
+    let objetivoTabAbierta = false;
     
     // Inicializar al cargar
     document.addEventListener('DOMContentLoaded', function() {
         cargarEstrategias();
         actualizarContadorCruces();
-        ajustarMargenes();
         
-        // Añadir interactividad a los ejes
-        document.querySelectorAll('.eje-item').forEach(item => {
-            item.addEventListener('click', function() {
-                // Remover clase active de todos
-                document.querySelectorAll('.eje-item').forEach(el => {
-                    el.classList.remove('active');
+        // Agregar interactividad a los ejes
+        document.querySelectorAll('.eje-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Remover activo de todos
+                document.querySelectorAll('.eje-card').forEach(c => {
+                    c.classList.remove('active');
                 });
-                // Añadir clase active al clickeado
+                
+                // Agregar activo al seleccionado
                 this.classList.add('active');
                 
-                // Mostrar alerta con el eje seleccionado
-                const ejeNombre = this.querySelector('span').textContent;
-                mostrarAlerta(`✅ Eje seleccionado: ${ejeNombre}`, 'info');
+                // Obtener datos del eje
+                const eje = this.getAttribute('data-eje');
+                const nombre = this.querySelector('h4').textContent;
+                const descripcion = this.querySelector('p').textContent;
+                
+                // Mostrar notificación
+                mostrarNotificacion(`Eje seleccionado: ${nombre}`, 'info');
+                
+                // Aquí puedes agregar lógica adicional, como filtrar contenido por eje
+                filtrarPorEje(eje);
             });
         });
         
-        // Ocultar/mostrar con teclas
-        document.addEventListener('keydown', function(e) {
-            // Ctrl+E para barra de ejes
-            if (e.ctrlKey && e.key === 'e') {
-                e.preventDefault();
-                toggleEjesBar();
+        // Cerrar pestañas al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const ejesTab = document.getElementById('ejes-tab');
+            const objetivoTab = document.getElementById('objetivo-tab');
+            
+            if (!ejesTab.contains(e.target) && !e.target.closest('.tab-handle')) {
+                cerrarEjesTab();
             }
-            // Ctrl+O para panel objetivo
-            if (e.ctrlKey && e.key === 'o') {
+            
+            if (!objetivoTab.contains(e.target) && !e.target.closest('.tab-handle')) {
+                cerrarObjetivoTab();
+            }
+        });
+        
+        // Atajos de teclado
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarEjesTab();
+                cerrarObjetivoTab();
+                cerrarModalObjetivo();
+            }
+            
+            // Alt+E para ejes
+            if (e.altKey && e.key === 'e') {
                 e.preventDefault();
-                toggleObjetivoPanel();
+                toggleEjesTab();
+            }
+            
+            // Alt+O para objetivo
+            if (e.altKey && e.key === 'o') {
+                e.preventDefault();
+                toggleObjetivoTab();
             }
         });
     });
     
-    // Alternar visibilidad de la barra de ejes
-    function toggleEjesBar() {
-        const bar = document.querySelector('.ejes-sticky-bar');
-        const toggleBtn = document.querySelector('.ejes-toggle i');
+    // Funciones de las pestañas
+    function toggleEjesTab() {
+        const tab = document.getElementById('ejes-tab');
+        const content = document.getElementById('ejes-content');
         
-        ejesBarCollapsed = !ejesBarCollapsed;
+        ejesTabAbierta = !ejesTabAbierta;
         
-        if (ejesBarCollapsed) {
-            bar.classList.add('collapsed');
-            toggleBtn.classList.remove('fa-chevron-up');
-            toggleBtn.classList.add('fa-chevron-down');
-            mostrarAlerta('📌 Barra de ejes ocultada', 'info');
+        if (ejesTabAbierta) {
+            tab.classList.add('active');
+            content.classList.add('active');
+            // Cerrar objetivo si está abierto
+            cerrarObjetivoTab();
         } else {
-            bar.classList.remove('collapsed');
-            toggleBtn.classList.remove('fa-chevron-down');
-            toggleBtn.classList.add('fa-chevron-up');
-            mostrarAlerta('📌 Barra de ejes visible', 'info');
+            cerrarEjesTab();
         }
-        
-        ajustarMargenes();
     }
     
-    // Alternar visibilidad del panel objetivo
-    function toggleObjetivoPanel() {
-        const panel = document.querySelector('.objetivo-sticky-panel');
-        const toggleBtn = document.querySelector('.objetivo-toggle i');
+    function cerrarEjesTab() {
+        const tab = document.getElementById('ejes-tab');
+        const content = document.getElementById('ejes-content');
         
-        objetivoPanelCollapsed = !objetivoPanelCollapsed;
+        tab.classList.remove('active');
+        content.classList.remove('active');
+        ejesTabAbierta = false;
+    }
+    
+    function toggleObjetivoTab() {
+        const tab = document.getElementById('objetivo-tab');
+        const content = document.getElementById('objetivo-content');
         
-        if (objetivoPanelCollapsed) {
-            panel.classList.add('collapsed');
-            toggleBtn.classList.remove('fa-chevron-down');
-            toggleBtn.classList.add('fa-chevron-up');
-            mostrarAlerta('🎯 Panel objetivo ocultado', 'info');
+        objetivoTabAbierta = !objetivoTabAbierta;
+        
+        if (objetivoTabAbierta) {
+            tab.classList.add('active');
+            content.classList.add('active');
+            // Cerrar ejes si está abierto
+            cerrarEjesTab();
         } else {
-            panel.classList.remove('collapsed');
-            toggleBtn.classList.remove('fa-chevron-up');
-            toggleBtn.classList.add('fa-chevron-down');
-            mostrarAlerta('🎯 Panel objetivo visible', 'info');
+            cerrarObjetivoTab();
         }
-        
-        ajustarMargenes();
     }
     
-    // Ajustar márgenes del contenido principal
-    function ajustarMargenes() {
-        const mainContainer = document.querySelector('.foda-cruzado-main-container');
+    function cerrarObjetivoTab() {
+        const tab = document.getElementById('objetivo-tab');
+        const content = document.getElementById('objetivo-content');
         
-        let marginTop = 20;
-        let marginBottom = 20;
-        
-        // Calcular margen superior basado en la barra de ejes
-        if (!ejesBarCollapsed) {
-            const ejesBar = document.querySelector('.ejes-sticky-bar');
-            marginTop += ejesBar.offsetHeight;
-        }
-        
-        // Calcular margen inferior basado en el panel objetivo
-        if (!objetivoPanelCollapsed) {
-            const objetivoPanel = document.querySelector('.objetivo-sticky-panel');
-            marginBottom += objetivoPanel.offsetHeight;
-        }
-        
-        mainContainer.style.marginTop = marginTop + 'px';
-        mainContainer.style.marginBottom = marginBottom + 'px';
+        tab.classList.remove('active');
+        content.classList.remove('active');
+        objetivoTabAbierta = false;
     }
     
-    // Seleccionar tipo de cruce
+    function filtrarPorEje(eje) {
+        console.log(`Filtrando por eje: ${eje}`);
+        // Aquí puedes agregar la lógica para filtrar el contenido FODA por eje
+        
+        const ejesNombres = {
+            'educacion': 'Educación',
+            'salud': 'Salud',
+            'empleabilidad': 'Empleabilidad',
+            'desarrollo': 'Desarrollo Económico',
+            'agua': 'Sostenibilidad Ambiental (Agua)',
+            'comunicacion': 'Comunicación',
+            'institucional': 'Institucional'
+        };
+        
+        mostrarNotificacion(`Filtrando análisis por eje: ${ejesNombres[eje]}`, 'success');
+    }
+    
+    function mostrarObjetivoCompleto() {
+        const modal = document.getElementById('modal-objetivo');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function cerrarModalObjetivo() {
+        const modal = document.getElementById('modal-objetivo');
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Funciones del FODA
     function seleccionarTipoCruce(tipo) {
         tipoCruceActual = tipo;
         
@@ -1572,7 +1815,6 @@
         validarSelecciones();
     }
     
-    // Actualizar guía de estrategia según tipo
     function actualizarGuiaEstrategia() {
         const guia = document.getElementById('texto-guia');
         switch(tipoCruceActual) {
@@ -1591,7 +1833,6 @@
         }
     }
     
-    // Seleccionar elemento para cruce desde la matriz
     function seleccionarParaCruce(tipo, id, texto) {
         if (tipo === 'fortaleza' || tipo === 'debilidad') {
             document.getElementById('elemento-interno').value = id;
@@ -1602,10 +1843,9 @@
         }
         
         validarSelecciones();
-        mostrarAlerta(`✅ ${texto.substring(0, 50)}... seleccionado`, 'success');
+        mostrarNotificacion(`✅ ${texto.substring(0, 50)}... seleccionado`, 'success');
     }
     
-    // Actualizar descripción del elemento interno
     function actualizarDescripcionInterno() {
         const select = document.getElementById('elemento-interno');
         const descDiv = document.getElementById('desc-interno');
@@ -1633,7 +1873,6 @@
         validarSelecciones();
     }
     
-    // Actualizar descripción del elemento externo
     function actualizarDescripcionExterno() {
         const select = document.getElementById('elemento-externo');
         const descDiv = document.getElementById('desc-externo');
@@ -1661,24 +1900,20 @@
         validarSelecciones();
     }
     
-    // Validar que las selecciones coincidan con el tipo de cruce
     function validarSelecciones() {
         const internoSelect = document.getElementById('elemento-interno');
         const externoSelect = document.getElementById('elemento-externo');
         
-        // Si hay algo seleccionado, verificar que sea compatible
         if (internoSelect.value) {
             const tipoInterno = internoSelect.options[internoSelect.selectedIndex].getAttribute('data-tipo');
             
-            // Para FO y FA debe ser fortaleza
             if ((tipoCruceActual === 'fo' || tipoCruceActual === 'fa') && tipoInterno !== 'fortaleza') {
-                mostrarAlerta('⚠️ Para este tipo de cruce debe seleccionar una Fortaleza', 'warning');
+                mostrarNotificacion('⚠️ Para este tipo de cruce debe seleccionar una Fortaleza', 'warning');
                 internoSelect.value = '';
                 actualizarDescripcionInterno();
             }
-            // Para DO y DA debe ser debilidad
             else if ((tipoCruceActual === 'do' || tipoCruceActual === 'da') && tipoInterno !== 'debilidad') {
-                mostrarAlerta('⚠️ Para este tipo de cruce debe seleccionar una Debilidad', 'warning');
+                mostrarNotificacion('⚠️ Para este tipo de cruce debe seleccionar una Debilidad', 'warning');
                 internoSelect.value = '';
                 actualizarDescripcionInterno();
             }
@@ -1687,38 +1922,33 @@
         if (externoSelect.value) {
             const tipoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-tipo');
             
-            // Para FO y DO debe ser oportunidad
             if ((tipoCruceActual === 'fo' || tipoCruceActual === 'do') && tipoExterno !== 'oportunidad') {
-                mostrarAlerta('⚠️ Para este tipo de cruce debe seleccionar una Oportunidad', 'warning');
+                mostrarNotificacion('⚠️ Para este tipo de cruce debe seleccionar una Oportunidad', 'warning');
                 externoSelect.value = '';
                 actualizarDescripcionExterno();
             }
-            // Para FA y DA debe ser amenaza
             else if ((tipoCruceActual === 'fa' || tipoCruceActual === 'da') && tipoExterno !== 'amenaza') {
-                mostrarAlerta('⚠️ Para este tipo de cruce debe seleccionar una Amenaza', 'warning');
+                mostrarNotificacion('⚠️ Para este tipo de cruce debe seleccionar una Amenaza', 'warning');
                 externoSelect.value = '';
                 actualizarDescripcionExterno();
             }
         }
     }
     
-    // Guardar estrategia
     function guardarEstrategia() {
         const estrategiaTexto = document.getElementById('estrategia').value.trim();
         
-        // Validaciones
         if (!elementoInternoId || !elementoExternoId) {
-            mostrarAlerta('❌ Debe seleccionar ambos elementos para el cruce', 'error');
+            mostrarNotificacion('❌ Debe seleccionar ambos elementos para el cruce', 'error');
             return;
         }
         
         if (!estrategiaTexto) {
-            mostrarAlerta('❌ Debe escribir una estrategia', 'error');
+            mostrarNotificacion('❌ Debe escribir una estrategia', 'error');
             document.getElementById('estrategia').focus();
             return;
         }
         
-        // Obtener datos de los elementos seleccionados
         const internoSelect = document.getElementById('elemento-interno');
         const externoSelect = document.getElementById('elemento-externo');
         
@@ -1728,7 +1958,6 @@
         const tipoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-tipo');
         const textoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-desc');
         
-        // Crear objeto de estrategia
         const estrategia = {
             tipo_cruce: tipoCruceActual.toUpperCase(),
             elemento_interno_id: elementoInternoId,
@@ -1741,13 +1970,11 @@
             fecha: new Date().toISOString()
         };
         
-        // Mostrar indicador de carga
         const btnGuardar = document.querySelector('.btn-guardar');
         const originalText = btnGuardar.innerHTML;
         btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
         btnGuardar.disabled = true;
         
-        // Enviar al servidor
         fetch('/guardar_estrategia_foda', {
             method: 'POST',
             headers: {
@@ -1759,17 +1986,15 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                mostrarAlerta('✅ Estrategia guardada correctamente', 'success');
+                mostrarNotificacion('✅ Estrategia guardada correctamente', 'success');
                 
-                // Agregar a la lista local
                 estrategiasGuardadas.push(estrategia);
                 
-                // Actualizar UI
                 agregarEstrategiaALista(estrategia);
                 actualizarContadores();
                 limpiarFormulario();
             } else {
-                mostrarAlerta('❌ Error: ' + data.message, 'error');
+                mostrarNotificacion('❌ Error: ' + data.message, 'error');
             }
             
             btnGuardar.innerHTML = originalText;
@@ -1777,27 +2002,23 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            mostrarAlerta('❌ Error de conexión al servidor', 'error');
+            mostrarNotificacion('❌ Error de conexión al servidor', 'error');
             btnGuardar.innerHTML = originalText;
             btnGuardar.disabled = false;
         });
     }
     
-    // Agregar estrategia a la lista
     function agregarEstrategiaALista(estrategia) {
         const lista = document.getElementById('lista-estrategias');
         
-        // Remover mensaje de vacío si existe
         const emptyMsg = lista.querySelector('.estrategia-empty');
         if (emptyMsg) {
             emptyMsg.remove();
         }
         
-        // Crear elemento HTML
         const estrategiaDiv = document.createElement('div');
         estrategiaDiv.className = 'estrategia-item';
         
-        // Formatear fecha
         const fecha = new Date(estrategia.fecha);
         const fechaFormateada = fecha.toLocaleDateString('es-ES', {
             day: '2-digit',
@@ -1807,7 +2028,6 @@
             minute: '2-digit'
         });
         
-        // Icono según tipo
         let iconoInterno = estrategia.elemento_interno_tipo === 'fortaleza' ? 
             '<i class="fas fa-shield-alt"></i>' : 
             '<i class="fas fa-exclamation-triangle"></i>';
@@ -1836,11 +2056,9 @@
             </div>
         `;
         
-        // Agregar al inicio de la lista
         lista.insertBefore(estrategiaDiv, lista.firstChild);
     }
     
-    // Cargar estrategias guardadas
     function cargarEstrategias() {
         fetch('/api/estrategias_foda')
             .then(response => response.json())
@@ -1873,7 +2091,6 @@
             });
     }
     
-    // Filtrar estrategias por tipo
     function filtrarEstrategias() {
         const filtro = document.getElementById('filtro-tipo-estrategia').value;
         const estrategiasItems = document.querySelectorAll('.estrategia-item');
@@ -1889,7 +2106,6 @@
         });
     }
     
-    // Limpiar formulario
     function limpiarFormulario() {
         document.getElementById('elemento-interno').value = '';
         document.getElementById('elemento-externo').value = '';
@@ -1901,20 +2117,15 @@
         elementoInternoId = null;
         elementoExternoId = null;
         
-        mostrarAlerta('✅ Formulario limpiado', 'success');
+        mostrarNotificacion('✅ Formulario limpiado', 'success');
     }
     
-    // Actualizar contadores
     function actualizarContadores() {
-        // Contar estrategias
         const totalEstrategias = estrategiasGuardadas.length;
         document.getElementById('contador-estrategias').textContent = totalEstrategias;
-        
-        // Actualizar contador de cruces posibles
         actualizarContadorCruces();
     }
     
-    // Calcular cruces posibles
     function actualizarContadorCruces() {
         const fortalezas = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Positivo')|list|length }};
         const debilidades = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Negativo')|list|length }};
@@ -1930,8 +2141,7 @@
         document.getElementById('contador-cruces').textContent = totalCruces;
     }
     
-    // Mostrar alertas
-    function mostrarAlerta(mensaje, tipo) {
+    function mostrarNotificacion(mensaje, tipo) {
         let alerta = document.getElementById('alerta-flotante');
         
         if (!alerta) {
@@ -1939,7 +2149,7 @@
             alerta.id = 'alerta-flotante';
             alerta.style.cssText = `
                 position: fixed;
-                top: 120px;
+                top: 100px;
                 right: 20px;
                 padding: 15px 20px;
                 border-radius: 8px;
@@ -1982,8 +2192,5 @@
             alerta.style.opacity = '0';
         }, 4000);
     }
-    
-    // Ajustar en redimensionamiento de ventana
-    window.addEventListener('resize', ajustarMargenes);
 </script>
 {% endblock %}
