@@ -1,353 +1,394 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Mapa Neuronal Estratégico -->
-<div class="mapa-neuronal-container">
-    <div class="mapa-header">
-        <h1 class="mapa-title">
-            <i class="fas fa-project-diagram"></i> Mapa Neuronal Estratégico - Proyecto El Domo
-        </h1>
-        <div class="mapa-controls">
-            <button class="btn-control" onclick="zoomIn()">
-                <i class="fas fa-search-plus"></i> Zoom
-            </button>
-            <button class="btn-control" onclick="resetView()">
-                <i class="fas fa-sync-alt"></i> Reiniciar
-            </button>
-            <button class="btn-control" onclick="toggleAnimations()">
-                <i class="fas fa-play"></i> Animaciones
-            </button>
-            <button class="btn-control" onclick="exportMap()">
-                <i class="fas fa-download"></i> Exportar
-            </button>
-            <div class="filter-controls">
-                <select id="filtro-nivel" onchange="filtrarNodos()">
-                    <option value="all">Todos los niveles</option>
-                    <option value="objetivo">Objetivo Central</option>
-                    <option value="ejes">Ejes Estratégicos</option>
-                    <option value="estrategias">Estrategias</option>
-                    <option value="actividades">Actividades</option>
-                    <option value="tareas">Tareas</option>
-                </select>
+<!-- Mapa Neuronal Estratégico - Versión Mejorada -->
+<div class="mapa-neuronal-container" id="mapaFullscreen">
+    <!-- Controles flotantes -->
+    <div class="mapa-controls-flotantes">
+        <button class="control-btn" onclick="toggleFullscreen()" title="Pantalla completa">
+            <i class="fas fa-expand"></i>
+        </button>
+        <button class="control-btn" onclick="resetView()" title="Reiniciar vista">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+        <button class="control-btn" onclick="toggleAnimations()" title="Animaciones">
+            <i class="fas fa-play" id="animacionIcon"></i>
+        </button>
+        <button class="control-btn" onclick="exportMap()" title="Exportar">
+            <i class="fas fa-download"></i>
+        </button>
+        <div class="control-group">
+            <select id="filtro-nivel" onchange="filtrarNodos()">
+                <option value="all">Todos los niveles</option>
+                <option value="objetivo">Objetivo Central</option>
+                <option value="ejes">Ejes Estratégicos</option>
+                <option value="estrategias">Estrategias</option>
+                <option value="actividades">Actividades</option>
+                <option value="tareas">Tareas</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <input type="range" id="zoomSlider" min="0.5" max="3" step="0.1" value="1" oninput="zoomSliderChange(this.value)">
+        </div>
+    </div>
+    
+    <!-- Cabecera del mapa -->
+    <div class="mapa-header-glass">
+        <div class="header-content">
+            <h1 class="mapa-title-glow">
+                <i class="fas fa-project-diagram"></i>
+                <span class="title-text">MAPA NEURONAL ESTRATÉGICO</span>
+                <span class="subtitle">Proyecto El Domo</span>
+            </h1>
+            <div class="header-stats">
+                <div class="stat-badge">
+                    <i class="fas fa-bullseye"></i>
+                    <span>1 Objetivo</span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-layer-group"></i>
+                    <span>7 Ejes</span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-chess-board"></i>
+                    <span id="total-estrategias">0 Estrategias</span>
+                </div>
+                <div class="stat-badge">
+                    <i class="fas fa-network-wired"></i>
+                    <span id="total-conexiones">0 Conexiones</span>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="mapa-canvas" id="mapaCanvas">
-        <!-- Canvas SVG para las conexiones -->
-        <svg class="conexiones-svg" id="conexionesSvg"></svg>
+    <!-- Canvas principal -->
+    <div class="mapa-canvas-fullscreen" id="mapaCanvas">
+        <!-- Fondo con partículas -->
+        <div class="particles-container" id="particlesContainer"></div>
         
-        <!-- Contenedor para los nodos -->
+        <!-- SVG para conexiones -->
+        <svg class="conexiones-svg" id="conexionesSvg">
+            <defs>
+                <linearGradient id="gradient-eje" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#3498db" stop-opacity="0.7" />
+                    <stop offset="100%" stop-color="#9b59b6" stop-opacity="0.7" />
+                </linearGradient>
+                <linearGradient id="gradient-estrategia" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#2ecc71" stop-opacity="0.7" />
+                    <stop offset="100%" stop-color="#3498db" stop-opacity="0.7" />
+                </linearGradient>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#3498db"/>
+                </marker>
+            </defs>
+        </svg>
+        
+        <!-- Contenedor de nodos -->
         <div class="nodos-container" id="nodosContainer">
-            <!-- Nodo Central - Objetivo Estratégico -->
+            <!-- Nodo Central -->
             <div class="nodo nodo-central" id="nodo-objetivo">
+                <div class="nodo-glow"></div>
+                <div class="nodo-orb"></div>
                 <div class="nodo-content">
-                    <div class="nodo-icon">
+                    <div class="nodo-icon-pulse">
                         <i class="fas fa-brain"></i>
                     </div>
-                    <div class="nodo-title">OBJETIVO ESTRATÉGICO</div>
-                    <div class="nodo-desc">
-                        <div class="nodo-texto">
-                            Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local...
-                        </div>
-                        <button class="btn-ver-mas" onclick="mostrarDetalleObjetivo()">Ver completo</button>
+                    <div class="nodo-title-glow">OBJETIVO ESTRATÉGICO</div>
+                    <div class="nodo-desc-scroll">
+                        Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local...
                     </div>
-                    <div class="nodo-stats">
-                        <div class="stat">
-                            <i class="fas fa-layer-group"></i>
-                            <span>7 Ejes</span>
+                    <button class="btn-ver-mas" onclick="mostrarDetalleObjetivo()">
+                        <i class="fas fa-eye"></i> Ver completo
+                    </button>
+                    <div class="nodo-stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">7</div>
+                            <div class="stat-label">Ejes</div>
                         </div>
-                        <div class="stat">
-                            <i class="fas fa-chess-board"></i>
-                            <span id="total-estrategias">0 Estrategias</span>
+                        <div class="stat-item">
+                            <div class="stat-value" id="contador-estrategias">0</div>
+                            <div class="stat-label">Estrategias</div>
                         </div>
                     </div>
                 </div>
-                <div class="nodo-pulse"></div>
-            </div>
-            
-            <!-- Nodos de Ejes Estratégicos -->
-            <div class="nodo nodo-eje" id="nodo-educacion" data-eje="educacion">
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <div class="nodo-title">EDUCACIÓN</div>
-                    <div class="nodo-stats">
-                        <div class="stat">
-                            <i class="fas fa-lightbulb"></i>
-                            <span id="estrategias-educacion">0</span>
-                        </div>
-                    </div>
-                    <div class="nodo-actions">
-                        <button class="btn-nodo" onclick="mostrarEstrategias('educacion')">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                    </div>
+                <div class="nodo-actions">
+                    <button class="nodo-action-btn" onclick="expandirTodo()" title="Expandir todo">
+                        <i class="fas fa-expand"></i>
+                    </button>
                 </div>
             </div>
             
-            <div class="nodo nodo-eje" id="nodo-salud" data-eje="salud">
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-heartbeat"></i>
-                    </div>
-                    <div class="nodo-title">SALUD</div>
-                    <div class="nodo-stats">
-                        <div class="stat">
-                            <i class="fas fa-lightbulb"></i>
-                            <span id="estrategias-salud">0</span>
-                        </div>
-                    </div>
-                    <div class="nodo-actions">
-                        <button class="btn-nodo" onclick="mostrarEstrategias('salud')">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                    </div>
-                </div>
+            <!-- Nodos de Ejes (se posicionan dinámicamente) -->
+            <div class="ejes-container" id="ejesContainer">
+                <!-- Los nodos de ejes se generan dinámicamente -->
             </div>
             
-            <div class="nodo nodo-eje" id="nodo-empleabilidad" data-eje="empleabilidad">
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <div class="nodo-title">EMPLEABILIDAD</div>
-                    <div class="nodo-stats">
-                        <div class="stat">
-                            <i class="fas fa-lightbulb"></i>
-                            <span id="estrategias-empleabilidad">0</span>
-                        </div>
-                    </div>
-                    <div class="nodo-actions">
-                        <button class="btn-nodo" onclick="mostrarEstrategias('empleabilidad')">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="nodo nodo-eje" id="nodo-desarrollo" data-eje="desarrollo">
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <div class="nodo-title">DESARROLLO ECONÓMICO</div>
-                    <div class="nodo-stats">
-                        <div class="stat">
-                            <i class="fas fa-lightbulb"></i>
-                            <span id="estrategias-desarrollo">0</span>
-                        </div>
-                    </div>
-                    <div class="nodo-actions">
-                        <button class="btn-nodo" onclick="mostrarEstrategias('desarrollo')">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="nodo nodo-eje" id="nodo-agua" data-eje="agua">
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-tint"></i>
-                    </div>
-                    <div class="nodo-title">SOSTENIBILIDAD AMBIENTAL (AGUA)</div>
-                    <div class="nodo-stats">
-                        <div class="stat">
-                            <i class="fas fa-lightbulb"></i>
-                            <span id="estrategias-agua">0</span>
-                        </div>
-                    </div>
-                    <div class="nodo-actions">
-                        <button class="btn-nodo" onclick="mostrarEstrategias('agua')">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="nodo nodo-eje" id="nodo-comunicacion" data-eje="comunicacion">
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-bullhorn"></i>
-                    </div>
-                    <div class="nodo-title">COMUNICACIÓN</div>
-                    <div class="nodo-stats">
-                        <div class="stat">
-                            <i class="fas fa-lightbulb"></i>
-                            <span id="estrategias-comunicacion">0</span>
-                        </div>
-                    </div>
-                    <div class="nodo-actions">
-                        <button class="btn-nodo" onclick="mostrarEstrategias('comunicacion')">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="nodo nodo-eje" id="nodo-institucional" data-eje="institucional">
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-landmark"></i>
-                    </div>
-                    <div class="nodo-title">INSTITUCIONAL</div>
-                    <div class="nodo-stats">
-                        <div class="stat">
-                            <i class="fas fa-lightbulb"></i>
-                            <span id="estrategias-institucional">0</span>
-                        </div>
-                    </div>
-                    <div class="nodo-actions">
-                        <button class="btn-nodo" onclick="mostrarEstrategias('institucional')">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Nodos de Estrategias (se cargarán dinámicamente) -->
+            <!-- Contenedores para niveles jerárquicos -->
             <div class="estrategias-container" id="estrategiasContainer"></div>
-            
-            <!-- Nodos de Actividades (se cargarán dinámicamente) -->
             <div class="actividades-container" id="actividadesContainer"></div>
-            
-            <!-- Nodos de Tareas (se cargarán dinámicamente) -->
             <div class="tareas-container" id="tareasContainer"></div>
         </div>
-    </div>
-    
-    <div class="mapa-legenda">
-        <div class="legenda-item">
-            <div class="legenda-color nodo-central-color"></div>
-            <span>Objetivo Estratégico</span>
-        </div>
-        <div class="legenda-item">
-            <div class="legenda-color nodo-eje-color"></div>
-            <span>Ejes Estratégicos</span>
-        </div>
-        <div class="legenda-item">
-            <div class="legenda-color nodo-estrategia-color"></div>
-            <span>Estrategias</span>
-        </div>
-        <div class="legenda-item">
-            <div class="legenda-color nodo-actividad-color"></div>
-            <span>Actividades</span>
-        </div>
-        <div class="legenda-item">
-            <div class="legenda-color nodo-tarea-color"></div>
-            <span>Tareas</span>
+        
+        <!-- Mini mapa de navegación -->
+        <div class="minimap" id="minimap">
+            <div class="minimap-viewport" id="minimapViewport"></div>
         </div>
     </div>
     
-    <div class="mapa-sidebar" id="sidebarDetalle">
-        <div class="sidebar-header">
-            <h3 id="sidebarTitulo">Detalles</h3>
-            <button class="sidebar-close" onclick="cerrarSidebar()">
+    <!-- Leyenda flotante -->
+    <div class="leyenda-flotante">
+        <div class="leyenda-header">
+            <i class="fas fa-key"></i> Leyenda
+        </div>
+        <div class="leyenda-content">
+            <div class="leyenda-item">
+                <div class="leyenda-icon nodo-central-color">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <span>Objetivo Central</span>
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-icon nodo-eje-color">
+                    <i class="fas fa-layer-group"></i>
+                </div>
+                <span>Ejes Estratégicos</span>
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-icon nodo-estrategia-color">
+                    <i class="fas fa-chess-board"></i>
+                </div>
+                <span>Estrategias</span>
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-icon nodo-actividad-color">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <span>Actividades</span>
+            </div>
+            <div class="leyenda-item">
+                <div class="leyenda-icon nodo-tarea-color">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <span>Tareas</span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Panel de detalles -->
+    <div class="panel-detalles" id="panelDetalles">
+        <div class="panel-header">
+            <h3 id="detalleTitulo"><i class="fas fa-info-circle"></i> Detalles</h3>
+            <button class="panel-close" onclick="cerrarPanel()">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="sidebar-content" id="sidebarContent">
+        <div class="panel-body" id="detalleContenido">
             <!-- Contenido dinámico -->
         </div>
     </div>
-</div>
-
-<!-- Modal para el objetivo completo -->
-<div class="modal-mapa" id="modalObjetivo">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3><i class="fas fa-brain"></i> OBJETIVO ESTRATÉGICO COMPLETO</h3>
-            <button class="modal-close" onclick="cerrarModal('modalObjetivo')">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p>Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras, a través de la repotenciación de sistemas comunitarios y el monitoreo estricto de su calidad; este compromiso se complementa con la mejora de equipamiento en salud, la intervención en infraestructura sanitaria y lúdica de 4 unidades educativas, la reubicación estratégica de al menos el 60% del personal local hacia nuevos departamentos, y una cooperación técnica con los GADs y niveles distritales, todo dinamizado por un sistema de comunicación comunitaria que transparente la propuesta de valor y los beneficios del proyecto en el AID y AII.</p>
+    
+    <!-- Modal objetivo -->
+    <div class="modal-glass" id="modalObjetivo">
+        <div class="modal-glass-content">
+            <div class="modal-header-glow">
+                <h3><i class="fas fa-brain"></i> OBJETIVO ESTRATÉGICO COMPLETO</h3>
+                <button class="modal-close-glow" onclick="cerrarModal('modalObjetivo')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body-scroll">
+                <div class="objetivo-content">
+                    <div class="objetivo-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <p>Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras, a través de la repotenciación de sistemas comunitarios y el monitoreo estricto de su calidad; este compromiso se complementa con la mejora de equipamiento en salud, la intervención en infraestructura sanitaria y lúdica de 4 unidades educativas, la reubicación estratégica de al menos el 60% del personal local hacia nuevos departamentos, y una cooperación técnica con los GADs y niveles distritales, todo dinamizado por un sistema de comunicación comunitaria que transparente la propuesta de valor y los beneficios del proyecto en el AID y AII.</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* Contenedor principal del mapa */
+    /* Reset y configuración base */
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+    
+    /* Contenedor principal fullscreen */
     .mapa-neuronal-container {
-        position: relative;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
         height: 100vh;
-        background: linear-gradient(135deg, #0c2461 0%, #1a5276 100%);
+        background: linear-gradient(135deg, #0c0e2a 0%, #1a1b3a 50%, #0c2461 100%);
         overflow: hidden;
-        padding: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
-    .mapa-header {
-        margin-bottom: 20px;
-        color: white;
-    }
-    
-    .mapa-title {
-        font-size: 24px;
-        font-weight: 700;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: white;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    }
-    
-    .mapa-controls {
+    /* Controles flotantes */
+    .mapa-controls-flotantes {
+        position: fixed;
+        top: 20px;
+        right: 20px;
         display: flex;
         gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-    
-    .btn-control {
-        padding: 8px 15px;
+        z-index: 1000;
         background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .control-btn {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(155, 89, 182, 0.8));
+        border: none;
         color: white;
-        border-radius: 6px;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 8px;
+        justify-content: center;
+        font-size: 18px;
         transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
     }
     
-    .btn-control:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: translateY(-2px);
+    .control-btn:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
     }
     
-    .filter-controls select {
-        padding: 8px 15px;
+    .control-group {
+        display: flex;
+        align-items: center;
+        margin-left: 10px;
+    }
+    
+    .control-group select, .control-group input {
         background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
-        border-radius: 6px;
+        padding: 8px 15px;
+        border-radius: 10px;
         backdrop-filter: blur(10px);
-        min-width: 180px;
+        min-width: 150px;
     }
     
-    .filter-controls select option {
-        background: #0c2461;
+    .control-group option {
+        background: #0c0e2a;
         color: white;
     }
     
-    /* Canvas del mapa */
-    .mapa-canvas {
-        position: relative;
-        width: 100%;
-        height: calc(100vh - 150px);
-        background: rgba(12, 36, 97, 0.3);
-        border-radius: 12px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    .control-group input[type="range"] {
+        min-width: 100px;
     }
     
+    /* Cabecera glassmorphism */
+    .mapa-header-glass {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        right: 280px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 15px 25px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .mapa-title-glow {
+        color: white;
+        font-size: 20px;
+        font-weight: 700;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        text-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+    }
+    
+    .title-text {
+        font-size: 24px;
+        letter-spacing: 1px;
+    }
+    
+    .subtitle {
+        font-size: 14px;
+        opacity: 0.8;
+        font-weight: 400;
+    }
+    
+    .header-stats {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .stat-badge {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 8px 15px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        font-size: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Canvas fullscreen */
+    .mapa-canvas-fullscreen {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        cursor: grab;
+    }
+    
+    .mapa-canvas-fullscreen:active {
+        cursor: grabbing;
+    }
+    
+    /* Partículas de fondo */
+    .particles-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+    }
+    
+    .particle {
+        position: absolute;
+        width: 2px;
+        height: 2px;
+        background: rgba(52, 152, 219, 0.5);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
+    /* SVG de conexiones */
     .conexiones-svg {
         position: absolute;
         top: 0;
@@ -360,15 +401,31 @@
     
     .conexion {
         stroke-width: 2;
-        stroke: rgba(52, 152, 219, 0.5);
         fill: none;
-        animation: pulseLine 2s infinite;
+        filter: url(#glow);
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+    }
+    
+    .conexion.eje {
+        stroke: url(#gradient-eje);
+        animation: drawLine 3s ease-in-out forwards;
+    }
+    
+    .conexion.estrategia {
+        stroke: url(#gradient-estrategia);
+        animation: drawLine 2s ease-in-out forwards;
     }
     
     .conexion.activa {
-        stroke: rgba(46, 204, 113, 0.7);
         stroke-width: 3;
-        filter: drop-shadow(0 0 4px rgba(46, 204, 113, 0.5));
+        animation: pulseLine 2s infinite;
+    }
+    
+    @keyframes drawLine {
+        to {
+            stroke-dashoffset: 0;
+        }
     }
     
     @keyframes pulseLine {
@@ -376,21 +433,24 @@
             stroke-opacity: 0.3;
         }
         50% {
-            stroke-opacity: 0.8;
+            stroke-opacity: 1;
         }
         100% {
             stroke-opacity: 0.3;
         }
     }
     
-    /* Nodos generales */
+    /* Contenedor de nodos */
     .nodos-container {
-        position: relative;
+        position: absolute;
         width: 100%;
         height: 100%;
         z-index: 2;
+        transform-origin: center;
+        transition: transform 0.3s ease;
     }
     
+    /* Nodos generales */
     .nodo {
         position: absolute;
         cursor: pointer;
@@ -399,19 +459,8 @@
     }
     
     .nodo:hover {
-        transform: scale(1.05) translateY(-5px);
+        transform: scale(1.05);
         z-index: 100;
-    }
-    
-    .nodo-content {
-        background: white;
-        border-radius: 12px;
-        padding: 15px;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        position: relative;
-        transition: all 0.3s ease;
-        min-width: 200px;
-        border: 3px solid transparent;
     }
     
     /* Nodo central */
@@ -420,426 +469,370 @@
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 10;
+        width: 350px;
+        height: 350px;
     }
     
-    .nodo-central .nodo-content {
-        background: linear-gradient(135deg, #9C27B0 0%, #7b1fa2 100%);
-        color: white;
-        border-color: #E1BEE7;
-        min-width: 300px;
-        max-width: 400px;
-        animation: pulseCentral 3s infinite;
-    }
-    
-    @keyframes pulseCentral {
-        0% {
-            box-shadow: 0 0 0 0 rgba(156, 39, 176, 0.4);
-        }
-        70% {
-            box-shadow: 0 0 0 20px rgba(156, 39, 176, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(156, 39, 176, 0);
-        }
-    }
-    
-    .nodo-pulse {
+    .nodo-glow {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
         width: 100%;
         height: 100%;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(156, 39, 176, 0.2) 0%, rgba(156, 39, 176, 0) 70%);
-        animation: radialPulse 3s infinite;
-        z-index: -1;
+        background: radial-gradient(circle, rgba(156, 39, 176, 0.4) 0%, rgba(156, 39, 176, 0) 70%);
+        animation: pulseGlow 3s infinite;
+        filter: blur(20px);
     }
     
-    @keyframes radialPulse {
-        0% {
-            transform: translate(-50%, -50%) scale(0.8);
-            opacity: 0.5;
-        }
-        50% {
-            transform: translate(-50%, -50%) scale(1.2);
-            opacity: 0.2;
-        }
-        100% {
-            transform: translate(-50%, -50%) scale(0.8);
-            opacity: 0.5;
-        }
+    .nodo-orb {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, #9C27B0, #E91E63, #9C27B0);
+        animation: rotateOrb 20s linear infinite;
+        opacity: 0.1;
+        filter: blur(40px);
     }
     
-    .nodo-central .nodo-icon {
-        width: 60px;
-        height: 60px;
-        background: rgba(255, 255, 255, 0.2);
+    .nodo-central .nodo-content {
+        position: relative;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 25px;
+        padding: 30px;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        z-index: 2;
+    }
+    
+    .nodo-icon-pulse {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #9C27B0, #E91E63);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 15px;
-        font-size: 24px;
+        margin-bottom: 20px;
+        font-size: 32px;
+        color: white;
+        animation: pulseIcon 2s infinite;
+        box-shadow: 0 0 30px rgba(156, 39, 176, 0.5);
     }
     
-    .nodo-central .nodo-title {
+    .nodo-title-glow {
         font-size: 18px;
         font-weight: 700;
+        color: white;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(156, 39, 176, 0.7);
+    }
+    
+    .nodo-desc-scroll {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+        line-height: 1.5;
+        margin-bottom: 20px;
+        max-height: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+    
+    .btn-ver-mas {
+        background: linear-gradient(135deg, #3498db, #9b59b6);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+    
+    .btn-ver-mas:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+    }
+    
+    .nodo-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        width: 100%;
+    }
+    
+    .stat-item {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 10px;
         text-align: center;
-        margin-bottom: 10px;
+    }
+    
+    .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 5px;
+    }
+    
+    .stat-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
         text-transform: uppercase;
         letter-spacing: 1px;
     }
     
-    .nodo-central .nodo-desc {
-        font-size: 12px;
-        line-height: 1.4;
-        margin-bottom: 15px;
-        text-align: center;
-        opacity: 0.9;
-        max-height: 100px;
-        overflow: hidden;
-    }
-    
-    .btn-ver-mas {
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        color: white;
-        padding: 6px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: block;
-        margin: 0 auto;
-    }
-    
-    .btn-ver-mas:hover {
-        background: rgba(255, 255, 255, 0.3);
-    }
-    
-    .nodo-stats {
+    .nodo-actions {
+        position: absolute;
+        bottom: -20px;
+        left: 50%;
+        transform: translateX(-50%);
         display: flex;
-        justify-content: center;
-        gap: 20px;
-        margin-top: 15px;
+        gap: 10px;
     }
     
-    .stat {
+    .nodo-action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #3498db, #9b59b6);
+        border: none;
+        color: white;
+        cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 5px;
-        font-size: 11px;
-        opacity: 0.8;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .nodo-action-btn:hover {
+        transform: scale(1.1);
     }
     
     /* Nodos de ejes */
     .nodo-eje {
-        z-index: 9;
+        width: 180px;
+        height: 180px;
     }
     
     .nodo-eje .nodo-content {
-        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-        color: white;
-        border-color: #85C1E9;
-        min-width: 180px;
-        max-width: 200px;
+        position: relative;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 20px;
+        padding: 20px;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .nodo-eje:hover .nodo-content {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
     }
     
     .nodo-eje .nodo-icon {
-        width: 50px;
-        height: 50px;
-        background: rgba(255, 255, 255, 0.2);
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #3498db, #2980b9);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 10px;
-        font-size: 20px;
+        margin-bottom: 15px;
+        font-size: 24px;
+        color: white;
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
     }
     
     .nodo-eje .nodo-title {
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 600;
-        text-align: center;
-        margin-bottom: 8px;
-        line-height: 1.2;
-    }
-    
-    .nodo-eje .nodo-stats {
-        margin-top: 10px;
-        font-size: 12px;
-    }
-    
-    .nodo-actions {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-    }
-    
-    .btn-nodo {
-        width: 30px;
-        height: 30px;
-        background: rgba(255, 255, 255, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.3);
         color: white;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+    
+    .nodo-eje .nodo-counter {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 4px 12px;
+        border-radius: 15px;
+    }
+    
+    /* Nodos de estrategias, actividades y tareas */
+    .nodo-estrategia, .nodo-actividad, .nodo-tarea {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .nodo-estrategia .nodo-content {
+        background: rgba(46, 204, 113, 0.1);
+        border: 1px solid rgba(46, 204, 113, 0.2);
+    }
+    
+    .nodo-actividad .nodo-content {
+        background: rgba(231, 76, 60, 0.1);
+        border: 1px solid rgba(231, 76, 60, 0.2);
+    }
+    
+    .nodo-tarea .nodo-content {
+        background: rgba(243, 156, 18, 0.1);
+        border: 1px solid rgba(243, 156, 18, 0.2);
+    }
+    
+    .nodo-estrategia .nodo-icon,
+    .nodo-actividad .nodo-icon,
+    .nodo-tarea .nodo-icon {
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 12px;
-    }
-    
-    .btn-nodo:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: scale(1.1);
-    }
-    
-    /* Nodos de estrategias (dinámicos) */
-    .nodo-estrategia .nodo-content {
-        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        margin-bottom: 10px;
+        font-size: 20px;
         color: white;
-        border-color: #A3E4D7;
-        min-width: 160px;
-        max-width: 180px;
     }
     
     .nodo-estrategia .nodo-icon {
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 8px;
-        font-size: 16px;
-    }
-    
-    .nodo-estrategia .nodo-title {
-        font-size: 12px;
-        font-weight: 600;
-        text-align: center;
-        margin-bottom: 5px;
-        line-height: 1.2;
-    }
-    
-    .nodo-estrategia .nodo-desc {
-        font-size: 10px;
-        line-height: 1.2;
-        opacity: 0.9;
-        max-height: 60px;
-        overflow: hidden;
-    }
-    
-    /* Nodos de actividades (dinámicos) */
-    .nodo-actividad .nodo-content {
-        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-        color: white;
-        border-color: #F1948A;
-        min-width: 140px;
-        max-width: 160px;
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
     }
     
     .nodo-actividad .nodo-icon {
-        width: 35px;
-        height: 35px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 8px;
-        font-size: 14px;
-    }
-    
-    .nodo-actividad .nodo-title {
-        font-size: 11px;
-        font-weight: 600;
-        text-align: center;
-        line-height: 1.2;
-    }
-    
-    /* Nodos de tareas (dinámicos) */
-    .nodo-tarea .nodo-content {
-        background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
-        color: white;
-        border-color: #F7DC6F;
-        min-width: 120px;
-        max-width: 140px;
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
     }
     
     .nodo-tarea .nodo-icon {
-        width: 30px;
-        height: 30px;
-        background: rgba(255, 255, 255, 0.2);
+        background: linear-gradient(135deg, #f39c12, #d35400);
+    }
+    
+    /* Leyenda flotante */
+    .leyenda-flotante {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 15px;
+        padding: 15px;
+        width: 200px;
+        z-index: 1000;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+    
+    .leyenda-header {
+        color: white;
+        font-weight: 600;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .leyenda-content {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .leyenda-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 12px;
+    }
+    
+    .leyenda-icon {
+        width: 25px;
+        height: 25px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 5px;
         font-size: 12px;
-    }
-    
-    .nodo-tarea .nodo-title {
-        font-size: 10px;
-        font-weight: 600;
-        text-align: center;
-        line-height: 1.2;
-    }
-    
-    /* Leyenda */
-    .mapa-legenda {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(10px);
-        border-radius: 8px;
-        padding: 15px;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        z-index: 10;
-    }
-    
-    .legenda-item {
-        display: flex;
-        align-items: center;
-        gap: 10px;
         color: white;
-        font-size: 12px;
-    }
-    
-    .legenda-color {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.3);
+        flex-shrink: 0;
     }
     
     .nodo-central-color {
-        background: linear-gradient(135deg, #9C27B0 0%, #7b1fa2 100%);
+        background: linear-gradient(135deg, #9C27B0, #E91E63);
     }
     
     .nodo-eje-color {
-        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        background: linear-gradient(135deg, #3498db, #2980b9);
     }
     
     .nodo-estrategia-color {
-        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        background: linear-gradient(135deg, #2ecc71, #27ae60);
     }
     
     .nodo-actividad-color {
-        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        background: linear-gradient(135deg, #e74c3c, #c0392b);
     }
     
     .nodo-tarea-color {
-        background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
+        background: linear-gradient(135deg, #f39c12, #d35400);
     }
     
-    /* Sidebar de detalles */
-    .mapa-sidebar {
-        position: absolute;
+    /* Panel de detalles */
+    .panel-detalles {
+        position: fixed;
         top: 0;
         right: -400px;
         width: 380px;
         height: 100%;
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(30px);
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+        z-index: 2000;
         transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        z-index: 1000;
         overflow-y: auto;
     }
     
-    .mapa-sidebar.open {
+    .panel-detalles.open {
         right: 0;
     }
     
-    .sidebar-header {
-        padding: 20px;
-        background: linear-gradient(135deg, #0c2461 0%, #1a5276 100%);
-        color: white;
+    .panel-header {
+        padding: 25px;
+        background: rgba(12, 36, 97, 0.5);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     
-    .sidebar-header h3 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 600;
-    }
-    
-    .sidebar-close {
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
+    .panel-header h3 {
         color: white;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .sidebar-content {
-        padding: 20px;
-    }
-    
-    /* Modal */
-    .modal-mapa {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 2000;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .modal-mapa.active {
-        display: flex;
-        opacity: 1;
-    }
-    
-    .modal-content {
-        background: white;
-        border-radius: 12px;
-        max-width: 800px;
-        width: 100%;
-        max-height: 80vh;
-        overflow: hidden;
-        transform: translateY(20px);
-        transition: transform 0.3s ease;
-    }
-    
-    .modal-mapa.active .modal-content {
-        transform: translateY(0);
-    }
-    
-    .modal-header {
-        background: linear-gradient(135deg, #9C27B0 0%, #7b1fa2 100%);
-        color: white;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .modal-header h3 {
-        margin: 0;
         font-size: 18px;
         font-weight: 600;
         display: flex;
@@ -847,38 +840,197 @@
         gap: 10px;
     }
     
-    .modal-close {
-        background: rgba(255, 255, 255, 0.2);
+    .panel-close {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
         border: none;
         color: white;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.3s ease;
     }
     
-    .modal-body {
+    .panel-close:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(90deg);
+    }
+    
+    .panel-body {
+        padding: 25px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    
+    /* Modal glass */
+    .modal-glass {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 3000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .modal-glass.active {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    .modal-glass-content {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(40px);
+        border-radius: 25px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 80vh;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+        transform: translateY(30px);
+        transition: transform 0.3s ease;
+    }
+    
+    .modal-glass.active .modal-glass-content {
+        transform: translateY(0);
+    }
+    
+    .modal-header-glow {
+        padding: 25px;
+        background: linear-gradient(135deg, rgba(156, 39, 176, 0.2), rgba(233, 30, 99, 0.2));
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header-glow h3 {
+        color: white;
+        font-size: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .modal-close-glow {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .modal-close-glow:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: rotate(90deg);
+    }
+    
+    .modal-body-scroll {
         padding: 30px;
-        font-size: 14px;
-        line-height: 1.8;
-        color: #333;
-        text-align: justify;
-        max-height: calc(80vh - 80px);
+        max-height: calc(80vh - 90px);
         overflow-y: auto;
     }
     
+    .objetivo-content {
+        text-align: center;
+    }
+    
+    .objetivo-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #9C27B0, #E91E63);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        font-size: 32px;
+        color: white;
+        box-shadow: 0 0 30px rgba(156, 39, 176, 0.5);
+    }
+    
+    .objetivo-content p {
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.8;
+        font-size: 16px;
+        text-align: justify;
+    }
+    
+    /* Mini mapa */
+    .minimap {
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        width: 150px;
+        height: 150px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        z-index: 1000;
+    }
+    
+    .minimap-viewport {
+        position: absolute;
+        border: 2px solid rgba(52, 152, 219, 0.8);
+        background: rgba(52, 152, 219, 0.1);
+    }
+    
     /* Animaciones */
+    @keyframes pulseGlow {
+        0%, 100% {
+            opacity: 0.5;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+    }
+    
+    @keyframes rotateOrb {
+        from {
+            transform: rotate(0deg);
+        }
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    
+    @keyframes pulseIcon {
+        0%, 100% {
+            box-shadow: 0 0 30px rgba(156, 39, 176, 0.5);
+        }
+        50% {
+            box-shadow: 0 0 50px rgba(156, 39, 176, 0.8);
+        }
+    }
+    
     @keyframes aparecerNodo {
         from {
             opacity: 0;
-            transform: scale(0.5) translateY(50px);
+            transform: translateY(50px) scale(0.5);
         }
         to {
             opacity: 1;
-            transform: scale(1) translateY(0);
+            transform: translateY(0) scale(1);
         }
     }
     
@@ -886,63 +1038,77 @@
         animation: aparecerNodo 0.6s ease forwards;
     }
     
-    @keyframes conectarLinea {
-        from {
-            stroke-dashoffset: 1000;
-        }
-        to {
-            stroke-dashoffset: 0;
-        }
+    /* Efectos de selección */
+    .nodo-seleccionado {
+        box-shadow: 0 0 30px rgba(52, 152, 219, 0.8);
+        border-color: rgba(52, 152, 219, 0.5);
+        transform: scale(1.05);
+        z-index: 1000;
     }
     
-    .conexion-animada {
-        stroke-dasharray: 1000;
-        stroke-dashoffset: 1000;
-        animation: conectarLinea 2s ease-in-out forwards;
+    /* Efecto de partículas en hover */
+    .particulas-hover {
+        position: absolute;
+        pointer-events: none;
+        z-index: -1;
+    }
+    
+    /* Scrollbar personalizado */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #3498db, #9b59b6);
+        border-radius: 10px;
     }
     
     /* Responsive */
     @media (max-width: 1200px) {
-        .mapa-sidebar {
-            width: 320px;
+        .mapa-header-glass {
+            right: 180px;
         }
         
-        .nodo-central .nodo-content {
-            min-width: 250px;
-            max-width: 300px;
+        .panel-detalles {
+            width: 320px;
         }
     }
     
     @media (max-width: 768px) {
-        .mapa-controls {
+        .mapa-controls-flotantes {
             flex-direction: column;
-            align-items: flex-start;
+            right: 10px;
         }
         
-        .mapa-sidebar {
-            width: 100%;
-            right: -100%;
+        .mapa-header-glass {
+            right: 10px;
+            left: 10px;
         }
         
-        .mapa-legenda {
-            position: relative;
-            bottom: auto;
-            right: auto;
-            margin-top: 20px;
-            width: 100%;
-            flex-direction: row;
+        .header-content {
+            flex-direction: column;
+            gap: 10px;
+            text-align: center;
+        }
+        
+        .header-stats {
             flex-wrap: wrap;
             justify-content: center;
         }
         
-        .nodo-central .nodo-content {
-            min-width: 200px;
-            max-width: 250px;
+        .panel-detalles {
+            width: 100%;
+            right: -100%;
         }
         
-        .nodo-eje .nodo-content {
-            min-width: 150px;
-            max-width: 160px;
+        .nodo-central {
+            width: 280px;
+            height: 280px;
         }
     }
 </style>
@@ -951,13 +1117,13 @@
     // Variables globales
     let nodos = {
         ejes: [
-            { id: 'educacion', nombre: 'EDUCACIÓN', icono: 'graduation-cap', x: 20, y: 20 },
-            { id: 'salud', nombre: 'SALUD', icono: 'heartbeat', x: 80, y: 20 },
-            { id: 'empleabilidad', nombre: 'EMPLEABILIDAD', icono: 'briefcase', x: 20, y: 80 },
-            { id: 'desarrollo', nombre: 'DESARROLLO ECONÓMICO', icono: 'chart-line', x: 80, y: 80 },
-            { id: 'agua', nombre: 'SOSTENIBILIDAD AMBIENTAL (AGUA)', icono: 'tint', x: 20, y: 140 },
-            { id: 'comunicacion', nombre: 'COMUNICACIÓN', icono: 'bullhorn', x: 80, y: 140 },
-            { id: 'institucional', nombre: 'INSTITUCIONAL', icono: 'landmark', x: 50, y: 200 }
+            { id: 'educacion', nombre: 'EDUCACIÓN', icono: 'graduation-cap', color: '#3498db' },
+            { id: 'salud', nombre: 'SALUD', icono: 'heartbeat', color: '#e74c3c' },
+            { id: 'empleabilidad', nombre: 'EMPLEABILIDAD', icono: 'briefcase', color: '#2ecc71' },
+            { id: 'desarrollo', nombre: 'DESARROLLO ECONÓMICO', icono: 'chart-line', color: '#9b59b6' },
+            { id: 'agua', nombre: 'SOSTENIBILIDAD AMBIENTAL', icono: 'tint', color: '#1abc9c' },
+            { id: 'comunicacion', nombre: 'COMUNICACIÓN', icono: 'bullhorn', color: '#f1c40f' },
+            { id: 'institucional', nombre: 'INSTITUCIONAL', icono: 'landmark', color: '#e67e22' }
         ],
         estrategias: [],
         actividades: [],
@@ -967,470 +1133,545 @@
     let conexiones = [];
     let animacionesActivas = true;
     let zoomLevel = 1;
+    let panning = false;
+    let startX, startY;
+    let translateX = 0, translateY = 0;
+    let nodoSeleccionado = null;
+    let particulas = [];
     
-    // Inicializar al cargar
+    // Inicialización
     document.addEventListener('DOMContentLoaded', function() {
         inicializarMapa();
+        crearParticulas();
         cargarDatos();
+        inicializarEventos();
         animarEntrada();
         
-        // Agregar evento de redimensionamiento
-        window.addEventListener('resize', recalcularPosiciones);
-        
-        // Agregar interactividad a los nodos
-        document.querySelectorAll('.nodo').forEach(nodo => {
-            nodo.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const id = this.id;
-                mostrarDetallesNodo(id);
-            });
-        });
+        // Actualizar estadísticas iniciales
+        actualizarEstadisticas();
     });
     
-    // Inicializar el mapa
     function inicializarMapa() {
+        // Configurar canvas para pan y zoom
+        const canvas = document.getElementById('mapaCanvas');
+        const nodosContainer = document.getElementById('nodosContainer');
+        
+        // Crear nodos de ejes
+        crearNodosEjes();
+        
+        // Aplicar transformación inicial
+        actualizarTransformacion();
+    }
+    
+    function inicializarEventos() {
+        const canvas = document.getElementById('mapaCanvas');
+        const nodosContainer = document.getElementById('nodosContainer');
+        
+        // Eventos de mouse para pan
+        canvas.addEventListener('mousedown', startPan);
+        canvas.addEventListener('mousemove', pan);
+        canvas.addEventListener('mouseup', endPan);
+        canvas.addEventListener('mouseleave', endPan);
+        
+        // Eventos táctiles
+        canvas.addEventListener('touchstart', startPanTouch);
+        canvas.addEventListener('touchmove', panTouch);
+        canvas.addEventListener('touchend', endPan);
+        
+        // Evento de rueda para zoom
+        canvas.addEventListener('wheel', zoomWheel);
+        
+        // Evento de redimensionamiento
+        window.addEventListener('resize', recalcularPosiciones);
+        
+        // Evento para cerrar panel al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.panel-detalles') && !e.target.closest('.nodo')) {
+                cerrarPanel();
+            }
+        });
+    }
+    
+    // Funciones de pan y zoom
+    function startPan(e) {
+        panning = true;
+        startX = e.clientX - translateX;
+        startY = e.clientY - translateY;
+        document.getElementById('mapaCanvas').style.cursor = 'grabbing';
+    }
+    
+    function pan(e) {
+        if (!panning) return;
+        e.preventDefault();
+        translateX = e.clientX - startX;
+        translateY = e.clientY - startY;
+        actualizarTransformacion();
+    }
+    
+    function endPan() {
+        panning = false;
+        document.getElementById('mapaCanvas').style.cursor = 'grab';
+    }
+    
+    function startPanTouch(e) {
+        if (e.touches.length === 1) {
+            panning = true;
+            startX = e.touches[0].clientX - translateX;
+            startY = e.touches[0].clientY - translateY;
+        }
+    }
+    
+    function panTouch(e) {
+        if (!panning || e.touches.length !== 1) return;
+        e.preventDefault();
+        translateX = e.touches[0].clientX - startX;
+        translateY = e.touches[0].clientY - startY;
+        actualizarTransformacion();
+    }
+    
+    function zoomWheel(e) {
+        e.preventDefault();
+        const zoomIntensity = 0.1;
+        const oldZoom = zoomLevel;
+        
+        // Determinar dirección del zoom
+        zoomLevel += e.deltaY < 0 ? zoomIntensity : -zoomIntensity;
+        zoomLevel = Math.min(Math.max(0.5, zoomLevel), 3);
+        
+        // Actualizar slider
+        document.getElementById('zoomSlider').value = zoomLevel;
+        
+        // Centrar zoom en posición del mouse
+        const rect = e.target.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        // Ajustar traslación para mantener el punto bajo el mouse
+        translateX = mouseX - (mouseX - translateX) * (zoomLevel / oldZoom);
+        translateY = mouseY - (mouseY - translateY) * (zoomLevel / oldZoom);
+        
+        actualizarTransformacion();
+    }
+    
+    function zoomSliderChange(value) {
+        const oldZoom = zoomLevel;
+        zoomLevel = parseFloat(value);
+        
+        // Centrar zoom
+        const canvas = document.getElementById('mapaCanvas');
+        const rect = canvas.getBoundingClientRect();
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        
+        translateX = centerX - (centerX - translateX) * (zoomLevel / oldZoom);
+        translateY = centerY - (centerY - translateY) * (zoomLevel / oldZoom);
+        
+        actualizarTransformacion();
+    }
+    
+    function actualizarTransformacion() {
+        const nodosContainer = document.getElementById('nodosContainer');
+        nodosContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`;
+        
+        // Actualizar mini mapa
+        actualizarMinimap();
+    }
+    
+    // Crear partículas de fondo
+    function crearParticulas() {
+        const container = document.getElementById('particlesContainer');
+        const particulaCount = 100;
+        
+        for (let i = 0; i < particulaCount; i++) {
+            const particula = document.createElement('div');
+            particula.className = 'particle';
+            
+            // Posición aleatoria
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            const size = Math.random() * 3 + 1;
+            const duration = Math.random() * 20 + 10;
+            const delay = Math.random() * 5;
+            
+            particula.style.left = `${x}%`;
+            particula.style.top = `${y}%`;
+            particula.style.width = `${size}px`;
+            particula.style.height = `${size}px`;
+            particula.style.animation = `float ${duration}s infinite ${delay}s`;
+            particula.style.opacity = Math.random() * 0.5 + 0.2;
+            
+            container.appendChild(particula);
+            particulas.push(particula);
+        }
+        
+        // Agregar animación de flotar
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0%, 100% { transform: translate(0, 0); }
+                25% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px); }
+                50% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px); }
+                75% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Crear nodos de ejes
+    function crearNodosEjes() {
+        const ejesContainer = document.getElementById('ejesContainer');
+        ejesContainer.innerHTML = '';
+        
         const canvas = document.getElementById('mapaCanvas');
         const width = canvas.offsetWidth;
         const height = canvas.offsetHeight;
-        
-        // Posicionar nodos de ejes en círculo alrededor del centro
         const centroX = width / 2;
         const centroY = height / 2;
-        const radioEjes = Math.min(width, height) * 0.25;
-        const angulo = (2 * Math.PI) / 7;
+        const radio = Math.min(width, height) * 0.35;
         
         nodos.ejes.forEach((eje, index) => {
-            const angle = angulo * index - Math.PI / 2;
-            eje.x = centroX + radioEjes * Math.cos(angle);
-            eje.y = centroY + radioEjes * Math.sin(angle);
+            const angulo = (2 * Math.PI / nodos.ejes.length) * index;
+            const x = centroX + radio * Math.cos(angulo);
+            const y = centroY + radio * Math.sin(angulo);
             
-            const nodo = document.getElementById(`nodo-${eje.id}`);
-            if (nodo) {
-                nodo.style.left = `${eje.x}px`;
-                nodo.style.top = `${eje.y}px`;
-                nodo.style.transform = 'translate(-50%, -50%)';
-            }
+            const nodoDiv = document.createElement('div');
+            nodoDiv.className = 'nodo nodo-eje nodo-aparecer';
+            nodoDiv.id = `nodo-${eje.id}`;
+            nodoDiv.dataset.ejeId = eje.id;
+            nodoDiv.style.left = `${x}px`;
+            nodoDiv.style.top = `${y}px`;
+            nodoDiv.style.transform = 'translate(-50%, -50%)';
+            nodoDiv.style.animationDelay = `${index * 0.1}s`;
+            
+            nodoDiv.innerHTML = `
+                <div class="nodo-content">
+                    <div class="nodo-icon" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)})">
+                        <i class="fas fa-${eje.icono}"></i>
+                    </div>
+                    <div class="nodo-title">${eje.nombre}</div>
+                    <div class="nodo-counter" id="counter-${eje.id}">0 estrategias</div>
+                </div>
+            `;
+            
+            ejesContainer.appendChild(nodoDiv);
+            
+            // Crear conexión con el nodo central
+            crearConexion(centroX, centroY, x, y, 'eje', eje.color);
+            
+            // Agregar evento de clic
+            nodoDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                seleccionarNodo(this.id);
+                mostrarEstrategias(eje.id);
+            });
         });
         
-        // Dibujar conexiones iniciales
-        dibujarConexiones();
+        // Dibujar conexiones después de un retraso
+        setTimeout(dibujarConexiones, nodos.ejes.length * 100);
     }
     
-    // Recalcular posiciones al redimensionar
-    function recalcularPosiciones() {
-        inicializarMapa();
-        if (nodos.estrategias.length > 0) {
-            posicionarEstrategias();
-        }
+    function oscurecerColor(color, percent) {
+        let num = parseInt(color.replace("#", ""), 16),
+            amt = Math.round(2.55 * percent),
+            R = (num >> 16) - amt,
+            G = (num >> 8 & 0x00FF) - amt,
+            B = (num & 0x0000FF) - amt;
+        
+        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
     }
     
     // Cargar datos del backend
     function cargarDatos() {
-        // Cargar estrategias
-        fetch('/api/estrategias_foda_con_eje')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    nodos.estrategias = data.estrategias;
-                    actualizarContadoresEjes();
-                    posicionarEstrategias();
-                }
-            })
-            .catch(error => {
-                console.error('Error al cargar estrategias:', error);
-            });
-        
-        // Aquí puedes cargar actividades y tareas desde tus endpoints
-        // fetch('/api/actividades')
-        // fetch('/api/tareas')
+        // Simular carga de datos
+        setTimeout(() => {
+            // Datos de ejemplo para estrategias
+            nodos.estrategias = [
+                { id: 1, eje_id: 'educacion', nombre: 'Capacitación docente', tipo: 'FO' },
+                { id: 2, eje_id: 'educacion', nombre: 'Infraestructura educativa', tipo: 'DA' },
+                { id: 3, eje_id: 'salud', nombre: 'Equipamiento médico', tipo: 'FO' },
+                { id: 4, eje_id: 'empleabilidad', nombre: 'Formación técnica', tipo: 'FA' },
+                { id: 5, eje_id: 'agua', nombre: 'Monitoreo calidad', tipo: 'DO' }
+            ];
+            
+            actualizarContadoresEjes();
+            actualizarEstadisticas();
+        }, 1000);
     }
     
-    // Actualizar contadores de estrategias por eje
     function actualizarContadoresEjes() {
-        const contadores = {
-            educacion: 0,
-            salud: 0,
-            empleabilidad: 0,
-            desarrollo: 0,
-            agua: 0,
-            comunicacion: 0,
-            institucional: 0
-        };
-        
-        nodos.estrategias.forEach(estrategia => {
-            if (contadores[estrategia.eje_id]) {
-                contadores[estrategia.eje_id]++;
+        nodos.ejes.forEach(eje => {
+            const count = nodos.estrategias.filter(e => e.eje_id === eje.id).length;
+            const counterElement = document.getElementById(`counter-${eje.id}`);
+            if (counterElement) {
+                counterElement.textContent = `${count} estrategias`;
             }
         });
+    }
+    
+    function actualizarEstadisticas() {
+        document.getElementById('total-estrategias').textContent = `${nodos.estrategias.length} Estrategias`;
+        document.getElementById('contador-estrategias').textContent = nodos.estrategias.length;
+        document.getElementById('total-conexiones').textContent = `${conexiones.length} Conexiones`;
+    }
+    
+    // Funciones de animación y visualización
+    function animarEntrada() {
+        const todosNodos = document.querySelectorAll('.nodo');
+        todosNodos.forEach((nodo, index) => {
+            nodo.classList.add('nodo-aparecer');
+            nodo.style.animationDelay = `${index * 0.05}s`;
+        });
         
-        // Actualizar UI
-        Object.keys(contadores).forEach(ejeId => {
-            const elemento = document.getElementById(`estrategias-${ejeId}`);
-            if (elemento) {
-                elemento.textContent = contadores[ejeId];
+        // Efecto de onda desde el centro
+        setTimeout(crearOndaCentro, 500);
+    }
+    
+    function crearOndaCentro() {
+        const canvas = document.getElementById('mapaCanvas');
+        const onda = document.createElement('div');
+        onda.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid rgba(52, 152, 219, 0.5);
+            z-index: 0;
+            pointer-events: none;
+        `;
+        
+        canvas.appendChild(onda);
+        
+        let size = 10;
+        const animacion = setInterval(() => {
+            size += 20;
+            onda.style.width = `${size}px`;
+            onda.style.height = `${size}px`;
+            onda.style.opacity = 1 - (size / 500);
+            
+            if (size > 500) {
+                clearInterval(animacion);
+                onda.remove();
             }
-        });
-        
-        // Actualizar total
-        const totalEstrategias = nodos.estrategias.length;
-        document.getElementById('total-estrategias').textContent = `${totalEstrategias} Estrategias`;
+        }, 20);
     }
     
-    // Posicionar estrategias alrededor de sus ejes
-    function posicionarEstrategias() {
-        const estrategiasContainer = document.getElementById('estrategiasContainer');
-        estrategiasContainer.innerHTML = '';
+    function seleccionarNodo(nodoId) {
+        // Remover selección anterior
+        if (nodoSeleccionado) {
+            nodoSeleccionado.classList.remove('nodo-seleccionado');
+        }
         
-        nodos.estrategias.forEach((estrategia, index) => {
-            const eje = nodos.ejes.find(e => e.id === estrategia.eje_id);
-            if (!eje) return;
+        // Agregar nueva selección
+        nodoSeleccionado = document.getElementById(nodoId);
+        if (nodoSeleccionado) {
+            nodoSeleccionado.classList.add('nodo-seleccionado');
             
-            // Crear nodo de estrategia
-            const estrategiaDiv = document.createElement('div');
-            estrategiaDiv.className = 'nodo nodo-estrategia nodo-aparecer';
-            estrategiaDiv.id = `estrategia-${estrategia.id}`;
-            estrategiaDiv.dataset.estrategiaId = estrategia.id;
-            estrategiaDiv.dataset.ejeId = estrategia.eje_id;
-            
-            // Posicionar en círculo alrededor del eje
-            const estrategiasPorEje = nodos.estrategias.filter(e => e.eje_id === estrategia.eje_id);
-            const indiceEnEje = estrategiasPorEje.indexOf(estrategia);
-            const totalEnEje = estrategiasPorEje.length;
-            const angulo = (2 * Math.PI / totalEnEje) * indiceEnEje;
-            const radioEstrategias = 120;
-            
-            estrategia.x = eje.x + radioEstrategias * Math.cos(angulo);
-            estrategia.y = eje.y + radioEstrategias * Math.sin(angulo);
-            
-            estrategiaDiv.style.left = `${estrategia.x}px`;
-            estrategiaDiv.style.top = `${estrategia.y}px`;
-            estrategiaDiv.style.transform = 'translate(-50%, -50%)';
-            estrategiaDiv.style.animationDelay = `${index * 0.1}s`;
-            
-            // Contenido del nodo
-            let tipoTexto = '';
-            switch(estrategia.tipo_cruce) {
-                case 'FO': tipoTexto = 'F+O'; break;
-                case 'DO': tipoTexto = 'D+O'; break;
-                case 'FA': tipoTexto = 'F+A'; break;
-                case 'DA': tipoTexto = 'D+A'; break;
-            }
-            
-            estrategiaDiv.innerHTML = `
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-lightbulb"></i>
-                    </div>
-                    <div class="nodo-title">${tipoTexto}: ${estrategia.eje_texto}</div>
-                    <div class="nodo-desc">${estrategia.estrategia.substring(0, 60)}...</div>
-                    <div class="nodo-actions">
-                        <button class="btn-nodo" onclick="mostrarActividades(${estrategia.id}, '${estrategia.eje_id}')">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            estrategiasContainer.appendChild(estrategiaDiv);
-            
-            // Crear conexión con el eje
-            crearConexion(eje.x, eje.y, estrategia.x, estrategia.y, 'eje-estrategia');
-        });
-        
-        // Animar conexiones después de un retraso
-        setTimeout(dibujarConexiones, 500);
+            // Efecto de partículas
+            crearParticulasHover(nodoId);
+        }
     }
     
-    // Mostrar actividades de una estrategia
-    function mostrarActividades(estrategiaId, ejeId) {
-        // Filtrar actividades por estrategia (esto vendría del backend)
-        const actividadesFiltradas = []; // Aquí cargarías las actividades reales
+    function crearParticulasHover(nodoId) {
+        const nodo = document.getElementById(nodoId);
+        if (!nodo) return;
         
-        // Por ahora, crear actividades de ejemplo
-        const actividadesEjemplo = [
-            { id: 1, nombre: 'Actividad 1', descripcion: 'Descripción actividad 1' },
-            { id: 2, nombre: 'Actividad 2', descripcion: 'Descripción actividad 2' },
-            { id: 3, nombre: 'Actividad 3', descripcion: 'Descripción actividad 3' }
-        ];
+        const rect = nodo.getBoundingClientRect();
+        const x = rect.left + rect.width / 2;
+        const y = rect.top + rect.height / 2;
         
-        const estrategia = nodos.estrategias.find(e => e.id === estrategiaId);
-        if (!estrategia) return;
-        
-        const actividadesContainer = document.getElementById('actividadesContainer');
-        actividadesContainer.innerHTML = '';
-        
-        actividadesEjemplo.forEach((actividad, index) => {
-            const actividadDiv = document.createElement('div');
-            actividadDiv.className = 'nodo nodo-actividad nodo-aparecer';
-            actividadDiv.id = `actividad-${actividad.id}`;
+        for (let i = 0; i < 10; i++) {
+            const particula = document.createElement('div');
+            particula.className = 'particle';
+            particula.style.position = 'fixed';
+            particula.style.left = `${x}px`;
+            particula.style.top = `${y}px`;
+            particula.style.zIndex = '9999';
             
-            // Posicionar en círculo alrededor de la estrategia
-            const angulo = (2 * Math.PI / actividadesEjemplo.length) * index;
-            const radioActividades = 100;
+            const angle = Math.random() * Math.PI * 2;
+            const speed = Math.random() * 50 + 50;
+            const size = Math.random() * 4 + 2;
             
-            const actividadX = estrategia.x + radioActividades * Math.cos(angulo);
-            const actividadY = estrategia.y + radioActividades * Math.sin(angulo);
+            particula.style.width = `${size}px`;
+            particula.style.height = `${size}px`;
             
-            actividadDiv.style.left = `${actividadX}px`;
-            actividadDiv.style.top = `${actividadY}px`;
-            actividadDiv.style.transform = 'translate(-50%, -50%)';
-            actividadDiv.style.animationDelay = `${index * 0.1}s`;
+            document.body.appendChild(particula);
             
-            actividadDiv.innerHTML = `
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <div class="nodo-title">${actividad.nombre}</div>
-                    <div class="nodo-actions">
-                        <button class="btn-nodo" onclick="mostrarTareas(${actividad.id})">
-                            <i class="fas fa-expand-alt"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            actividadesContainer.appendChild(actividadDiv);
-            
-            // Crear conexión con la estrategia
-            crearConexion(estrategia.x, estrategia.y, actividadX, actividadY, 'estrategia-actividad');
-        });
-        
-        dibujarConexiones();
+            let progress = 0;
+            const animacion = setInterval(() => {
+                progress += 0.02;
+                const currentX = x + Math.cos(angle) * speed * progress;
+                const currentY = y + Math.sin(angle) * speed * progress;
+                
+                particula.style.left = `${currentX}px`;
+                particula.style.top = `${currentY}px`;
+                particula.style.opacity = 1 - progress;
+                
+                if (progress >= 1) {
+                    clearInterval(animacion);
+                    particula.remove();
+                }
+            }, 16);
+        }
     }
     
-    // Mostrar tareas de una actividad
-    function mostrarTareas(actividadId) {
-        // Tareas de ejemplo
-        const tareasEjemplo = [
-            { id: 1, nombre: 'Tarea 1', estado: 'pendiente' },
-            { id: 2, nombre: 'Tarea 2', estado: 'en-progreso' },
-            { id: 3, nombre: 'Tarea 3', estado: 'completada' }
-        ];
-        
-        const tareasContainer = document.getElementById('tareasContainer');
-        tareasContainer.innerHTML = '';
-        
-        // En una implementación real, buscarías la actividad específica
-        const actividadElement = document.getElementById(`actividad-${actividadId}`);
-        if (!actividadElement) return;
-        
-        const rect = actividadElement.getBoundingClientRect();
-        const actividadX = rect.left + rect.width / 2;
-        const actividadY = rect.top + rect.height / 2;
-        
-        tareasEjemplo.forEach((tarea, index) => {
-            const tareaDiv = document.createElement('div');
-            tareaDiv.className = 'nodo nodo-tarea nodo-aparecer';
-            tareaDiv.id = `tarea-${tarea.id}`;
-            
-            // Posicionar en círculo alrededor de la actividad
-            const angulo = (2 * Math.PI / tareasEjemplo.length) * index;
-            const radioTareas = 80;
-            
-            const tareaX = actividadX + radioTareas * Math.cos(angulo);
-            const tareaY = actividadY + radioTareas * Math.sin(angulo);
-            
-            tareaDiv.style.left = `${tareaX}px`;
-            tareaDiv.style.top = `${tareaY}px`;
-            tareaDiv.style.transform = 'translate(-50%, -50%)';
-            tareaDiv.style.animationDelay = `${index * 0.1}s`;
-            
-            let estadoColor = '';
-            switch(tarea.estado) {
-                case 'completada': estadoColor = '#2ecc71'; break;
-                case 'en-progreso': estadoColor = '#3498db'; break;
-                default: estadoColor = '#e74c3c';
-            }
-            
-            tareaDiv.innerHTML = `
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="nodo-title">${tarea.nombre}</div>
-                    <div class="tarea-estado" style="background: ${estadoColor}"></div>
-                </div>
-            `;
-            
-            tareasContainer.appendChild(tareaDiv);
-            
-            // Crear conexión con la actividad
-            crearConexion(actividadX, actividadY, tareaX, tareaY, 'actividad-tarea');
-        });
-        
-        dibujarConexiones();
+    // Funciones de conexiones
+    function crearConexion(x1, y1, x2, y2, tipo, color) {
+        conexiones.push({ x1, y1, x2, y2, tipo, color });
     }
     
-    // Crear una conexión entre dos puntos
-    function crearConexion(x1, y1, x2, y2, tipo) {
-        conexiones.push({
-            x1, y1, x2, y2, tipo,
-            id: `conexion-${conexiones.length}`
-        });
-    }
-    
-    // Dibujar todas las conexiones
     function dibujarConexiones() {
         const svg = document.getElementById('conexionesSvg');
-        svg.innerHTML = '';
         
-        conexiones.forEach(conexion => {
+        // Limpiar conexiones existentes
+        const existingLines = svg.querySelectorAll('.conexion');
+        existingLines.forEach(line => line.remove());
+        
+        // Dibujar nuevas conexiones
+        conexiones.forEach((conexion, index) => {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
             line.setAttribute('x1', conexion.x1);
             line.setAttribute('y1', conexion.y1);
             line.setAttribute('x2', conexion.x2);
             line.setAttribute('y2', conexion.y2);
-            line.setAttribute('class', `conexion ${animacionesActivas ? 'conexion-animada' : ''}`);
+            line.setAttribute('class', `conexion ${conexion.tipo}`);
+            line.style.animationDelay = `${index * 0.1}s`;
             
-            // Asignar color según tipo
-            let color = '';
-            switch(conexion.tipo) {
-                case 'eje-estrategia': color = 'rgba(52, 152, 219, 0.5)'; break;
-                case 'estrategia-actividad': color = 'rgba(46, 204, 113, 0.5)'; break;
-                case 'actividad-tarea': color = 'rgba(231, 76, 60, 0.5)'; break;
-                default: color = 'rgba(255, 255, 255, 0.3)';
+            if (conexion.color) {
+                line.style.stroke = conexion.color;
             }
             
-            line.style.stroke = color;
             svg.appendChild(line);
         });
+        
+        actualizarEstadisticas();
     }
     
-    // Animación de entrada
-    function animarEntrada() {
-        const nodos = document.querySelectorAll('.nodo');
-        nodos.forEach((nodo, index) => {
-            nodo.classList.add('nodo-aparecer');
-            nodo.style.animationDelay = `${index * 0.1}s`;
-        });
-        
-        // Dibujar conexiones después de que aparezcan los nodos
-        setTimeout(dibujarConexiones, nodos.length * 100);
+    // Funciones de UI
+    function mostrarEstrategias(ejeId) {
+        // Implementar lógica para mostrar estrategias
+        mostrarPanelDetalles(ejeId);
     }
     
-    // Mostrar detalles de un nodo
-    function mostrarDetallesNodo(nodoId) {
-        const sidebar = document.getElementById('sidebarDetalle');
-        const content = document.getElementById('sidebarContent');
-        const titulo = document.getElementById('sidebarTitulo');
+    function mostrarPanelDetalles(ejeId) {
+        const panel = document.getElementById('panelDetalles');
+        const titulo = document.getElementById('detalleTitulo');
+        const contenido = document.getElementById('detalleContenido');
         
-        let contenidoHTML = '';
+        const eje = nodos.ejes.find(e => e.id === ejeId);
+        if (!eje) return;
         
-        if (nodoId === 'nodo-objetivo') {
-            titulo.textContent = 'OBJETIVO ESTRATÉGICO';
-            contenidoHTML = `
-                <div class="detalle-objetivo">
-                    <h4>Proyecto El Domo</h4>
-                    <p>Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras...</p>
-                    <button class="btn-detalle" onclick="mostrarDetalleObjetivo()">Ver objetivo completo</button>
-                    
-                    <div class="detalle-stats">
-                        <h5>Estadísticas:</h5>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <i class="fas fa-layer-group"></i>
-                                <span>7 Ejes Estratégicos</span>
-                            </div>
-                            <div class="stat-item">
-                                <i class="fas fa-chess-board"></i>
-                                <span>${nodos.estrategias.length} Estrategias</span>
-                            </div>
-                        </div>
+        const estrategiasEje = nodos.estrategias.filter(e => e.eje_id === ejeId);
+        
+        titulo.innerHTML = `<i class="fas fa-${eje.icono}"></i> ${eje.nombre}`;
+        
+        contenido.innerHTML = `
+            <div class="detalle-eje">
+                <div class="eje-header" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)}); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                    <div class="eje-icon-grande">
+                        <i class="fas fa-${eje.icono}"></i>
+                    </div>
+                    <h4 style="color: white; margin-top: 10px;">${eje.nombre}</h4>
+                </div>
+                
+                <div class="eje-estadisticas">
+                    <div class="estadistica">
+                        <div class="estadistica-valor">${estrategiasEje.length}</div>
+                        <div class="estadistica-label">Estrategias</div>
+                    </div>
+                    <div class="estadistica">
+                        <div class="estadistica-valor">${conexiones.filter(c => c.tipo === 'eje').length}</div>
+                        <div class="estadistica-label">Conexiones</div>
                     </div>
                 </div>
-            `;
-        } else if (nodoId.includes('nodo-')) {
-            const ejeId = nodoId.replace('nodo-', '');
-            const eje = nodos.ejes.find(e => e.id === ejeId);
-            if (eje) {
-                titulo.textContent = `EJE: ${eje.nombre}`;
-                const estrategiasEje = nodos.estrategias.filter(e => e.eje_id === ejeId);
                 
-                contenidoHTML = `
-                    <div class="detalle-eje">
-                        <div class="eje-icon">
-                            <i class="fas fa-${eje.icono}"></i>
-                        </div>
-                        <h4>${eje.nombre}</h4>
-                        <div class="eje-stats">
-                            <div class="stat-item">
-                                <i class="fas fa-lightbulb"></i>
-                                <span>${estrategiasEje.length} Estrategias</span>
+                ${estrategiasEje.length > 0 ? `
+                    <div class="estrategias-lista">
+                        <h5 style="color: white; margin-bottom: 15px;">Estrategias:</h5>
+                        ${estrategiasEje.map(estrategia => `
+                            <div class="estrategia-item" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid ${eje.color};">
+                                <div class="estrategia-tipo" style="background: ${eje.color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; margin-bottom: 5px;">
+                                    ${estrategia.tipo}
+                                </div>
+                                <div style="color: rgba(255,255,255,0.9);">${estrategia.nombre}</div>
                             </div>
-                        </div>
-                        
-                        ${estrategiasEje.length > 0 ? `
-                            <div class="estrategias-lista">
-                                <h5>Estrategias relacionadas:</h5>
-                                ${estrategiasEje.map(estrategia => `
-                                    <div class="estrategia-item">
-                                        <div class="estrategia-tipo ${estrategia.tipo_cruce.toLowerCase()}">
-                                            ${estrategia.tipo_cruce}
-                                        </div>
-                                        <div class="estrategia-texto">${estrategia.estrategia.substring(0, 80)}...</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        ` : '<p>No hay estrategias asignadas a este eje aún.</p>'}
-                        
-                        <button class="btn-detalle" onclick="mostrarEstrategias('${ejeId}')">
-                            <i class="fas fa-expand-alt"></i> Ver todas las estrategias
-                        </button>
+                        `).join('')}
                     </div>
-                `;
+                ` : '<p style="color: rgba(255,255,255,0.7); text-align: center; padding: 20px;">No hay estrategias asignadas a este eje aún.</p>'}
+            </div>
+        `;
+        
+        panel.classList.add('open');
+    }
+    
+    function cerrarPanel() {
+        document.getElementById('panelDetalles').classList.remove('open');
+        if (nodoSeleccionado) {
+            nodoSeleccionado.classList.remove('nodo-seleccionado');
+            nodoSeleccionado = null;
+        }
+    }
+    
+    // Funciones de control
+    function toggleFullscreen() {
+        const container = document.getElementById('mapaFullscreen');
+        
+        if (!document.fullscreenElement) {
+            if (container.requestFullscreen) {
+                container.requestFullscreen();
+            } else if (container.webkitRequestFullscreen) {
+                container.webkitRequestFullscreen();
+            } else if (container.msRequestFullscreen) {
+                container.msRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
             }
         }
-        
-        content.innerHTML = contenidoHTML;
-        sidebar.classList.add('open');
     }
     
-    // Mostrar estrategias de un eje específico
-    function mostrarEstrategias(ejeId) {
-        // Filtrar el mapa para mostrar solo estrategias de este eje
-        const todasEstrategias = document.querySelectorAll('.nodo-estrategia');
-        const otrosNodos = document.querySelectorAll('.nodo:not(.nodo-estrategia):not(.nodo-central):not(.nodo-eje)');
+    function resetView() {
+        zoomLevel = 1;
+        translateX = 0;
+        translateY = 0;
+        document.getElementById('zoomSlider').value = 1;
+        actualizarTransformacion();
+        mostrarNotificacion('Vista reiniciada', 'success');
+    }
+    
+    function toggleAnimations() {
+        animacionesActivas = !animacionesActivas;
+        const icon = document.getElementById('animacionIcon');
         
-        // Ocultar todos los nodos primero
-        todasEstrategias.forEach(nodo => {
-            if (nodo.dataset.ejeId === ejeId) {
-                nodo.style.display = 'block';
-                // Resaltar el nodo
-                nodo.style.zIndex = '100';
-                nodo.style.boxShadow = '0 0 20px rgba(46, 204, 113, 0.8)';
-            } else {
-                nodo.style.display = 'none';
-            }
-        });
-        
-        // Ocultar actividades y tareas
-        otrosNodos.forEach(nodo => nodo.style.display = 'none');
-        
-        // Resaltar el eje seleccionado
-        const ejeSeleccionado = document.getElementById(`nodo-${ejeId}`);
-        if (ejeSeleccionado) {
-            ejeSeleccionado.style.zIndex = '50';
-            ejeSeleccionado.style.boxShadow = '0 0 20px rgba(52, 152, 219, 0.8)';
+        if (animacionesActivas) {
+            icon.className = 'fas fa-pause';
+            document.querySelectorAll('.conexion').forEach(line => {
+                line.style.animationPlayState = 'running';
+            });
+        } else {
+            icon.className = 'fas fa-play';
+            document.querySelectorAll('.conexion').forEach(line => {
+                line.style.animationPlayState = 'paused';
+            });
         }
         
-        // Mostrar mensaje
-        mostrarNotificacion(`Mostrando estrategias del eje: ${ejeId.toUpperCase()}`, 'info');
+        mostrarNotificacion(`Animaciones ${animacionesActivas ? 'activadas' : 'pausadas'}`, 'info');
     }
     
-    // Mostrar todas las estrategias
-    function mostrarTodasEstrategias() {
-        const todosNodos = document.querySelectorAll('.nodo');
-        todosNodos.forEach(nodo => {
-            nodo.style.display = 'block';
-            nodo.style.zIndex = '';
-            nodo.style.boxShadow = '';
-        });
-        
-        mostrarNotificacion('Mostrando todos los nodos', 'success');
+    function exportMap() {
+        // Implementar exportación
+        mostrarNotificacion('Exportando mapa como imagen...', 'success');
     }
     
-    // Filtrar nodos por nivel
     function filtrarNodos() {
         const nivel = document.getElementById('filtro-nivel').value;
         const todosNodos = document.querySelectorAll('.nodo');
@@ -1438,10 +1679,7 @@
         todosNodos.forEach(nodo => {
             if (nivel === 'all') {
                 nodo.style.display = 'block';
-                return;
-            }
-            
-            if (nivel === 'objetivo' && nodo.classList.contains('nodo-central')) {
+            } else if (nivel === 'objetivo' && nodo.classList.contains('nodo-central')) {
                 nodo.style.display = 'block';
             } else if (nivel === 'ejes' && nodo.classList.contains('nodo-eje')) {
                 nodo.style.display = 'block';
@@ -1455,43 +1693,13 @@
                 nodo.style.display = 'none';
             }
         });
-    }
-    
-    // Funciones de control
-    function zoomIn() {
-        const canvas = document.getElementById('mapaCanvas');
-        zoomLevel += 0.1;
-        canvas.style.transform = `scale(${zoomLevel})`;
-    }
-    
-    function resetView() {
-        const canvas = document.getElementById('mapaCanvas');
-        zoomLevel = 1;
-        canvas.style.transform = 'scale(1)';
-        mostrarTodasEstrategias();
-    }
-    
-    function toggleAnimations() {
-        animacionesActivas = !animacionesActivas;
-        const conexiones = document.querySelectorAll('.conexion');
         
-        conexiones.forEach(conexion => {
-            if (animacionesActivas) {
-                conexion.classList.add('conexion-animada');
-            } else {
-                conexion.classList.remove('conexion-animada');
-            }
-        });
-        
-        mostrarNotificacion(`Animaciones ${animacionesActivas ? 'activadas' : 'desactivadas'}`, 'info');
+        mostrarNotificacion(`Mostrando nivel: ${nivel}`, 'info');
     }
     
-    function exportMap() {
-        // En una implementación real, esto exportaría el mapa como imagen
-        mostrarNotificacion('Exportando mapa...', 'success');
-        setTimeout(() => {
-            mostrarNotificacion('Mapa exportado exitosamente', 'success');
-        }, 1500);
+    function expandirTodo() {
+        // Implementar expansión de todos los nodos
+        mostrarNotificacion('Expandir todas las conexiones', 'info');
     }
     
     function mostrarDetalleObjetivo() {
@@ -1502,26 +1710,70 @@
         document.getElementById(modalId).classList.remove('active');
     }
     
-    function cerrarSidebar() {
-        document.getElementById('sidebarDetalle').classList.remove('open');
+    function recalcularPosiciones() {
+        const ejes = document.querySelectorAll('.nodo-eje');
+        const canvas = document.getElementById('mapaCanvas');
+        const width = canvas.offsetWidth;
+        const height = canvas.offsetHeight;
+        const centroX = width / 2;
+        const centroY = height / 2;
+        const radio = Math.min(width, height) * 0.35;
+        
+        ejes.forEach((eje, index) => {
+            const angulo = (2 * Math.PI / ejes.length) * index;
+            const x = centroX + radio * Math.cos(angulo);
+            const y = centroY + radio * Math.sin(angulo);
+            
+            eje.style.left = `${x}px`;
+            eje.style.top = `${y}px`;
+        });
+        
+        // Redibujar conexiones
+        conexiones = [];
+        ejes.forEach((eje, index) => {
+            const rect = eje.getBoundingClientRect();
+            crearConexion(centroX, centroY, rect.left + rect.width/2, rect.top + rect.height/2, 'eje');
+        });
+        
+        dibujarConexiones();
+    }
+    
+    function actualizarMinimap() {
+        const minimap = document.getElementById('minimapViewport');
+        if (!minimap) return;
+        
+        const scale = 0.1;
+        const viewportWidth = 150 * (1/zoomLevel);
+        const viewportHeight = 150 * (1/zoomLevel);
+        const viewportX = -translateX * scale;
+        const viewportY = -translateY * scale;
+        
+        minimap.style.width = `${viewportWidth}px`;
+        minimap.style.height = `${viewportHeight}px`;
+        minimap.style.left = `${viewportX + 75}px`;
+        minimap.style.top = `${viewportY + 75}px`;
     }
     
     function mostrarNotificacion(mensaje, tipo) {
-        let notificacion = document.createElement('div');
-        notificacion.className = 'notificacion-flotante';
+        const notificacion = document.createElement('div');
+        notificacion.className = 'notificacion';
         notificacion.style.cssText = `
             position: fixed;
-            top: 100px;
+            top: 20px;
             right: 20px;
             padding: 15px 20px;
-            background: ${tipo === 'success' ? '#4CAF50' : tipo === 'info' ? '#2196F3' : '#FF9800'};
+            background: ${tipo === 'success' ? 'rgba(46, 204, 113, 0.9)' : tipo === 'info' ? 'rgba(52, 152, 219, 0.9)' : 'rgba(241, 196, 15, 0.9)'};
             color: white;
-            border-radius: 8px;
+            border-radius: 10px;
             font-weight: 600;
-            z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            animation: slideInRight 0.3s ease forwards;
-            max-width: 300px;
+            z-index: 4000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         `;
         
         notificacion.innerHTML = `
@@ -1532,94 +1784,21 @@
         document.body.appendChild(notificacion);
         
         setTimeout(() => {
-            notificacion.style.animation = 'slideOutRight 0.3s ease forwards';
+            notificacion.style.transform = 'translateX(0)';
+        }, 10);
+        
+        setTimeout(() => {
+            notificacion.style.transform = 'translateX(150%)';
             setTimeout(() => {
-                if (notificacion.parentNode) {
-                    notificacion.parentNode.removeChild(notificacion);
-                }
+                notificacion.remove();
             }, 300);
         }, 3000);
     }
     
-    // Estilos adicionales para las notificaciones
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-        @keyframes slideOutRight {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-        
-        .detalle-eje, .detalle-objetivo {
-            padding: 10px;
-        }
-        
-        .eje-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 15px;
-            color: white;
-            font-size: 24px;
-        }
-        
-        .estrategias-lista {
-            margin-top: 20px;
-        }
-        
-        .estrategia-item {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 10px;
-            margin-bottom: 10px;
-            border-left: 4px solid #2ecc71;
-        }
-        
-        .estrategia-tipo {
-            display: inline-block;
-            padding: 2px 8px;
-            background: #2ecc71;
-            color: white;
-            border-radius: 4px;
-            font-size: 10px;
-            margin-right: 8px;
-        }
-        
-        .estrategia-texto {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-        }
-        
-        .btn-detalle {
-            width: 100%;
-            padding: 10px;
-            background: linear-gradient(135deg, #0c2461 0%, #1a5276 100%);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            margin-top: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        
-        .tarea-estado {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin: 5px auto 0;
-        }
-    `;
-    document.head.appendChild(style);
+    // Detectar cambios en fullscreen
+    document.addEventListener('fullscreenchange', recalcularPosiciones);
+    document.addEventListener('webkitfullscreenchange', recalcularPosiciones);
+    document.addEventListener('mozfullscreenchange', recalcularPosiciones);
+    document.addEventListener('MSFullscreenChange', recalcularPosiciones);
 </script>
 {% endblock %}
