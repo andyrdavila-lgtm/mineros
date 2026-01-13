@@ -66,14 +66,14 @@
                         <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="fortaleza">
                             <div class="elemento-check">
                                 <input type="checkbox" id="fortaleza-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('fortaleza', {{ aspecto.id }}, `{{ aspecto.actividad|escapejs }}`)">
+                                       onchange="toggleElementoSeleccionado('fortaleza', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
                                 <label for="fortaleza-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('fortaleza-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('fortaleza', {{ aspecto.id }}, `{{ aspecto.actividad|escapejs }}`)">
+                                <button class="btn-add" onclick="seleccionarParaCruce('fortaleza', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -106,14 +106,14 @@
                         <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="oportunidad">
                             <div class="elemento-check">
                                 <input type="checkbox" id="oportunidad-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('oportunidad', {{ aspecto.id }}, `{{ aspecto.actividad|escapejs }}`)">
+                                       onchange="toggleElementoSeleccionado('oportunidad', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
                                 <label for="oportunidad-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('oportunidad-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('oportunidad', {{ aspecto.id }}, `{{ aspecto.actividad|escapejs }}`)">
+                                <button class="btn-add" onclick="seleccionarParaCruce('oportunidad', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -146,14 +146,14 @@
                         <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="debilidad">
                             <div class="elemento-check">
                                 <input type="checkbox" id="debilidad-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('debilidad', {{ aspecto.id }}, `{{ aspecto.actividad|escapejs }}`)">
+                                       onchange="toggleElementoSeleccionado('debilidad', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
                                 <label for="debilidad-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('debilidad-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('debilidad', {{ aspecto.id }}, `{{ aspecto.actividad|escapejs }}`)">
+                                <button class="btn-add" onclick="seleccionarParaCruce('debilidad', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -186,14 +186,14 @@
                         <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="amenaza">
                             <div class="elemento-check">
                                 <input type="checkbox" id="amenaza-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('amenaza', {{ aspecto.id }}, `{{ aspecto.actividad|escapejs }}`)">
+                                       onchange="toggleElementoSeleccionado('amenaza', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
                                 <label for="amenaza-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('amenaza-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('amenaza', {{ aspecto.id }}, `{{ aspecto.actividad|escapejs }}`)">
+                                <button class="btn-add" onclick="seleccionarParaCruce('amenaza', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
