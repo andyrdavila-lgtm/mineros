@@ -1232,6 +1232,55 @@ def limpiar_canva():
 
 # ==================== RUTAS API PARA ACTIVIDADES Y TAREAS ====================
 
+@app.route('/api/actividades')
+@login_required
+def api_actividades():
+    """API para obtener todas las actividades"""
+    try:
+        actividades = ActividadEstrategia.query.all()
+        actividades_data = []
+        for a in actividades:
+            actividades_data.append({
+                'id': a.id,
+                'estrategia_id': a.estrategia_id,
+                'nombre': a.nombre,
+                'descripcion': a.descripcion,
+                'responsable': a.responsable,
+                'fecha_inicio': a.fecha_inicio.isoformat() if a.fecha_inicio else None,
+                'fecha_fin': a.fecha_fin.isoformat() if a.fecha_fin else None,
+                'fecha_creacion': a.fecha_creacion.isoformat() if a.fecha_creacion else None,
+                'creador': a.creador.username if a.creador else None
+            })
+        return jsonify({'success': True, 'actividades': actividades_data})
+    except Exception as e:
+        print(f"Error en api_actividades: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/tareas')
+@login_required
+def api_tareas():
+    """API para obtener todas las tareas"""
+    try:
+        tareas = TareaActividad.query.all()
+        tareas_data = []
+        for t in tareas:
+            tareas_data.append({
+                'id': t.id,
+                'actividad_id': t.actividad_id,
+                'nombre': t.nombre,
+                'descripcion': t.descripcion,
+                'responsable': t.responsable,
+                'fecha_inicio': t.fecha_inicio.isoformat() if t.fecha_inicio else None,
+                'fecha_fin': t.fecha_fin.isoformat() if t.fecha_fin else None,
+                'estado': t.estado,
+                'fecha_creacion': t.fecha_creacion.isoformat() if t.fecha_creacion else None,
+                'creador': t.creador.username if t.creador else None
+            })
+        return jsonify({'success': True, 'tareas': tareas_data})
+    except Exception as e:
+        print(f"Error en api_tareas: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 @app.route('/api/actividades_estrategia/<int:estrategia_id>')
 @login_required
 def api_actividades_estrategia(estrategia_id):
