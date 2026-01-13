@@ -1,40 +1,40 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Mapa Neuronal Estratégico - Versión Mejorada con Sistema Anti-Colisiones -->
+<!-- Mapa Neuronal Estratégico - Versión Sistema Solar -->
 <div class="mapa-neuronal-container" id="mapaFullscreen">
     <!-- Cabecera principal -->
     <div class="mapa-header-glass">
         <div class="header-content">
             <h1 class="mapa-title-glow">
-                <i class="fas fa-project-diagram"></i>
-                <span class="title-text">MAPA NEURONAL ESTRATÉGICO</span>
+                <i class="fas fa-sun"></i>
+                <span class="title-text">SISTEMA SOLAR ESTRATÉGICO</span>
                 <span class="subtitle">Proyecto El Domo</span>
             </h1>
             <div class="header-stats">
                 <div class="stat-badge">
-                    <i class="fas fa-bullseye"></i>
-                    <span>1 Objetivo</span>
+                    <i class="fas fa-sun"></i>
+                    <span>1 Sol Central</span>
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-layer-group"></i>
-                    <span id="total-ejes">7 Ejes</span>
+                    <i class="fas fa-globe-americas"></i>
+                    <span id="total-ejes">7 Planetas</span>
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-chess-board"></i>
-                    <span id="total-estrategias">0 Estrategias</span>
+                    <i class="fas fa-moon"></i>
+                    <span id="total-estrategias">0 Lunas</span>
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-tasks"></i>
-                    <span id="total-tacticas">0 Tácticas</span>
+                    <i class="fas fa-satellite"></i>
+                    <span id="total-tacticas">0 Satélites</span>
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-check-circle"></i>
-                    <span id="total-actividades">0 Actividades</span>
+                    <i class="fas fa-meteor"></i>
+                    <span id="total-actividades">0 Asteroides</span>
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-network-wired"></i>
-                    <span id="total-conexiones">0 Conexiones</span>
+                    <i class="fas fa-route"></i>
+                    <span id="total-conexiones">0 Órbitas</span>
                 </div>
             </div>
         </div>
@@ -43,7 +43,7 @@
     <!-- Panel de controles organizado -->
     <div class="panel-controles">
         <div class="grupo-controles">
-            <h4><i class="fas fa-sliders-h"></i> Controles</h4>
+            <h4><i class="fas fa-cogs"></i> Controles del Sistema</h4>
             <div class="controles-grid">
                 <button class="control-btn tooltip" onclick="toggleFullscreen()" data-tooltip="Pantalla completa">
                     <i class="fas fa-expand"></i>
@@ -54,48 +54,44 @@
                 <button class="control-btn tooltip" onclick="toggleAnimations()" data-tooltip="Animaciones">
                     <i class="fas fa-play" id="animacionIcon"></i>
                 </button>
+                <button class="control-btn tooltip" onclick="reposicionarTodoElMapa()" data-tooltip="Reordenar sistema solar">
+                    <i class="fas fa-solar-system"></i>
+                </button>
                 <button class="control-btn tooltip" onclick="exportMap()" data-tooltip="Exportar">
                     <i class="fas fa-download"></i>
                 </button>
                 <button class="control-btn tooltip" onclick="cargarDatosDesdeAPI()" data-tooltip="Actualizar datos">
                     <i class="fas fa-sync"></i>
                 </button>
-                <!-- Nuevos botones de optimización -->
-                <button class="control-btn tooltip" onclick="reposicionarTodoElMapa()" data-tooltip="Optimizar distribución">
-                    <i class="fas fa-sitemap"></i>
-                </button>
-                <button class="control-btn tooltip" onclick="verificarYCorregirColisiones()" data-tooltip="Verificar colisiones">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </button>
             </div>
         </div>
         
         <div class="grupo-controles">
-            <h4><i class="fas fa-filter"></i> Filtros</h4>
+            <h4><i class="fas fa-filter"></i> Filtros Espaciales</h4>
             <select id="filtro-nivel" onchange="aplicarFiltro()" class="filtro-select">
-                <option value="todos">Todos los niveles</option>
-                <option value="objetivo">Objetivo Central</option>
-                <option value="ejes">Ejes Estratégicos</option>
-                <option value="estrategias">Estrategias</option>
-                <option value="tacticas">Tácticas</option>
-                <option value="actividades">Actividades</option>
+                <option value="todos">Todas las órbitas</option>
+                <option value="sol">Sol Central</option>
+                <option value="planetas">Planetas (Ejes)</option>
+                <option value="lunas">Lunas (Estrategias)</option>
+                <option value="satelites">Satélites (Tácticas)</option>
+                <option value="asteroides">Asteroides (Actividades)</option>
             </select>
             
             <select id="filtro-eje" onchange="filtrarPorEje()" class="filtro-select">
-                <option value="todos">Todos los ejes</option>
-                <option value="educacion">Educación</option>
-                <option value="salud">Salud</option>
-                <option value="empleabilidad">Empleabilidad</option>
-                <option value="desarrollo_economico">Desarrollo Económico</option>
-                <option value="sostenibilidad_ambiental">Sostenibilidad Ambiental</option>
-                <option value="comunicacion">Comunicación</option>
-                <option value="institucional">Institucional</option>
+                <option value="todos">Todos los planetas</option>
+                <option value="educacion">Planeta Educación</option>
+                <option value="salud">Planeta Salud</option>
+                <option value="empleabilidad">Planeta Empleabilidad</option>
+                <option value="desarrollo_economico">Planeta Desarrollo Económico</option>
+                <option value="sostenibilidad_ambiental">Planeta Sostenibilidad</option>
+                <option value="comunicacion">Planeta Comunicación</option>
+                <option value="institucional">Planeta Institucional</option>
             </select>
             
             <div class="filtro-checkbox">
                 <label>
-                    <input type="checkbox" id="mostrar-conexiones" checked onchange="toggleConexiones()">
-                    <span>Mostrar conexiones</span>
+                    <input type="checkbox" id="mostrar-orbitas" checked onchange="toggleOrbitas()">
+                    <span>Mostrar órbitas</span>
                 </label>
                 <label>
                     <input type="checkbox" id="mostrar-nombres" checked onchange="toggleNombres()">
@@ -105,7 +101,7 @@
         </div>
         
         <div class="grupo-controles">
-            <h4><i class="fas fa-search"></i> Zoom</h4>
+            <h4><i class="fas fa-search"></i> Zoom Galáctico</h4>
             <div class="zoom-controls">
                 <button class="zoom-btn" onclick="zoomOut()">-</button>
                 <input type="range" id="zoomSlider" min="0.3" max="3" step="0.1" value="1" 
@@ -115,10 +111,10 @@
             </div>
             <div class="modo-controls">
                 <button class="modo-btn active" onclick="cambiarModo('navegacion')" id="modo-navegacion">
-                    <i class="fas fa-hand-paper"></i> Navegar
+                    <i class="fas fa-space-shuttle"></i> Navegar
                 </button>
                 <button class="modo-btn" onclick="cambiarModo('seleccion')" id="modo-seleccion">
-                    <i class="fas fa-mouse-pointer"></i> Seleccionar
+                    <i class="fas fa-crosshairs"></i> Seleccionar
                 </button>
             </div>
         </div>
@@ -132,25 +128,42 @@
         <!-- SVG para conexiones dinámicas -->
         <svg class="conexiones-svg" id="conexionesSvg">
             <defs>
-                <linearGradient id="gradient-central" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.4" />
-                    <stop offset="100%" stop-color="#E91E63" stop-opacity="0.4" />
+                <!-- Gradientes para órbitas -->
+                <linearGradient id="gradient-sol" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#FFD700" stop-opacity="0.6" />
+                    <stop offset="100%" stop-color="#FF8C00" stop-opacity="0.6" />
                 </linearGradient>
-                <linearGradient id="gradient-eje" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#3498db" stop-opacity="0.5" />
-                    <stop offset="100%" stop-color="#2980b9" stop-opacity="0.5" />
+                <linearGradient id="gradient-mercurio" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#8B8B8B" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#696969" stop-opacity="0.5" />
                 </linearGradient>
-                <linearGradient id="gradient-estrategia" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#2ecc71" stop-opacity="0.5" />
-                    <stop offset="100%" stop-color="#27ae60" stop-opacity="0.5" />
+                <linearGradient id="gradient-venus" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#DAA520" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#B8860B" stop-opacity="0.5" />
                 </linearGradient>
-                <linearGradient id="gradient-tactica" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#e74c3c" stop-opacity="0.5" />
-                    <stop offset="100%" stop-color="#c0392b" stop-opacity="0.5" />
+                <linearGradient id="gradient-tierra" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#1E90FF" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#4169E1" stop-opacity="0.5" />
                 </linearGradient>
-                <linearGradient id="gradient-actividad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stop-color="#f39c12" stop-opacity="0.5" />
-                    <stop offset="100%" stop-color="#d35400" stop-opacity="0.5" />
+                <linearGradient id="gradient-marte" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#DC143C" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#B22222" stop-opacity="0.5" />
+                </linearGradient>
+                <linearGradient id="gradient-jupiter" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#D2691E" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#A0522D" stop-opacity="0.5" />
+                </linearGradient>
+                <linearGradient id="gradient-saturno" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#F0E68C" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#DAA520" stop-opacity="0.5" />
+                </linearGradient>
+                <linearGradient id="gradient-urano" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#AFEEEE" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#48D1CC" stop-opacity="0.5" />
+                </linearGradient>
+                <linearGradient id="gradient-neptuno" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#4169E1" stop-opacity="0.5" />
+                    <stop offset="100%" stop-color="#0000CD" stop-opacity="0.5" />
                 </linearGradient>
                 <filter id="glow">
                     <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
@@ -165,18 +178,24 @@
             </defs>
         </svg>
         
+        <!-- Órbitas del sistema solar -->
+        <div class="orbitas-container" id="orbitasContainer">
+            <!-- Las órbitas se generan dinámicamente -->
+        </div>
+        
         <!-- Contenedor de nodos -->
         <div class="nodos-container" id="nodosContainer">
-            <!-- Nodo Central -->
-            <div class="nodo nodo-central" id="nodo-objetivo">
-                <div class="nodo-glow"></div>
+            <!-- Sol Central -->
+            <div class="nodo nodo-sol" id="nodo-objetivo">
+                <div class="nodo-glow-sol"></div>
+                <div class="nodo-corona"></div>
                 <div class="nodo-content">
-                    <div class="nodo-icon-pulse">
-                        <i class="fas fa-brain"></i>
+                    <div class="nodo-icon-pulse-sol">
+                        <i class="fas fa-sun"></i>
                     </div>
-                    <div class="nodo-title-glow">OBJETIVO ESTRATÉGICO</div>
+                    <div class="nodo-title-glow">SOL ESTRATÉGICO</div>
                     <div class="nodo-desc-scroll">
-                        Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral...
+                        Consolidar la viabilidad y el respaldo social del Proyecto El Domo...
                     </div>
                     <button class="btn-ver-mas" onclick="mostrarDetalleObjetivo()">
                         <i class="fas fa-eye"></i> Ver completo
@@ -184,31 +203,31 @@
                     <div class="nodo-stats-grid">
                         <div class="stat-item">
                             <div class="stat-value" id="contador-ejes">7</div>
-                            <div class="stat-label">Ejes</div>
+                            <div class="stat-label">Planetas</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value" id="contador-estrategias">0</div>
-                            <div class="stat-label">Estrategias</div>
+                            <div class="stat-label">Lunas</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value" id="contador-tacticas">0</div>
-                            <div class="stat-label">Tácticas</div>
+                            <div class="stat-label">Satélites</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-value" id="contador-actividades">0</div>
-                            <div class="stat-label">Actividades</div>
+                            <div class="stat-label">Asteroides</div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Los nodos de ejes se generan dinámicamente aquí -->
-            <div class="ejes-container" id="ejesContainer"></div>
+            <!-- Los nodos de planetas (ejes) se generan dinámicamente aquí -->
+            <div class="planetas-container" id="planetasContainer"></div>
             
-            <!-- Contenedores para niveles jerárquicos -->
-            <div class="estrategias-container" id="estrategiasContainer"></div>
-            <div class="tacticas-container" id="tacticasContainer"></div>
-            <div class="actividades-container" id="actividadesContainer"></div>
+            <!-- Contenedores para lunas y satélites -->
+            <div class="lunas-container" id="lunasContainer"></div>
+            <div class="satelites-container" id="satelitesContainer"></div>
+            <div class="asteroides-container" id="asteroidesContainer"></div>
         </div>
         
         <!-- Mini mapa de navegación -->
@@ -217,39 +236,39 @@
         </div>
     </div>
     
-    <!-- Leyenda flotante -->
+    <!-- Leyenda galáctica -->
     <div class="leyenda-flotante">
         <div class="leyenda-header">
-            <i class="fas fa-key"></i> Leyenda
+            <i class="fas fa-star"></i> Leyenda Galáctica
         </div>
         <div class="leyenda-content">
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-central-color"></div>
-                <span>Objetivo Central</span>
+                <div class="leyenda-icon nodo-sol-color"></div>
+                <span>Sol Central (Objetivo)</span>
             </div>
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-eje-color"></div>
-                <span>Ejes Estratégicos</span>
+                <div class="leyenda-icon nodo-planeta-color"></div>
+                <span>Planetas (Ejes)</span>
             </div>
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-estrategia-color"></div>
-                <span>Estrategias</span>
+                <div class="leyenda-icon nodo-luna-color"></div>
+                <span>Lunas (Estrategias)</span>
             </div>
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-tactica-color"></div>
-                <span>Tácticas</span>
+                <div class="leyenda-icon nodo-satelite-color"></div>
+                <span>Satélites (Tácticas)</span>
             </div>
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-actividad-color"></div>
-                <span>Actividades</span>
+                <div class="leyenda-icon nodo-asteroide-color"></div>
+                <span>Asteroides (Actividades)</span>
             </div>
         </div>
         <div class="leyenda-stats">
             <div class="stat-leyenda">
-                <span id="leyenda-activos">0</span> nodos activos
+                <span id="leyenda-activos">0</span> cuerpos celestes
             </div>
             <div class="stat-leyenda">
-                <span id="leyenda-conexiones">0</span> conexiones
+                <span id="leyenda-conexiones">0</span> órbitas activas
             </div>
         </div>
     </div>
@@ -257,7 +276,7 @@
     <!-- Panel de detalles -->
     <div class="panel-detalles" id="panelDetalles">
         <div class="panel-header">
-            <h3 id="detalleTitulo"><i class="fas fa-info-circle"></i> Detalles del Nodo</h3>
+            <h3 id="detalleTitulo"><i class="fas fa-info-circle"></i> Información del Cuerpo Celeste</h3>
             <button class="panel-close" onclick="cerrarPanel()">
                 <i class="fas fa-times"></i>
             </button>
@@ -273,11 +292,11 @@
     <div class="cargando-overlay" id="cargandoOverlay">
         <div class="cargando-content">
             <div class="cargando-spinner">
-                <i class="fas fa-project-diagram fa-spin"></i>
+                <i class="fas fa-sun fa-spin"></i>
             </div>
             <div class="cargando-texto">
-                <h3>Cargando Mapa Neuronal</h3>
-                <p id="estadoCarga">Inicializando sistema...</p>
+                <h3>Inicializando Sistema Solar</h3>
+                <p id="estadoCarga">Configurando órbitas...</p>
                 <div class="cargando-progreso">
                     <div class="cargando-barra" id="progresoCarga"></div>
                 </div>
@@ -301,7 +320,7 @@
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: linear-gradient(135deg, #0c0e2a 0%, #1a1b3a 50%, #0c2461 100%);
+        background: linear-gradient(135deg, #000428 0%, #000e3b 50%, #001f5c 100%);
         overflow: hidden;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
@@ -313,7 +332,7 @@
         left: 0;
         right: 0;
         height: 80px;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(20px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         padding: 0 20px;
@@ -340,7 +359,7 @@
         font-size: 22px;
         font-weight: 700;
         letter-spacing: 1px;
-        text-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
+        text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
     }
     
     .subtitle {
@@ -379,13 +398,13 @@
         top: 90px;
         right: 20px;
         width: 350px;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(20px);
         border-radius: 15px;
         padding: 20px;
         z-index: 1000;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         display: flex;
         flex-direction: column;
         gap: 20px;
@@ -412,7 +431,7 @@
     
     .controles-grid {
         display: grid;
-        grid-template-columns: repeat(7, 1fr);
+        grid-template-columns: repeat(6, 1fr);
         gap: 8px;
     }
     
@@ -420,8 +439,8 @@
         width: 40px;
         height: 40px;
         border-radius: 10px;
-        background: rgba(52, 152, 219, 0.2);
-        border: 1px solid rgba(52, 152, 219, 0.3);
+        background: rgba(255, 215, 0, 0.2);
+        border: 1px solid rgba(255, 215, 0, 0.3);
         color: white;
         cursor: pointer;
         display: flex;
@@ -432,8 +451,9 @@
     }
     
     .control-btn:hover {
-        background: rgba(52, 152, 219, 0.4);
+        background: rgba(255, 215, 0, 0.4);
         transform: translateY(-2px);
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
     }
     
     .tooltip {
@@ -477,7 +497,7 @@
     }
     
     .filtro-select option {
-        background: #0c0e2a;
+        background: #000428;
         color: white;
     }
     
@@ -497,7 +517,7 @@
     }
     
     .filtro-checkbox input {
-        accent-color: #3498db;
+        accent-color: #FFD700;
     }
     
     .zoom-controls {
@@ -537,9 +557,9 @@
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #3498db;
+        background: #FFD700;
         cursor: pointer;
-        box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     }
     
     .zoom-value {
@@ -574,8 +594,8 @@
     }
     
     .modo-btn.active {
-        background: rgba(52, 152, 219, 0.3);
-        border-color: rgba(52, 152, 219, 0.5);
+        background: rgba(255, 215, 0, 0.3);
+        border-color: rgba(255, 215, 0, 0.5);
         color: white;
     }
     
@@ -595,7 +615,7 @@
         cursor: grabbing;
     }
     
-    /* Partículas de fondo */
+    /* Partículas de fondo (estrellas) */
     .particles-container {
         position: absolute;
         width: 100%;
@@ -606,9 +626,15 @@
     
     .particle {
         position: absolute;
-        background: rgba(52, 152, 219, 0.3);
+        background: rgba(255, 255, 255, 0.8);
         border-radius: 50%;
         pointer-events: none;
+        animation: twinkle 3s infinite;
+    }
+    
+    @keyframes twinkle {
+        0%, 100% { opacity: 0.2; }
+        50% { opacity: 1; }
     }
     
     /* SVG para conexiones */
@@ -633,37 +659,28 @@
         stroke-width: 3;
     }
     
-    .conexion-central {
-        stroke: url(#gradient-central);
-        stroke-dasharray: 5, 5;
-        stroke-opacity: 0.6;
-        animation: dashMove 20s linear infinite;
+    /* Órbitas del sistema solar */
+    .orbitas-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+        pointer-events: none;
     }
     
-    .conexion-eje {
-        stroke: url(#gradient-eje);
-        stroke-opacity: 0.6;
+    .orbita {
+        position: absolute;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transform: translate(-50%, -50%);
+        animation: rotateOrbit linear infinite;
     }
     
-    .conexion-estrategia {
-        stroke: url(#gradient-estrategia);
-        stroke-opacity: 0.6;
-    }
-    
-    .conexion-tactica {
-        stroke: url(#gradient-tactica);
-        stroke-opacity: 0.6;
-    }
-    
-    .conexion-actividad {
-        stroke: url(#gradient-actividad);
-        stroke-opacity: 0.6;
-    }
-    
-    @keyframes dashMove {
-        to {
-            stroke-dashoffset: -100;
-        }
+    @keyframes rotateOrbit {
+        from { transform: translate(-50%, -50%) rotate(0deg); }
+        to { transform: translate(-50%, -50%) rotate(360deg); }
     }
     
     /* Contenedor de nodos */
@@ -671,7 +688,7 @@
         position: absolute;
         width: 100%;
         height: 100%;
-        z-index: 3;
+        z-index: 10;
         transform-origin: center;
         transition: transform 0.3s ease;
         will-change: transform;
@@ -693,73 +710,84 @@
     
     .nodo.seleccionado {
         z-index: 999;
-        box-shadow: 0 0 30px rgba(52, 152, 219, 0.8);
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
     }
     
-    /* Nodo central */
-    .nodo-central {
-        width: 300px;
-        height: 300px;
+    /* Sol Central */
+    .nodo-sol {
+        width: 320px;
+        height: 320px;
         z-index: 100;
     }
     
-    .nodo-glow {
+    .nodo-glow-sol {
         position: absolute;
         width: 100%;
         height: 100%;
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(156, 39, 176, 0.4) 0%, rgba(156, 39, 176, 0) 70%);
-        animation: pulseGlow 3s infinite;
-        filter: blur(20px);
+        background: radial-gradient(circle, rgba(255, 215, 0, 0.6) 0%, rgba(255, 140, 0, 0.3) 30%, rgba(255, 140, 0, 0) 70%);
+        animation: pulseSol 3s infinite;
+        filter: blur(30px);
         z-index: -1;
     }
     
-    .nodo-central .nodo-content {
+    .nodo-corona {
+        position: absolute;
+        width: 150%;
+        height: 150%;
+        top: -25%;
+        left: -25%;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, rgba(255, 140, 0, 0.1) 50%, transparent 70%);
+        animation: rotateCorona 20s linear infinite;
+        z-index: -2;
+    }
+    
+    .nodo-sol .nodo-content {
         position: relative;
         width: 100%;
         height: 100%;
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(20px);
+        background: radial-gradient(circle, rgba(255, 215, 0, 0.9), rgba(255, 140, 0, 0.8));
         border-radius: 50%;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: 30px;
-        border: 2px solid rgba(156, 39, 176, 0.3);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
-                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        padding: 40px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 0 50px rgba(255, 215, 0, 0.5),
+                    inset 0 0 30px rgba(255, 255, 255, 0.2);
     }
     
-    .nodo-icon-pulse {
-        width: 70px;
-        height: 70px;
-        background: linear-gradient(135deg, #9C27B0, #E91E63);
+    .nodo-icon-pulse-sol {
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.9);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 20px;
-        font-size: 28px;
-        color: white;
-        animation: pulseIcon 2s infinite;
-        box-shadow: 0 0 30px rgba(156, 39, 176, 0.5);
+        font-size: 48px;
+        color: #FF8C00;
+        animation: pulseSolIcon 2s infinite;
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
     }
     
     .nodo-title-glow {
-        font-size: 16px;
+        font-size: 18px;
         font-weight: 700;
         color: white;
         margin-bottom: 10px;
         text-transform: uppercase;
         letter-spacing: 1px;
-        text-shadow: 0 0 10px rgba(156, 39, 176, 0.7);
+        text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
     }
     
     .nodo-desc-scroll {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.8);
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.9);
         line-height: 1.4;
         margin-bottom: 15px;
         max-height: 60px;
@@ -771,16 +799,16 @@
     }
     
     .btn-ver-mas {
-        background: linear-gradient(135deg, #3498db, #9b59b6);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 215, 0, 0.8));
         border: none;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
+        color: #000;
+        padding: 10px 20px;
+        border-radius: 25px;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 6px;
-        font-size: 12px;
+        gap: 8px;
+        font-size: 14px;
         font-weight: 600;
         transition: all 0.3s ease;
         margin-bottom: 15px;
@@ -788,84 +816,87 @@
     
     .btn-ver-mas:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
     }
     
     .nodo-stats-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 10px;
+        gap: 15px;
         width: 80%;
     }
     
     .stat-item {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.2);
         border-radius: 10px;
-        padding: 8px;
+        padding: 10px;
         text-align: center;
+        backdrop-filter: blur(5px);
     }
     
     .stat-value {
-        font-size: 20px;
+        font-size: 24px;
         font-weight: 700;
         color: white;
         margin-bottom: 2px;
     }
     
     .stat-label {
-        font-size: 10px;
-        color: rgba(255, 255, 255, 0.7);
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.8);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     
-    /* Nodos de ejes */
-    .nodo-eje {
-        width: 160px;
-        height: 160px;
+    /* Planetas (Ejes) */
+    .nodo-planeta {
+        width: 180px;
+        height: 180px;
         z-index: 90;
+        animation: orbitPlanet linear infinite;
     }
     
-    .nodo-eje .nodo-content {
+    .nodo-planeta .nodo-content {
         position: relative;
         width: 100%;
         height: 100%;
-        background: rgba(52, 152, 219, 0.1);
+        background: radial-gradient(circle, rgba(52, 152, 219, 0.9), rgba(41, 128, 185, 0.8));
         backdrop-filter: blur(15px);
-        border-radius: 20px;
+        border-radius: 50%;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: 20px;
-        border: 2px solid rgba(52, 152, 219, 0.3);
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        padding: 25px;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3),
+                    inset 0 0 20px rgba(255, 255, 255, 0.1);
         transition: all 0.3s ease;
     }
     
-    .nodo-eje:hover .nodo-content {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-        border-color: rgba(52, 152, 219, 0.5);
+    .nodo-planeta:hover .nodo-content {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4),
+                    inset 0 0 30px rgba(255, 255, 255, 0.2);
     }
     
-    .nodo-eje .nodo-icon {
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, #3498db, #2980b9);
+    .nodo-planeta .nodo-icon {
+        width: 70px;
+        height: 70px;
+        background: rgba(255, 255, 255, 0.9);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 10px;
-        font-size: 20px;
-        color: white;
-        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        margin-bottom: 15px;
+        font-size: 28px;
+        color: #2980b9;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
     }
     
-    .nodo-eje .nodo-title {
-        font-size: 14px;
+    .nodo-planeta .nodo-title {
+        font-size: 15px;
         font-weight: 600;
         color: white;
         margin-bottom: 5px;
@@ -873,100 +904,115 @@
         line-height: 1.2;
     }
     
-    .nodo-eje .nodo-counter {
-        font-size: 11px;
-        color: rgba(255, 255, 255, 0.7);
+    .nodo-planeta .nodo-counter {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
         background: rgba(255, 255, 255, 0.1);
-        padding: 3px 10px;
-        border-radius: 12px;
+        padding: 5px 12px;
+        border-radius: 15px;
     }
     
-    /* Nodos de estrategias */
-    .nodo-estrategia {
+    /* Lunas (Estrategias) */
+    .nodo-luna {
         width: 140px;
         height: 140px;
         z-index: 80;
+        animation: orbitMoon linear infinite;
     }
     
-    .nodo-estrategia .nodo-content {
-        background: rgba(46, 204, 113, 0.1);
-        border: 2px solid rgba(46, 204, 113, 0.3);
+    .nodo-luna .nodo-content {
+        background: radial-gradient(circle, rgba(46, 204, 113, 0.9), rgba(39, 174, 96, 0.8));
+        border: 2px solid rgba(255, 255, 255, 0.3);
     }
     
-    .nodo-estrategia .nodo-icon {
-        background: linear-gradient(135deg, #2ecc71, #27ae60);
+    .nodo-luna .nodo-icon {
+        background: rgba(255, 255, 255, 0.9);
+        color: #27ae60;
     }
     
-    /* Nodos de tácticas */
-    .nodo-tactica {
-        width: 120px;
-        height: 120px;
+    /* Satélites (Tácticas) */
+    .nodo-satelite {
+        width: 110px;
+        height: 110px;
         z-index: 70;
     }
     
-    .nodo-tactica .nodo-content {
-        background: rgba(231, 76, 60, 0.1);
-        border: 2px solid rgba(231, 76, 60, 0.3);
+    .nodo-satelite .nodo-content {
+        background: radial-gradient(circle, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.8));
+        border: 2px solid rgba(255, 255, 255, 0.3);
     }
     
-    .nodo-tactica .nodo-icon {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
+    .nodo-satelite .nodo-icon {
+        background: rgba(255, 255, 255, 0.9);
+        color: #c0392b;
     }
     
-    /* Nodos de actividades */
-    .nodo-actividad {
-        width: 100px;
-        height: 100px;
+    /* Asteroides (Actividades) */
+    .nodo-asteroide {
+        width: 90px;
+        height: 90px;
         z-index: 60;
+        animation: floatAsteroid 3s ease-in-out infinite;
     }
     
-    .nodo-actividad .nodo-content {
-        background: rgba(243, 156, 18, 0.1);
-        border: 2px solid rgba(243, 156, 18, 0.3);
+    .nodo-asteroide .nodo-content {
+        background: radial-gradient(circle, rgba(243, 156, 18, 0.9), rgba(211, 84, 0, 0.8));
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px !important;
     }
     
-    .nodo-actividad .nodo-icon {
-        background: linear-gradient(135deg, #f39c12, #d35400);
+    .nodo-asteroide .nodo-icon {
+        background: rgba(255, 255, 255, 0.9);
+        color: #d35400;
+        border-radius: 40%;
     }
     
-    /* Estilos comunes para nodos hijos */
-    .nodo-estrategia .nodo-content,
-    .nodo-tactica .nodo-content,
-    .nodo-actividad .nodo-content {
+    /* Estilos comunes para lunas, satélites y asteroides */
+    .nodo-luna .nodo-content,
+    .nodo-satelite .nodo-content,
+    .nodo-asteroide .nodo-content {
         position: relative;
         width: 100%;
         height: 100%;
         backdrop-filter: blur(10px);
-        border-radius: 15px;
+        border-radius: 50%;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        padding: 15px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        padding: 20px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2),
+                    inset 0 0 10px rgba(255, 255, 255, 0.1);
         transition: all 0.3s ease;
     }
     
-    .nodo-estrategia .nodo-icon,
-    .nodo-tactica .nodo-icon,
-    .nodo-actividad .nodo-icon {
-        width: 40px;
-        height: 40px;
+    .nodo-luna:hover .nodo-content,
+    .nodo-satelite:hover .nodo-content,
+    .nodo-asteroide:hover .nodo-content {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3),
+                    inset 0 0 15px rgba(255, 255, 255, 0.2);
+    }
+    
+    .nodo-luna .nodo-icon,
+    .nodo-satelite .nodo-icon,
+    .nodo-asteroide .nodo-icon {
+        width: 50px;
+        height: 50px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-bottom: 8px;
-        font-size: 16px;
-        color: white;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        margin-bottom: 10px;
+        font-size: 20px;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.2);
     }
     
-    .nodo-estrategia .nodo-title,
-    .nodo-tactica .nodo-title,
-    .nodo-actividad .nodo-title {
-        font-size: 12px;
+    .nodo-luna .nodo-title,
+    .nodo-satelite .nodo-title,
+    .nodo-asteroide .nodo-title {
+        font-size: 13px;
         font-weight: 600;
         color: white;
         text-align: center;
@@ -984,14 +1030,14 @@
         position: absolute;
         bottom: 20px;
         left: 20px;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(20px);
         border-radius: 15px;
         padding: 15px;
-        width: 220px;
+        width: 240px;
         z-index: 1000;
         border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
     
     .leyenda-header {
@@ -1014,35 +1060,36 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 12px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 13px;
     }
     
     .leyenda-icon {
-        width: 20px;
-        height: 20px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         flex-shrink: 0;
     }
     
-    .nodo-central-color {
-        background: linear-gradient(135deg, #9C27B0, #E91E63);
+    .nodo-sol-color {
+        background: radial-gradient(circle, #FFD700, #FF8C00);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
     }
     
-    .nodo-eje-color {
-        background: linear-gradient(135deg, #3498db, #2980b9);
+    .nodo-planeta-color {
+        background: radial-gradient(circle, #3498db, #2980b9);
     }
     
-    .nodo-estrategia-color {
-        background: linear-gradient(135deg, #2ecc71, #27ae60);
+    .nodo-luna-color {
+        background: radial-gradient(circle, #2ecc71, #27ae60);
     }
     
-    .nodo-tactica-color {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
+    .nodo-satelite-color {
+        background: radial-gradient(circle, #e74c3c, #c0392b);
     }
     
-    .nodo-actividad-color {
-        background: linear-gradient(135deg, #f39c12, #d35400);
+    .nodo-asteroide-color {
+        background: radial-gradient(circle, #f39c12, #d35400);
     }
     
     .leyenda-stats {
@@ -1054,7 +1101,7 @@
     }
     
     .stat-leyenda {
-        font-size: 11px;
+        font-size: 12px;
         color: rgba(255, 255, 255, 0.7);
         display: flex;
         justify-content: space-between;
@@ -1072,7 +1119,7 @@
         right: -400px;
         width: 380px;
         height: 100%;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(0, 0, 0, 0.3);
         backdrop-filter: blur(30px);
         border-left: 1px solid rgba(255, 255, 255, 0.1);
         z-index: 2000;
@@ -1086,7 +1133,7 @@
     
     .panel-header {
         padding: 25px;
-        background: rgba(12, 36, 97, 0.5);
+        background: rgba(0, 20, 60, 0.5);
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         display: flex;
         justify-content: space-between;
@@ -1148,8 +1195,8 @@
     
     .minimap-viewport {
         position: absolute;
-        border: 2px solid rgba(52, 152, 219, 0.8);
-        background: rgba(52, 152, 219, 0.1);
+        border: 2px solid rgba(255, 215, 0, 0.8);
+        background: rgba(255, 215, 0, 0.1);
         transition: all 0.3s ease;
     }
     
@@ -1160,7 +1207,7 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: rgba(12, 14, 42, 0.95);
+        background: rgba(0, 4, 40, 0.95);
         backdrop-filter: blur(10px);
         z-index: 9999;
         display: flex;
@@ -1179,7 +1226,7 @@
     .cargando-spinner {
         font-size: 60px;
         margin-bottom: 20px;
-        color: #3498db;
+        color: #FFD700;
     }
     
     .cargando-texto h3 {
@@ -1203,15 +1250,15 @@
     
     .cargando-barra {
         height: 100%;
-        background: linear-gradient(90deg, #3498db, #9b59b6);
+        background: linear-gradient(90deg, #FFD700, #FF8C00);
         width: 0%;
         transition: width 0.3s ease;
     }
     
     /* Animaciones */
-    @keyframes pulseGlow {
+    @keyframes pulseSol {
         0%, 100% {
-            opacity: 0.5;
+            opacity: 0.6;
             transform: scale(1);
         }
         50% {
@@ -1220,13 +1267,33 @@
         }
     }
     
-    @keyframes pulseIcon {
+    @keyframes pulseSolIcon {
         0%, 100% {
-            box-shadow: 0 0 30px rgba(156, 39, 176, 0.5);
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
         }
         50% {
-            box-shadow: 0 0 50px rgba(156, 39, 176, 0.8);
+            box-shadow: 0 0 60px rgba(255, 215, 0, 1);
         }
+    }
+    
+    @keyframes rotateCorona {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes orbitPlanet {
+        from { transform: rotate(0deg) translateX(250px) rotate(0deg); }
+        to { transform: rotate(360deg) translateX(250px) rotate(-360deg); }
+    }
+    
+    @keyframes orbitMoon {
+        from { transform: rotate(0deg) translateX(80px) rotate(0deg); }
+        to { transform: rotate(360deg) translateX(80px) rotate(-360deg); }
+    }
+    
+    @keyframes floatAsteroid {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(5deg); }
     }
     
     @keyframes aparecerNodo {
@@ -1255,54 +1322,38 @@
     }
     
     ::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #3498db, #9b59b6);
+        background: linear-gradient(135deg, #FFD700, #FF8C00);
         border-radius: 10px;
     }
     
-    /* Mejor espaciado entre nodos */
-    .ejes-container, .estrategias-container, 
-    .tacticas-container, .actividades-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: center;
-        gap: 40px;
+    /* Organización de contenedores */
+    .planetas-container, .lunas-container, 
+    .satelites-container, .asteroides-container {
+        position: absolute;
+        width: 100%;
+        height: 100%;
     }
     
-    .nodo-aparecer {
-        position: relative;
-        margin: 15px;
-    }
+    /* Estilos para los diferentes tipos de planetas */
+    .planeta-mercurio .nodo-content { background: radial-gradient(circle, #8B8B8B, #696969) !important; }
+    .planeta-venus .nodo-content { background: radial-gradient(circle, #DAA520, #B8860B) !important; }
+    .planeta-tierra .nodo-content { background: radial-gradient(circle, #1E90FF, #4169E1) !important; }
+    .planeta-marte .nodo-content { background: radial-gradient(circle, #DC143C, #B22222) !important; }
+    .planeta-jupiter .nodo-content { background: radial-gradient(circle, #D2691E, #A0522D) !important; }
+    .planeta-saturno .nodo-content { background: radial-gradient(circle, #F0E68C, #DAA520) !important; }
+    .planeta-urano .nodo-content { background: radial-gradient(circle, #AFEEEE, #48D1CC) !important; }
+    .planeta-neptuno .nodo-content { background: radial-gradient(circle, #4169E1, #0000CD) !important; }
     
     /* Mejor visibilidad de nodos ocultos por filtro */
     .nodo[style*="opacity: 0.1"] {
         transition: opacity 0.3s ease;
     }
     
-    /* Estilos para botones de optimización */
-    .control-btn.warning {
-        background: rgba(231, 76, 60, 0.2);
-        border: 1px solid rgba(231, 76, 60, 0.3);
-    }
-    
-    .control-btn.warning:hover {
-        background: rgba(231, 76, 60, 0.4);
-    }
-    
-    .control-btn.success {
-        background: rgba(46, 204, 113, 0.2);
-        border: 1px solid rgba(46, 204, 113, 0.3);
-    }
-    
-    .control-btn.success:hover {
-        background: rgba(46, 204, 113, 0.4);
-    }
-    
     /* Aumentar el z-index de nodos para mejor visualización */
-    .nodo-eje { z-index: 90; }
-    .nodo-estrategia { z-index: 80; }
-    .nodo-tactica { z-index: 70; }
-    .nodo-actividad { z-index: 60; }
+    .nodo-planeta { z-index: 90; }
+    .nodo-luna { z-index: 80; }
+    .nodo-satelite { z-index: 70; }
+    .nodo-asteroide { z-index: 60; }
     
     .nodo:hover {
         z-index: 1000 !important;
@@ -1318,7 +1369,7 @@
         }
         
         .controles-grid {
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
         }
         
         .panel-detalles {
@@ -1326,11 +1377,21 @@
         }
         
         .leyenda-flotante {
-            width: 200px;
+            width: 220px;
         }
         
         .minimap {
             display: none;
+        }
+        
+        .nodo-sol {
+            width: 280px;
+            height: 280px;
+        }
+        
+        .nodo-planeta {
+            width: 160px;
+            height: 160px;
         }
     }
     
@@ -1367,7 +1428,7 @@
         }
         
         .controles-grid {
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(3, 1fr);
         }
         
         .panel-detalles {
@@ -1384,12 +1445,12 @@
             display: none;
         }
         
-        .nodo-central {
-            width: 250px;
-            height: 250px;
+        .nodo-sol {
+            width: 240px;
+            height: 240px;
         }
         
-        .nodo-eje {
+        .nodo-planeta {
             width: 140px;
             height: 140px;
         }
@@ -1398,7 +1459,7 @@
 
 <script>
     // ================================
-    // VARIABLES GLOBALES
+    // VARIABLES GLOBALES - SISTEMA SOLAR
     // ================================
     let mapa = {
         ejes: [],
@@ -1417,7 +1478,7 @@
         translateX: 0,
         translateY: 0,
         nodoSeleccionado: null,
-        mostrarConexiones: true,
+        mostrarOrbitas: true,
         mostrarNombres: true,
         modo: 'navegacion',
         filtroNivel: 'todos',
@@ -1427,652 +1488,510 @@
     let elementos = {
         particulas: [],
         intervaloConexiones: null,
-        animacionFrame: null,
-        nodosPosiciones: new Map()
+        animacionFrame: null
     };
     
-    // ================================
-    // ALGORITMO DE FUERZA DIRECTA MEJORADO
-    // ================================
-    
-    // Configuración del algoritmo de fuerza
-    const fuerzaConfig = {
-        repulsion: 100,        // Fuerza de repulsión entre nodos
-        atraccionCentral: 0.1, // Fuerza de atracción al centro
-        atraccionConexiones: 0.5, // Fuerza de atracción entre nodos conectados
-        friccion: 0.8,         // Fricción para estabilizar
-        maxIteraciones: 100,   // Máximo de iteraciones para ajuste
-        umbralColision: 120    // Distancia mínima entre nodos
+    // Configuración del sistema solar
+    const sistemaSolarConfig = {
+        radios: {
+            sol: 0,
+            planeta: 280,      // Radio de órbita para planetas
+            luna: 100,        // Radio de órbita para lunas
+            satelite: 70,     // Radio de órbita para satélites
+            asteroide: 40     // Radio de órbita para asteroides
+        },
+        tamaños: {
+            sol: 160,
+            planeta: 90,
+            luna: 70,
+            satelite: 55,
+            asteroide: 45
+        },
+        velocidades: {
+            planeta: 0.5,
+            luna: 1,
+            satelite: 1.5,
+            asteroide: 2
+        }
     };
     
-    // Sistema de grid para evitar colisiones
-    const gridConfig = {
-        cellSize: 150, // Tamaño de celda en píxeles
-        grid: new Map() // Mapa de posiciones ocupadas
-    };
+    // Asignación de planetas reales a ejes
+    const planetasAsignados = [
+        { id: 'educacion', nombre: 'Mercurio', color: '#8B8B8B', icono: 'book', gradiente: 'gradient-mercurio' },
+        { id: 'salud', nombre: 'Venus', color: '#DAA520', icono: 'heartbeat', gradiente: 'gradient-venus' },
+        { id: 'empleabilidad', nombre: 'Tierra', color: '#1E90FF', icono: 'briefcase', gradiente: 'gradient-tierra' },
+        { id: 'desarrollo_economico', nombre: 'Marte', color: '#DC143C', icono: 'chart-line', gradiente: 'gradient-marte' },
+        { id: 'sostenibilidad_ambiental', nombre: 'Júpiter', color: '#D2691E', icono: 'tint', gradiente: 'gradient-jupiter' },
+        { id: 'comunicacion', nombre: 'Saturno', color: '#F0E68C', icono: 'bullhorn', gradiente: 'gradient-saturno' },
+        { id: 'institucional', nombre: 'Urano', color: '#AFEEEE', icono: 'landmark', gradiente: 'gradient-urano' }
+    ];
     
     // ================================
-    // FUNCIONES DEL ALGORITMO DE FUERZA
+    // FUNCIONES DE INICIALIZACIÓN
     // ================================
     
-    // Función para calcular posición libre con algoritmo de fuerza
-    function calcularPosicionLibre(x, y, tipoNodo = '', nodoId = '') {
-        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
-        const centroX = canvasRect.width / 2;
-        const centroY = canvasRect.height / 2;
-        
-        // Si es nodo objetivo, mantener en el centro
-        if (nodoId === 'nodo-objetivo') {
-            return { x: centroX, y: centroY };
-        }
-        
-        // Si es un eje, usar distribución circular
-        if (tipoNodo === 'eje') {
-            // Encontrar el índice del eje
-            const index = mapa.ejes.findIndex(e => `nodo-${e.id}` === nodoId);
-            if (index >= 0) {
-                const totalEjes = mapa.ejes.length;
-                const angulo = (2 * Math.PI / totalEjes) * index - Math.PI / 2;
-                const radio = Math.min(canvasRect.width, canvasRect.height) * 0.35; // Reducido para más espacio
-                
-                let posX = centroX + radio * Math.cos(angulo);
-                let posY = centroY + radio * Math.sin(angulo);
-                
-                // Aplicar repulsión con otros nodos
-                const nuevaPos = aplicarRepulsion(posX, posY, nodoId, 'eje');
-                
-                return nuevaPos;
-            }
-        }
-        
-        // Para otros nodos, calcular posición en círculo alrededor del padre
-        let posX = x;
-        let posY = y;
-        
-        // Aplicar algoritmo de fuerza para evitar colisiones
-        const nuevaPos = aplicarRepulsion(posX, posY, nodoId, tipoNodo);
-        
-        return nuevaPos;
-    }
-    
-    function aplicarRepulsion(x, y, nodoId, tipoNodo) {
-        const todosNodos = document.querySelectorAll('.nodo');
-        let fuerzaX = 0;
-        let fuerzaY = 0;
-        
-        for (const nodo of todosNodos) {
-            if (!nodo.style.left || !nodo.style.top || nodo.id === nodoId) continue;
-            
-            const nodoX = parseFloat(nodo.style.left);
-            const nodoY = parseFloat(nodo.style.top);
-            
-            const dx = x - nodoX;
-            const dy = y - nodoY;
-            const distancia = Math.sqrt(dx * dx + dy * dy);
-            
-            // Si los nodos están demasiado cerca, aplicar fuerza de repulsión
-            if (distancia < fuerzaConfig.umbralColision && distancia > 0) {
-                const fuerza = (fuerzaConfig.umbralColision - distancia) / distancia * fuerzaConfig.repulsion;
-                fuerzaX += (dx / distancia) * fuerza;
-                fuerzaY += (dy / distancia) * fuerza;
-            }
-        }
-        
-        // Aplicar fuerzas con fricción
-        return {
-            x: x + fuerzaX * fuerzaConfig.friccion,
-            y: y + fuerzaY * fuerzaConfig.friccion
-        };
-    }
-    
-    // Función para ajustar todas las posiciones de nodos
-    function ajustarPosicionesNodos() {
-        const nodos = document.querySelectorAll('.nodo');
-        let ajustesRealizados = false;
-        
-        // Aplicar múltiples iteraciones para mejor ajuste
-        for (let iteracion = 0; iteracion < fuerzaConfig.maxIteraciones; iteracion++) {
-            let maxAjuste = 0;
-            
-            nodos.forEach(nodo => {
-                if (!nodo.style.left || !nodo.style.top) return;
-                
-                const x = parseFloat(nodo.style.left);
-                const y = parseFloat(nodo.style.top);
-                
-                // Calcular nuevas posiciones
-                const nuevaPos = aplicarRepulsion(x, y, nodo.id, nodo.dataset.tipo);
-                
-                // Aplicar atracción al centro para nodos muy alejados
-                const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
-                const centroX = canvasRect.width / 2;
-                const centroY = canvasRect.height / 2;
-                
-                const dxCentro = centroX - nuevaPos.x;
-                const dyCentro = centroY - nuevaPos.y;
-                const distCentro = Math.sqrt(dxCentro * dxCentro + dyCentro * dyCentro);
-                
-                // Solo aplicar atracción al centro si está muy lejos
-                if (distCentro > 800) {
-                    nuevaPos.x += dxCentro * fuerzaConfig.atraccionCentral;
-                    nuevaPos.y += dyCentro * fuerzaConfig.atraccionCentral;
-                }
-                
-                // Aplicar atracción a nodos conectados
-                if (nodo.id !== 'nodo-objetivo') {
-                    const conexionesNodo = mapa.conexiones.filter(c => 
-                        c.sourceId === nodo.id || c.targetId === nodo.id
-                    );
-                    
-                    conexionesNodo.forEach(conexion => {
-                        const otroNodoId = conexion.sourceId === nodo.id ? conexion.targetId : conexion.sourceId;
-                        const otroNodo = document.getElementById(otroNodoId);
-                        
-                        if (otroNodo && otroNodo.style.left && otroNodo.style.top) {
-                            const otroX = parseFloat(otroNodo.style.left);
-                            const otroY = parseFloat(otroNodo.style.top);
-                            
-                            const dx = otroX - nuevaPos.x;
-                            const dy = otroY - nuevaPos.y;
-                            const dist = Math.sqrt(dx * dx + dy * dy);
-                            
-                            // Aplicar atracción para mantener conexiones visibles
-                            if (dist > 50 && dist < 500) {
-                                nuevaPos.x += dx * fuerzaConfig.atraccionConexiones * 0.1;
-                                nuevaPos.y += dy * fuerzaConfig.atraccionConexiones * 0.1;
-                            }
-                        }
-                    });
-                }
-                
-                // Calcular cuanto se movió
-                const ajusteX = nuevaPos.x - x;
-                const ajusteY = nuevaPos.y - y;
-                const ajusteTotal = Math.sqrt(ajusteX * ajusteX + ajusteY * ajusteY);
-                
-                if (ajusteTotal > maxAjuste) maxAjuste = ajusteTotal;
-                
-                // Aplicar nueva posición
-                nodo.style.left = `${nuevaPos.x}px`;
-                nodo.style.top = `${nuevaPos.y}px`;
-            });
-            
-            // Si los ajustes son muy pequeños, detener
-            if (maxAjuste < 0.5) break;
-            ajustesRealizados = true;
-        }
-        
-        return ajustesRealizados;
-    }
-    
-    // Función para encontrar posición libre en grid
-    function encontrarPosicionEnGrid(x, y, ancho, alto) {
-        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
-        const gridX = Math.round(x / gridConfig.cellSize);
-        const gridY = Math.round(y / gridConfig.cellSize);
-        
-        // Intentar posiciones cercanas en espiral
-        for (let radio = 0; radio < 10; radio++) {
-            for (let ang = 0; ang < 2 * Math.PI; ang += Math.PI / 4) {
-                const testGridX = gridX + Math.round(radio * Math.cos(ang));
-                const testGridY = gridY + Math.round(radio * Math.sin(ang));
-                const testX = testGridX * gridConfig.cellSize;
-                const testY = testGridY * gridConfig.cellSize;
-                
-                const key = `${testGridX},${testGridY}`;
-                
-                if (!gridConfig.grid.has(key)) {
-                    // Verificar que esté dentro del canvas
-                    if (testX >= 50 && testX <= canvasRect.width - 50 &&
-                        testY >= 50 && testY <= canvasRect.height - 50) {
-                        gridConfig.grid.set(key, true);
-                        return { x: testX, y: testY };
-                    }
-                }
-            }
-        }
-        
-        // Si no encuentra posición en grid, usar posición original
-        return { x, y };
-    }
-    
-    // Sistema de capas concéntricas con sectores
-    function distribuirEnCapasConSectores() {
-        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
-        const centroX = canvasRect.width / 2;
-        const centroY = canvasRect.height / 2;
-        
-        // Definir radios por capa
-        const radios = {
-            ejes: Math.min(canvasRect.width, canvasRect.height) * 0.32,
-            estrategias: Math.min(canvasRect.width, canvasRect.height) * 0.45,
-            tacticas: Math.min(canvasRect.width, canvasRect.height) * 0.58,
-            actividades: Math.min(canvasRect.width, canvasRect.height) * 0.70
-        };
-        
-        // Distribuir ejes en círculo
-        mapa.ejes.forEach((eje, index) => {
-            const nodo = document.getElementById(`nodo-${eje.id}`);
-            if (!nodo) return;
-            
-            const totalEjes = mapa.ejes.length;
-            const angulo = (2 * Math.PI / totalEjes) * index - Math.PI / 2;
-            
-            // Posición base
-            let x = centroX + radios.ejes * Math.cos(angulo);
-            let y = centroY + radios.ejes * Math.sin(angulo);
-            
-            // Añadir pequeño desplazamiento aleatorio
-            x += (Math.random() - 0.5) * 40;
-            y += (Math.random() - 0.5) * 40;
-            
-            nodo.style.left = `${x}px`;
-            nodo.style.top = `${y}px`;
-        });
-        
-        // Distribuir estrategias en sectores alrededor de cada eje
-        mapa.estrategias.forEach((estrategia) => {
-            const nodo = document.getElementById(`estrategia-${estrategia.id}`);
-            if (!nodo) return;
-            
-            const ejeNodo = document.getElementById(`nodo-${estrategia.eje_id}`);
-            if (!ejeNodo) return;
-            
-            const estrategiasDelEje = mapa.estrategias.filter(e => e.eje_id === estrategia.eje_id);
-            const index = estrategiasDelEje.findIndex(e => e.id === estrategia.id);
-            const total = estrategiasDelEje.length;
-            
-            // Obtener posición del eje
-            const ejeX = parseFloat(ejeNodo.style.left);
-            const ejeY = parseFloat(ejeNodo.style.top);
-            
-            // Calcular ángulo hacia el centro desde el eje
-            const dx = centroX - ejeX;
-            const dy = centroY - ejeY;
-            const anguloBase = Math.atan2(dy, dx);
-            
-            // Distribuir en arco de 120 grados
-            const anguloSpread = Math.PI * 0.67; // 120 grados
-            const anguloInicio = anguloBase - anguloSpread / 2;
-            const angulo = anguloInicio + (anguloSpread / (total - 1 || 1)) * index;
-            
-            // Posicionar estrategia
-            let x = ejeX + radios.estrategias * Math.cos(angulo);
-            let y = ejeY + radios.estrategias * Math.sin(angulo);
-            
-            nodo.style.left = `${x}px`;
-            nodo.style.top = `${y}px`;
-        });
-        
-        // Distribuir tácticas en círculos más pequeños
-        mapa.tacticas.forEach((tactica) => {
-            const nodo = document.getElementById(`tactica-${tactica.id}`);
-            if (!nodo) return;
-            
-            const estrategiaNodo = document.getElementById(`estrategia-${tactica.estrategia_id}`);
-            if (!estrategiaNodo) return;
-            
-            const tacticasDeEstrategia = mapa.tacticas.filter(t => t.estrategia_id === tactica.estrategia_id);
-            const index = tacticasDeEstrategia.findIndex(t => t.id === tactica.id);
-            const total = tacticasDeEstrategia.length;
-            
-            const estrategiaX = parseFloat(estrategiaNodo.style.left);
-            const estrategiaY = parseFloat(estrategiaNodo.style.top);
-            
-            // Distribuir en círculo completo
-            const angulo = (2 * Math.PI / total) * index;
-            
-            let x = estrategiaX + 120 * Math.cos(angulo);
-            let y = estrategiaY + 120 * Math.sin(angulo);
-            
-            nodo.style.left = `${x}px`;
-            nodo.style.top = `${y}px`;
-        });
-        
-        // Distribuir actividades
-        mapa.actividades.forEach((actividad) => {
-            const nodo = document.getElementById(`actividad-${actividad.id}`);
-            if (!nodo) return;
-            
-            const tacticaNodo = document.getElementById(`tactica-${actividad.tactica_id}`);
-            if (!tacticaNodo) return;
-            
-            const actividadesDeTactica = mapa.actividades.filter(a => a.tactica_id === actividad.tactica_id);
-            const index = actividadesDeTactica.findIndex(a => a.id === actividad.id);
-            const total = actividadesDeTactica.length;
-            
-            const tacticaX = parseFloat(tacticaNodo.style.left);
-            const tacticaY = parseFloat(tacticaNodo.style.top);
-            
-            const angulo = (2 * Math.PI / total) * index;
-            
-            let x = tacticaX + 80 * Math.cos(angulo);
-            let y = tacticaY + 80 * Math.sin(angulo);
-            
-            nodo.style.left = `${x}px`;
-            nodo.style.top = `${y}px`;
-        });
-    }
-    
-    // Función principal de reposicionamiento
-    function reposicionarTodoElMapa() {
-        console.log("Reposicionando mapa para evitar colisiones...");
-        
-        // Usar distribución jerárquica mejorada
-        distribuirEnCapasConSectores();
-        
-        // Aplicar algoritmo de fuerza para ajustes finos
-        setTimeout(() => {
-            ajustarPosicionesNodos();
-            
-            // Verificar colisiones restantes
-            const colisiones = verificarColisiones();
-            if (colisiones.length > 0) {
-                console.log(`Colisiones detectadas: ${colisiones.length}`);
-                
-                // Si hay colisiones, aplicar ajustes adicionales
-                for (let i = 0; i < 5; i++) {
-                    ajustarPosicionesNodos();
-                }
-            }
-            
-            // Redibujar conexiones
-            dibujarConexiones();
-            mostrarNotificacion('Mapa reposicionado para evitar colisiones', 'success');
-        }, 100);
-    }
-    
-    // Función para verificar colisiones
-    function verificarColisiones() {
-        const nodos = document.querySelectorAll('.nodo');
-        const colisiones = [];
-        
-        for (let i = 0; i < nodos.length; i++) {
-            for (let j = i + 1; j < nodos.length; j++) {
-                const nodoA = nodos[i];
-                const nodoB = nodos[j];
-                
-                if (!nodoA.style.left || !nodoA.style.top || 
-                    !nodoB.style.left || !nodoB.style.top) continue;
-                
-                const rectA = nodoA.getBoundingClientRect();
-                const rectB = nodoB.getBoundingClientRect();
-                
-                // Verificar superposición
-                if (rectA.left < rectB.right && 
-                    rectA.right > rectB.left && 
-                    rectA.top < rectB.bottom && 
-                    rectA.bottom > rectB.top) {
-                    
-                    colisiones.push({
-                        nodoA: nodoA.id,
-                        nodoB: nodoB.id,
-                        distancia: Math.sqrt(
-                            Math.pow(rectA.left - rectB.left, 2) + 
-                            Math.pow(rectA.top - rectB.top, 2)
-                        )
-                    });
-                }
-            }
-        }
-        
-        return colisiones;
-    }
-    
-    // Función para verificar y corregir colisiones
-    function verificarYCorregirColisiones() {
-        const colisiones = verificarColisiones();
-        
-        if (colisiones.length === 0) {
-            mostrarNotificacion('¡No hay colisiones detectadas!', 'success');
-        } else {
-            mostrarNotificacion(`Se detectaron ${colisiones.length} colisiones. Corrigiendo...`, 'warning');
-            reposicionarTodoElMapa();
-        }
-    }
-    
-    // ================================
-    // FUNCIONES AUXILIARES
-    // ================================
-    
-    // Función para oscurecer color
-    function oscurecerColor(color, percent) {
-        let num = parseInt(color.replace("#", ""), 16),
-            amt = Math.round(2.55 * percent),
-            R = (num >> 16) - amt,
-            G = (num >> 8 & 0x00FF) - amt,
-            B = (num & 0x0000FF) - amt;
-        
-        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-    }
-    
-    // ================================
-    // INICIALIZACIÓN
-    // ================================
-    
-    // Inicialización
     document.addEventListener('DOMContentLoaded', function() {
-        inicializarMapa();
-        crearParticulas();
+        inicializarSistemaSolar();
+        crearEstrellas();
         inicializarEventos();
         cargarDatosDesdeAPI();
     });
     
-    function inicializarMapa() {
-        mostrarCargando('Inicializando mapa...', 10);
+    function inicializarSistemaSolar() {
+        mostrarCargando('Inicializando sistema solar...', 10);
         
-        // Posicionar nodo central
-        const objetivo = document.getElementById('nodo-objetivo');
-        objetivo.style.left = '50%';
-        objetivo.style.top = '50%';
-        objetivo.style.transform = 'translate(-50%, -50%)';
+        // Posicionar sol central
+        const sol = document.getElementById('nodo-objetivo');
+        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+        sol.style.left = `${canvasRect.width / 2}px`;
+        sol.style.top = `${canvasRect.height / 2}px`;
+        sol.style.transform = 'translate(-50%, -50%)';
         
-        // Crear nodos de ejes iniciales
-        crearNodosEjes();
+        // Crear órbitas
+        crearOrbitas();
         
-        actualizarProgresoCarga(30);
+        // Crear planetas (ejes)
+        crearPlanetas();
         
-        // Iniciar sistema de actualización de conexiones
-        iniciarSistemaConexiones();
+        actualizarProgresoCarga(40);
         
-        actualizarProgresoCarga(50);
+        // Iniciar sistema de animaciones
+        iniciarAnimaciones();
+        
+        actualizarProgresoCarga(60);
     }
     
-    // ================================
-    // CREACIÓN DE NODOS CON SISTEMA MEJORADO
-    // ================================
-    
-    function crearNodosEjes() {
-        const ejesContainer = document.getElementById('ejesContainer');
-        ejesContainer.innerHTML = '';
-        
-        // Definir ejes estratégicos
-        mapa.ejes = [
-            { 
-                id: 'educacion', 
-                nombre: 'EDUCACIÓN', 
-                icono: 'graduation-cap', 
-                color: '#3498db',
-                descripcion: 'Mejora de infraestructura educativa y capacitación docente'
-            },
-            { 
-                id: 'salud', 
-                nombre: 'SALUD', 
-                icono: 'heartbeat', 
-                color: '#e74c3c',
-                descripcion: 'Equipamiento médico y mejoras en servicios de salud'
-            },
-            { 
-                id: 'empleabilidad', 
-                nombre: 'EMPLEABILIDAD', 
-                icono: 'briefcase', 
-                color: '#2ecc71',
-                descripcion: 'Formación técnica y oportunidades de empleo local'
-            },
-            { 
-                id: 'desarrollo_economico', 
-                nombre: 'DESARROLLO ECONÓMICO', 
-                icono: 'chart-line', 
-                color: '#9b59b6',
-                descripcion: 'Impulso al desarrollo económico comunitario'
-            },
-            { 
-                id: 'sostenibilidad_ambiental', 
-                nombre: 'SOSTENIBILIDAD AMBIENTAL', 
-                icono: 'tint', 
-                color: '#1abc9c',
-                descripcion: 'Gestión sostenible del recurso hídrico y monitoreo ambiental'
-            },
-            { 
-                id: 'comunicacion', 
-                nombre: 'COMUNICACIÓN', 
-                icono: 'bullhorn', 
-                color: '#f1c40f',
-                descripcion: 'Sistema de comunicación comunitaria y transparencia'
-            },
-            { 
-                id: 'institucional', 
-                nombre: 'INSTITUCIONAL', 
-                icono: 'landmark', 
-                color: '#e67e22',
-                descripcion: 'Cooperación técnica con GADs y niveles distritales'
-            }
-        ];
+    function crearOrbitas() {
+        const orbitasContainer = document.getElementById('orbitasContainer');
+        orbitasContainer.innerHTML = '';
         
         const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
         const centroX = canvasRect.width / 2;
         const centroY = canvasRect.height / 2;
-        const radio = Math.min(canvasRect.width, canvasRect.height) * 0.32; // Reducido para más espacio
         
-        mapa.ejes.forEach((eje, index) => {
-            const angulo = (2 * Math.PI / mapa.ejes.length) * index - Math.PI / 2;
+        // Crear 4 órbitas concéntricas
+        for (let i = 1; i <= 4; i++) {
+            const radio = sistemaSolarConfig.radios.planeta * i;
+            const orbita = document.createElement('div');
+            orbita.className = 'orbita';
+            orbita.style.cssText = `
+                position: absolute;
+                top: ${centroY}px;
+                left: ${centroX}px;
+                width: ${radio * 2}px;
+                height: ${radio * 2}px;
+                border: 1px solid rgba(255, 255, 255, ${0.1 - (i * 0.02)});
+                animation: rotateOrbit ${60 - (i * 10)}s linear infinite;
+                z-index: 2;
+            `;
             
-            // Posición base en círculo
-            let x = centroX + radio * Math.cos(angulo);
-            let y = centroY + radio * Math.sin(angulo);
+            orbitasContainer.appendChild(orbita);
+        }
+    }
+    
+    function crearPlanetas() {
+        const planetasContainer = document.getElementById('planetasContainer');
+        planetasContainer.innerHTML = '';
+        
+        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+        const centroX = canvasRect.width / 2;
+        const centroY = canvasRect.height / 2;
+        
+        // Definir ejes estratégicos con sus planetas asignados
+        mapa.ejes = planetasAsignados.map((planeta, index) => ({
+            id: planeta.id,
+            nombre: `PLANETA ${planeta.nombre.toUpperCase()}`,
+            nombreReal: planeta.nombre,
+            subtitulo: planeta.id.replace('_', ' ').toUpperCase(),
+            icono: planeta.icono,
+            color: planeta.color,
+            gradiente: planeta.gradiente,
+            descripcion: obtenerDescripcionPlaneta(planeta.id),
+            anguloInicial: (2 * Math.PI / planetasAsignados.length) * index,
+            radioOrbita: sistemaSolarConfig.radios.planeta
+        }));
+        
+        // Crear planetas
+        mapa.ejes.forEach((planeta, index) => {
+            const angulo = planeta.anguloInicial;
+            const radio = planeta.radioOrbita;
             
-            // Agregar pequeño desplazamiento aleatorio para evitar alineación perfecta
-            x += (Math.random() - 0.5) * 30;
-            y += (Math.random() - 0.5) * 30;
+            const x = centroX + radio * Math.cos(angulo);
+            const y = centroY + radio * Math.sin(angulo);
             
-            const nodoDiv = document.createElement('div');
-            nodoDiv.className = 'nodo nodo-eje nodo-aparecer';
-            nodoDiv.id = `nodo-${eje.id}`;
-            nodoDiv.dataset.ejeId = eje.id;
-            nodoDiv.dataset.tipo = 'eje';
-            nodoDiv.style.left = `${x}px`;
-            nodoDiv.style.top = `${y}px`;
-            nodoDiv.style.transform = 'translate(-50%, -50%)';
-            nodoDiv.style.animationDelay = `${index * 0.1}s`;
+            const planetaDiv = document.createElement('div');
+            planetaDiv.className = `nodo nodo-planeta nodo-aparecer planeta-${planeta.nombreReal.toLowerCase()}`;
+            planetaDiv.id = `planeta-${planeta.id}`;
+            planetaDiv.dataset.ejeId = planeta.id;
+            planetaDiv.dataset.tipo = 'planeta';
+            planetaDiv.style.left = `${x}px`;
+            planetaDiv.style.top = `${y}px`;
+            planetaDiv.style.transform = 'translate(-50%, -50%)';
+            planetaDiv.style.animationDelay = `${index * 0.2}s`;
+            planetaDiv.style.animationDuration = `${60 + (index * 5)}s`;
             
-            nodoDiv.innerHTML = `
+            planetaDiv.innerHTML = `
                 <div class="nodo-content">
-                    <div class="nodo-icon" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)})">
-                        <i class="fas fa-${eje.icono}"></i>
+                    <div class="nodo-icon">
+                        <i class="fas fa-${planeta.icono}"></i>
                     </div>
-                    <div class="nodo-title">${eje.nombre}</div>
-                    <div class="nodo-counter" id="counter-${eje.id}">0 estrategias</div>
+                    <div class="nodo-title">${planeta.nombre}</div>
+                    <div class="nodo-counter" id="contador-${planeta.id}">0 lunas</div>
                 </div>
             `;
             
-            ejesContainer.appendChild(nodoDiv);
+            planetasContainer.appendChild(planetaDiv);
             
             // Agregar eventos
-            nodoDiv.addEventListener('click', function(e) {
+            planetaDiv.addEventListener('click', function(e) {
                 e.stopPropagation();
                 seleccionarNodo(this.id);
-                mostrarDetallesEje(eje.id);
+                mostrarDetallesPlaneta(planeta.id);
+            });
+            
+            // Crear conexión con el sol
+            mapa.conexiones.push({
+                id: `orbita-sol-${planeta.id}`,
+                tipo: 'sol',
+                sourceId: 'nodo-objetivo',
+                targetId: `planeta-${planeta.id}`,
+                color: planeta.color,
+                gradiente: planeta.gradiente
             });
         });
         
-        // Crear conexiones iniciales
-        crearConexionesEjes();
-        
+        // Actualizar estadísticas
         actualizarEstadisticas();
     }
     
-    function crearConexionesEjes() {
-        mapa.conexiones = [];
+    function obtenerDescripcionPlaneta(ejeId) {
+        const descripciones = {
+            'educacion': 'Mejora de infraestructura educativa y capacitación docente',
+            'salud': 'Equipamiento médico y mejoras en servicios de salud',
+            'empleabilidad': 'Formación técnica y oportunidades de empleo local',
+            'desarrollo_economico': 'Impulso al desarrollo económico comunitario',
+            'sostenibilidad_ambiental': 'Gestión sostenible del recurso hídrico y monitoreo ambiental',
+            'comunicacion': 'Sistema de comunicación comunitaria y transparencia',
+            'institucional': 'Cooperación técnica con GADs y niveles distritales'
+        };
         
-        // Conexiones desde el objetivo central hacia cada eje
-        mapa.ejes.forEach(eje => {
-            mapa.conexiones.push({
-                id: `conexion-objetivo-${eje.id}`,
-                tipo: 'central',
-                sourceId: 'nodo-objetivo',
-                targetId: `nodo-${eje.id}`,
-                color: eje.color
+        return descripciones[ejeId] || 'Planeta estratégico del sistema';
+    }
+    
+    function crearEstrellas() {
+        const container = document.getElementById('particlesContainer');
+        const cantidadEstrellas = 150;
+        
+        for (let i = 0; i < cantidadEstrellas; i++) {
+            const estrella = document.createElement('div');
+            estrella.className = 'particle';
+            
+            const x = Math.random() * 100;
+            const y = Math.random() * 100;
+            const size = Math.random() * 3 + 1;
+            const duracion = Math.random() * 5 + 3;
+            const delay = Math.random() * 5;
+            const opacidad = Math.random() * 0.7 + 0.3;
+            
+            estrella.style.left = `${x}%`;
+            estrella.style.top = `${y}%`;
+            estrella.style.width = `${size}px`;
+            estrella.style.height = `${size}px`;
+            estrella.style.animation = `twinkle ${duracion}s infinite ${delay}s`;
+            estrella.style.opacity = opacidad;
+            
+            // Algunas estrellas de colores
+            if (Math.random() > 0.9) {
+                const colores = ['#FFD700', '#1E90FF', '#FF69B4', '#98FB98'];
+                estrella.style.backgroundColor = colores[Math.floor(Math.random() * colores.length)];
+            }
+            
+            container.appendChild(estrella);
+            elementos.particulas.push(estrella);
+        }
+    }
+    
+    function iniciarAnimaciones() {
+        function animarSistemaSolar() {
+            // Animar planetas (órbitas)
+            document.querySelectorAll('.nodo-planeta').forEach((planeta, index) => {
+                if (planeta.dataset.ejeId && config.animacionesActivas) {
+                    const planetaInfo = mapa.ejes.find(e => e.id === planeta.dataset.ejeId);
+                    if (planetaInfo) {
+                        const tiempo = Date.now() / 1000;
+                        const angulo = planetaInfo.anguloInicial + tiempo * 0.001 * sistemaSolarConfig.velocidades.planeta;
+                        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+                        const centroX = canvasRect.width / 2;
+                        const centroY = canvasRect.height / 2;
+                        
+                        const x = centroX + planetaInfo.radioOrbita * Math.cos(angulo);
+                        const y = centroY + planetaInfo.radioOrbita * Math.sin(angulo);
+                        
+                        planeta.style.left = `${x}px`;
+                        planeta.style.top = `${y}px`;
+                        
+                        // Animar lunas de este planeta
+                        animarLunas(planetaInfo.id, x, y);
+                    }
+                }
             });
+            
+            // Redibujar órbitas
+            dibujarOrbitas();
+            
+            elementos.animacionFrame = requestAnimationFrame(animarSistemaSolar);
+        }
+        
+        elementos.animacionFrame = requestAnimationFrame(animarSistemaSolar);
+    }
+    
+    function animarLunas(planetaId, planetaX, planetaY) {
+        const lunas = document.querySelectorAll(`.nodo-luna[data-eje-id="${planetaId}"]`);
+        
+        lunas.forEach((luna, index) => {
+            if (!config.animacionesActivas) return;
+            
+            const tiempo = Date.now() / 1000;
+            const angulo = (2 * Math.PI / lunas.length) * index + tiempo * 0.002 * sistemaSolarConfig.velocidades.luna;
+            
+            const x = planetaX + sistemaSolarConfig.radios.luna * Math.cos(angulo);
+            const y = planetaY + sistemaSolarConfig.radios.luna * Math.sin(angulo);
+            
+            luna.style.left = `${x}px`;
+            luna.style.top = `${y}px`;
+            
+            // Animar satélites de esta luna
+            const estrategiaId = luna.dataset.estrategiaId;
+            if (estrategiaId) {
+                animarSatelites(estrategiaId, x, y);
+            }
         });
     }
     
-    function crearNodosEstrategias() {
-        const estrategiasContainer = document.getElementById('estrategiasContainer');
-        estrategiasContainer.innerHTML = '';
+    function animarSatelites(estrategiaId, lunaX, lunaY) {
+        const satelites = document.querySelectorAll(`.nodo-satelite[data-estrategia-id="${estrategiaId}"]`);
         
-        // Primero, reposicionar ejes para asegurar espacio
-        setTimeout(() => {
-            distribuirEnCapasConSectores();
-        }, 100);
+        satelites.forEach((satelite, index) => {
+            if (!config.animacionesActivas) return;
+            
+            const tiempo = Date.now() / 1000;
+            const angulo = (2 * Math.PI / satelites.length) * index + tiempo * 0.003 * sistemaSolarConfig.velocidades.satelite;
+            
+            const x = lunaX + sistemaSolarConfig.radios.satelite * Math.cos(angulo);
+            const y = lunaY + sistemaSolarConfig.radios.satelite * Math.sin(angulo);
+            
+            satelite.style.left = `${x}px`;
+            satelite.style.top = `${y}px`;
+            
+            // Animar asteroides de este satélite
+            const tacticaId = satelite.dataset.tacticaId;
+            if (tacticaId) {
+                animarAsteroides(tacticaId, x, y);
+            }
+        });
+    }
+    
+    function animarAsteroides(tacticaId, sateliteX, sateliteY) {
+        const asteroides = document.querySelectorAll(`.nodo-asteroide[data-tactica-id="${tacticaId}"]`);
+        
+        asteroides.forEach((asteroide, index) => {
+            if (!config.animacionesActivas) return;
+            
+            const tiempo = Date.now() / 1000;
+            const angulo = (2 * Math.PI / asteroides.length) * index + tiempo * 0.004 * sistemaSolarConfig.velocidades.asteroide;
+            
+            const x = sateliteX + sistemaSolarConfig.radios.asteroide * Math.cos(angulo);
+            const y = sateliteY + sistemaSolarConfig.radios.asteroide * Math.sin(angulo);
+            
+            asteroide.style.left = `${x}px`;
+            asteroide.style.top = `${y}px`;
+        });
+    }
+    
+    // ================================
+    // CARGAR DATOS DESDE API
+    // ================================
+    
+    async function cargarDatosDesdeAPI() {
+        mostrarCargando('Cargando datos galácticos...', 70);
+        
+        try {
+            // Cargar estrategias desde la API
+            const respuesta = await fetch('/api/estrategias_foda_con_eje');
+            const data = await respuesta.json();
+            
+            if (data.success && data.estrategias) {
+                mapa.estrategias = data.estrategias.map(e => ({
+                    id: e.id,
+                    tipo_cruce: e.tipo_cruce,
+                    estrategia: e.estrategia,
+                    eje_id: e.eje_id || 'educacion',
+                    eje_texto: e.eje_texto || 'EDUCACIÓN'
+                }));
+                actualizarProgresoCarga(75);
+                
+                // Cargar tácticas
+                await cargarTacticasDesdeBackend();
+                actualizarProgresoCarga(85);
+                
+                // Cargar actividades
+                await cargarActividadesDesdeBackend();
+                actualizarProgresoCarga(95);
+                
+                // Crear lunas (estrategias)
+                crearLunas();
+                
+                actualizarProgresoCarga(100);
+                
+                setTimeout(() => {
+                    ocultarCargando();
+                    mostrarNotificacion('Sistema solar cargado exitosamente', 'success');
+                }, 500);
+            } else {
+                throw new Error('Error en la respuesta de la API');
+            }
+        } catch (error) {
+            console.error('Error al cargar datos:', error);
+            mostrarNotificacion('Error al cargar datos. Usando datos de ejemplo.', 'error');
+            cargarDatosEjemplo();
+        }
+    }
+    
+    async function cargarTacticasDesdeBackend() {
+        try {
+            const respuesta = await fetch('/api/actividades');
+            if (!respuesta.ok) throw new Error('API no disponible');
+            
+            const data = await respuesta.json();
+            
+            if (data.success && data.actividades) {
+                mapa.tacticas = data.actividades.map(a => ({
+                    ...a,
+                    nombre: a.nombre || a.descripcion || `Táctica ${a.id}`
+                }));
+                
+                // Asignar eje_id a cada táctica basado en su estrategia
+                mapa.tacticas.forEach(tactica => {
+                    const estrategia = mapa.estrategias.find(e => e.id === tactica.estrategia_id);
+                    if (estrategia) {
+                        tactica.eje_id = estrategia.eje_id;
+                    }
+                });
+            } else {
+                throw new Error('Formato de respuesta inválido');
+            }
+        } catch (error) {
+            console.error('Error al cargar tácticas:', error);
+            mapa.tacticas = [
+                { id: 1, estrategia_id: 1, nombre: 'Capacitación en metodologías activas', eje_id: 'educacion' },
+                { id: 2, estrategia_id: 1, nombre: 'Actualización de planes de estudio', eje_id: 'educacion' },
+                { id: 3, estrategia_id: 2, nombre: 'Construcción de aulas', eje_id: 'educacion' },
+                { id: 4, estrategia_id: 3, nombre: 'Adquisición de equipos médicos', eje_id: 'salud' },
+                { id: 5, estrategia_id: 4, nombre: 'Talleres de formación técnica', eje_id: 'empleabilidad' },
+                { id: 6, estrategia_id: 5, nombre: 'Monitoreo de calidad del agua', eje_id: 'sostenibilidad_ambiental' }
+            ];
+        }
+    }
+    
+    async function cargarActividadesDesdeBackend() {
+        try {
+            const respuesta = await fetch('/api/tareas');
+            if (!respuesta.ok) throw new Error('API no disponible');
+            
+            const data = await respuesta.json();
+            
+            if (data.success && data.tareas) {
+                mapa.actividades = data.tareas.map(t => ({
+                    ...t,
+                    nombre: t.nombre || `Actividad ${t.id}`
+                }));
+            } else {
+                throw new Error('Formato de respuesta inválido');
+            }
+        } catch (error) {
+            console.error('Error al cargar actividades:', error);
+            mapa.actividades = [
+                { id: 1, tactica_id: 1, nombre: 'Organizar taller inicial', estado: 'completada' },
+                { id: 2, tactica_id: 1, nombre: 'Evaluar participantes', estado: 'en_progreso' },
+                { id: 3, tactica_id: 2, nombre: 'Revisar currículo actual', estado: 'pendiente' },
+                { id: 4, tactica_id: 3, nombre: 'Elaborar planos', estado: 'completada' },
+                { id: 5, tactica_id: 4, nombre: 'Cotizar equipos', estado: 'en_progreso' },
+                { id: 6, tactica_id: 5, nombre: 'Convocar participantes', estado: 'pendiente' }
+            ];
+        }
+    }
+    
+    function cargarDatosEjemplo() {
+        mapa.estrategias = [
+            { id: 1, eje_id: 'educacion', estrategia: 'Capacitación docente en metodologías activas', tipo_cruce: 'FO' },
+            { id: 2, eje_id: 'educacion', estrategia: 'Mejora de infraestructura educativa', tipo_cruce: 'DA' },
+            { id: 3, eje_id: 'salud', estrategia: 'Equipamiento de centros de salud', tipo_cruce: 'FO' },
+            { id: 4, eje_id: 'empleabilidad', estrategia: 'Formación técnica para jóvenes', tipo_cruce: 'FA' },
+            { id: 5, eje_id: 'sostenibilidad_ambiental', estrategia: 'Monitoreo permanente de calidad del agua', tipo_cruce: 'DO' }
+        ];
+        
+        mapa.tacticas = [
+            { id: 1, estrategia_id: 1, nombre: 'Capacitación en metodologías activas', eje_id: 'educacion' },
+            { id: 2, estrategia_id: 1, nombre: 'Actualización de planes de estudio', eje_id: 'educacion' },
+            { id: 3, estrategia_id: 2, nombre: 'Construcción de aulas', eje_id: 'educacion' },
+            { id: 4, estrategia_id: 3, nombre: 'Adquisición de equipos médicos', eje_id: 'salud' },
+            { id: 5, estrategia_id: 4, nombre: 'Talleres de formación técnica', eje_id: 'empleabilidad' },
+            { id: 6, estrategia_id: 5, nombre: 'Monitoreo de calidad del agua', eje_id: 'sostenibilidad_ambiental' }
+        ];
+        
+        mapa.actividades = [
+            { id: 1, tactica_id: 1, nombre: 'Organizar taller inicial', estado: 'completada' },
+            { id: 2, tactica_id: 1, nombre: 'Evaluar participantes', estado: 'en_progreso' },
+            { id: 3, tactica_id: 2, nombre: 'Revisar currículo actual', estado: 'pendiente' },
+            { id: 4, tactica_id: 3, nombre: 'Elaborar planos', estado: 'completada' },
+            { id: 5, tactica_id: 4, nombre: 'Cotizar equipos', estado: 'en_progreso' },
+            { id: 6, tactica_id: 5, nombre: 'Convocar participantes', estado: 'pendiente' }
+        ];
+        
+        crearLunas();
+        ocultarCargando();
+    }
+    
+    // ================================
+    // CREACIÓN DE LUNAS, SATÉLITES Y ASTEROIDES
+    // ================================
+    
+    function crearLunas() {
+        const lunasContainer = document.getElementById('lunasContainer');
+        lunasContainer.innerHTML = '';
         
         mapa.estrategias.forEach((estrategia, index) => {
-            const eje = mapa.ejes.find(e => e.id === estrategia.eje_id);
-            if (!eje) return;
+            const planeta = mapa.ejes.find(e => e.id === estrategia.eje_id);
+            if (!planeta) return;
             
-            const ejeElement = document.getElementById(`nodo-${eje.id}`);
-            if (!ejeElement) return;
+            const planetaElement = document.getElementById(`planeta-${planeta.id}`);
+            if (!planetaElement) return;
             
+            const planetaRect = planetaElement.getBoundingClientRect();
             const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
-            const centroX = canvasRect.width / 2;
-            const centroY = canvasRect.height / 2;
             
-            // Obtener posición del eje
-            const ejeRect = ejeElement.getBoundingClientRect();
-            const ejeX = ejeRect.left + ejeRect.width / 2 - canvasRect.left;
-            const ejeY = ejeRect.top + ejeRect.height / 2 - canvasRect.top;
+            const planetaX = parseFloat(planetaElement.style.left);
+            const planetaY = parseFloat(planetaElement.style.top);
             
-            // Calcular ángulo desde el eje hacia el centro
-            const dx = centroX - ejeX;
-            const dy = centroY - ejeY;
-            const anguloHaciaCentro = Math.atan2(dy, dx);
+            // Crear luna
+            const lunaDiv = document.createElement('div');
+            lunaDiv.className = 'nodo nodo-luna nodo-aparecer';
+            lunaDiv.id = `luna-${estrategia.id}`;
+            lunaDiv.dataset.estrategiaId = estrategia.id;
+            lunaDiv.dataset.ejeId = estrategia.eje_id;
+            lunaDiv.dataset.tipo = 'luna';
             
-            // Obtener estrategias del mismo eje
-            const estrategiasDelEje = mapa.estrategias.filter(e => e.eje_id === estrategia.eje_id);
-            const indice = estrategiasDelEje.findIndex(e => e.id === estrategia.id);
-            const total = estrategiasDelEje.length;
+            // Posición inicial en órbita
+            const angulo = (2 * Math.PI / mapa.estrategias.filter(e => e.eje_id === estrategia.eje_id).length) * 
+                          mapa.estrategias.filter(e => e.eje_id === estrategia.eje_id).findIndex(e => e.id === estrategia.id);
             
-            // Distribuir en arco de 90 grados hacia el centro
-            const spread = Math.PI / 2; // 90 grados
-            const anguloInicio = anguloHaciaCentro - spread / 2;
+            const x = planetaX + sistemaSolarConfig.radios.luna * Math.cos(angulo);
+            const y = planetaY + sistemaSolarConfig.radios.luna * Math.sin(angulo);
             
-            let angulo = 0;
-            if (total > 1) {
-                angulo = anguloInicio + (spread / (total - 1)) * indice;
-            } else {
-                angulo = anguloHaciaCentro;
-            }
-            
-            const radio = 180; // Radio reducido
-            
-            let x = ejeX + radio * Math.cos(angulo);
-            let y = ejeY + radio * Math.sin(angulo);
-            
-            // Agregar variación aleatoria
-            x += (Math.random() - 0.5) * 40;
-            y += (Math.random() - 0.5) * 40;
-            
-            const nodoDiv = document.createElement('div');
-            nodoDiv.className = 'nodo nodo-estrategia nodo-aparecer';
-            nodoDiv.id = `estrategia-${estrategia.id}`;
-            nodoDiv.dataset.estrategiaId = estrategia.id;
-            nodoDiv.dataset.ejeId = estrategia.eje_id;
-            nodoDiv.dataset.tipo = 'estrategia';
-            nodoDiv.style.left = `${x}px`;
-            nodoDiv.style.top = `${y}px`;
-            nodoDiv.style.transform = 'translate(-50%, -50%)';
-            nodoDiv.style.animationDelay = `${index * 0.05 + 0.5}s`;
+            lunaDiv.style.left = `${x}px`;
+            lunaDiv.style.top = `${y}px`;
+            lunaDiv.style.transform = 'translate(-50%, -50%)';
+            lunaDiv.style.animationDelay = `${index * 0.1}s`;
             
             let tipoTexto = '';
             switch(estrategia.tipo_cruce) {
@@ -2083,164 +2002,149 @@
                 default: tipoTexto = estrategia.tipo_cruce;
             }
             
-            nodoDiv.innerHTML = `
+            lunaDiv.innerHTML = `
                 <div class="nodo-content">
                     <div class="nodo-icon">
-                        <i class="fas fa-chess-board"></i>
+                        <i class="fas fa-moon"></i>
                     </div>
                     <div class="nodo-title">${tipoTexto}</div>
-                    <div class="nodo-counter">${estrategia.eje_texto || eje.nombre}</div>
                 </div>
             `;
             
-            estrategiasContainer.appendChild(nodoDiv);
+            lunasContainer.appendChild(lunaDiv);
             
             // Agregar eventos
-            nodoDiv.addEventListener('click', function(e) {
+            lunaDiv.addEventListener('click', function(e) {
                 e.stopPropagation();
                 seleccionarNodo(this.id);
-                mostrarDetallesEstrategia(estrategia.id);
+                mostrarDetallesLuna(estrategia.id);
             });
             
-            // Crear conexión con el eje
+            // Crear conexión con el planeta
             mapa.conexiones.push({
-                id: `conexion-${eje.id}-estrategia-${estrategia.id}`,
-                tipo: 'estrategia',
-                sourceId: `nodo-${eje.id}`,
-                targetId: `estrategia-${estrategia.id}`,
-                color: '#2ecc71'
+                id: `orbita-${planeta.id}-luna-${estrategia.id}`,
+                tipo: 'luna',
+                sourceId: `planeta-${planeta.id}`,
+                targetId: `luna-${estrategia.id}`,
+                color: '#2ecc71',
+                gradiente: 'gradient-estrategia'
             });
         });
         
-        actualizarContadoresEjes();
+        // Actualizar contadores de planetas
+        actualizarContadoresPlanetas();
         
-        // Crear tácticas después de un breve retraso
+        // Crear satélites después de un breve retraso
         setTimeout(() => {
-            crearNodosTacticas();
+            crearSatelites();
         }, 100);
     }
     
-    function crearNodosTacticas() {
-        const tacticasContainer = document.getElementById('tacticasContainer');
-        tacticasContainer.innerHTML = '';
+    function crearSatelites() {
+        const satelitesContainer = document.getElementById('satelitesContainer');
+        satelitesContainer.innerHTML = '';
         
         mapa.tacticas.forEach((tactica, index) => {
             const estrategia = mapa.estrategias.find(e => e.id === tactica.estrategia_id);
             if (!estrategia) return;
             
-            const estrategiaElement = document.getElementById(`estrategia-${estrategia.id}`);
-            if (!estrategiaElement) return;
+            const lunaElement = document.getElementById(`luna-${estrategia.id}`);
+            if (!lunaElement) return;
             
-            const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
-            const estrategiaRect = estrategiaElement.getBoundingClientRect();
+            const lunaX = parseFloat(lunaElement.style.left);
+            const lunaY = parseFloat(lunaElement.style.top);
             
-            const estrategiaX = estrategiaRect.left + estrategiaRect.width / 2 - canvasRect.left;
-            const estrategiaY = estrategiaRect.top + estrategiaRect.height / 2 - canvasRect.top;
+            // Crear satélite
+            const sateliteDiv = document.createElement('div');
+            sateliteDiv.className = 'nodo nodo-satelite nodo-aparecer';
+            sateliteDiv.id = `satelite-${tactica.id}`;
+            sateliteDiv.dataset.tacticaId = tactica.id;
+            sateliteDiv.dataset.estrategiaId = tactica.estrategia_id;
+            sateliteDiv.dataset.ejeId = tactica.eje_id;
+            sateliteDiv.dataset.tipo = 'satelite';
             
-            // Obtener tácticas de la misma estrategia
-            const tacticasDeEstrategia = mapa.tacticas.filter(t => t.estrategia_id === tactica.estrategia_id);
-            const indice = tacticasDeEstrategia.findIndex(t => t.id === tactica.id);
-            const total = tacticasDeEstrategia.length;
+            // Posición inicial
+            const angulo = (2 * Math.PI / mapa.tacticas.filter(t => t.estrategia_id === tactica.estrategia_id).length) * 
+                          mapa.tacticas.filter(t => t.estrategia_id === tactica.estrategia_id).findIndex(t => t.id === tactica.id);
             
-            // Distribuir en círculo completo
-            const angulo = (2 * Math.PI / total) * indice;
-            const radio = 100; // Radio reducido
+            const x = lunaX + sistemaSolarConfig.radios.satelite * Math.cos(angulo);
+            const y = lunaY + sistemaSolarConfig.radios.satelite * Math.sin(angulo);
             
-            let x = estrategiaX + radio * Math.cos(angulo);
-            let y = estrategiaY + radio * Math.sin(angulo);
+            sateliteDiv.style.left = `${x}px`;
+            sateliteDiv.style.top = `${y}px`;
+            sateliteDiv.style.transform = 'translate(-50%, -50%)';
+            sateliteDiv.style.animationDelay = `${index * 0.05 + 0.5}s`;
             
-            // Agregar variación aleatoria
-            x += (Math.random() - 0.5) * 30;
-            y += (Math.random() - 0.5) * 30;
-            
-            const nodoDiv = document.createElement('div');
-            nodoDiv.className = 'nodo nodo-tactica nodo-aparecer';
-            nodoDiv.id = `tactica-${tactica.id}`;
-            nodoDiv.dataset.tacticaId = tactica.id;
-            nodoDiv.dataset.estrategiaId = tactica.estrategia_id;
-            nodoDiv.dataset.tipo = 'tactica';
-            nodoDiv.style.left = `${x}px`;
-            nodoDiv.style.top = `${y}px`;
-            nodoDiv.style.transform = 'translate(-50%, -50%)';
-            nodoDiv.style.animationDelay = `${index * 0.05 + 1}s`;
-            
-            nodoDiv.innerHTML = `
+            sateliteDiv.innerHTML = `
                 <div class="nodo-content">
                     <div class="nodo-icon">
-                        <i class="fas fa-tasks"></i>
+                        <i class="fas fa-satellite"></i>
                     </div>
-                    <div class="nodo-title">${tactica.nombre.substring(0, 30)}${tactica.nombre.length > 30 ? '...' : ''}</div>
+                    <div class="nodo-title">${tactica.nombre.substring(0, 20)}${tactica.nombre.length > 20 ? '...' : ''}</div>
                 </div>
             `;
             
-            tacticasContainer.appendChild(nodoDiv);
+            satelitesContainer.appendChild(sateliteDiv);
             
             // Agregar eventos
-            nodoDiv.addEventListener('click', function(e) {
+            sateliteDiv.addEventListener('click', function(e) {
                 e.stopPropagation();
                 seleccionarNodo(this.id);
-                mostrarDetallesTactica(tactica.id);
+                mostrarDetallesSatelite(tactica.id);
             });
             
-            // Crear conexión con la estrategia
+            // Crear conexión con la luna
             mapa.conexiones.push({
-                id: `conexion-estrategia-${estrategia.id}-tactica-${tactica.id}`,
-                tipo: 'tactica',
-                sourceId: `estrategia-${estrategia.id}`,
-                targetId: `tactica-${tactica.id}`,
-                color: '#e74c3c'
+                id: `orbita-luna-${estrategia.id}-satelite-${tactica.id}`,
+                tipo: 'satelite',
+                sourceId: `luna-${estrategia.id}`,
+                targetId: `satelite-${tactica.id}`,
+                color: '#e74c3c',
+                gradiente: 'gradient-tactica'
             });
         });
         
-        // Crear actividades después de un breve retraso
+        // Crear asteroides después de un breve retraso
         setTimeout(() => {
-            crearNodosActividades();
+            crearAsteroides();
         }, 100);
     }
     
-    function crearNodosActividades() {
-        const actividadesContainer = document.getElementById('actividadesContainer');
-        actividadesContainer.innerHTML = '';
+    function crearAsteroides() {
+        const asteroidesContainer = document.getElementById('asteroidesContainer');
+        asteroidesContainer.innerHTML = '';
         
         mapa.actividades.forEach((actividad, index) => {
             const tactica = mapa.tacticas.find(t => t.id === actividad.tactica_id);
             if (!tactica) return;
             
-            const tacticaElement = document.getElementById(`tactica-${tactica.id}`);
-            if (!tacticaElement) return;
+            const sateliteElement = document.getElementById(`satelite-${tactica.id}`);
+            if (!sateliteElement) return;
             
-            const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
-            const tacticaRect = tacticaElement.getBoundingClientRect();
+            const sateliteX = parseFloat(sateliteElement.style.left);
+            const sateliteY = parseFloat(sateliteElement.style.top);
             
-            const tacticaX = tacticaRect.left + tacticaRect.width / 2 - canvasRect.left;
-            const tacticaY = tacticaRect.top + tacticaRect.height / 2 - canvasRect.top;
+            // Crear asteroide
+            const asteroideDiv = document.createElement('div');
+            asteroideDiv.className = 'nodo nodo-asteroide nodo-aparecer';
+            asteroideDiv.id = `asteroide-${actividad.id}`;
+            asteroideDiv.dataset.actividadId = actividad.id;
+            asteroideDiv.dataset.tacticaId = actividad.tactica_id;
+            asteroideDiv.dataset.estrategiaId = tactica.estrategia_id;
+            asteroideDiv.dataset.ejeId = tactica.eje_id;
+            asteroideDiv.dataset.tipo = 'asteroide';
             
-            // Obtener actividades de la misma táctica
-            const actividadesDeTactica = mapa.actividades.filter(a => a.tactica_id === actividad.tactica_id);
-            const indice = actividadesDeTactica.findIndex(a => a.id === actividad.id);
-            const total = actividadesDeTactica.length;
+            // Posición inicial
+            const angulo = (2 * Math.PI / mapa.actividades.filter(a => a.tactica_id === actividad.tactica_id).length) * 
+                          mapa.actividades.filter(a => a.tactica_id === actividad.tactica_id).findIndex(a => a.id === actividad.id);
             
-            // Distribuir en círculo pequeño
-            const angulo = (2 * Math.PI / total) * indice;
-            const radio = 70; // Radio reducido
+            const x = sateliteX + sistemaSolarConfig.radios.asteroide * Math.cos(angulo);
+            const y = sateliteY + sistemaSolarConfig.radios.asteroide * Math.sin(angulo);
             
-            let x = tacticaX + radio * Math.cos(angulo);
-            let y = tacticaY + radio * Math.sin(angulo);
-            
-            // Agregar variación aleatoria
-            x += (Math.random() - 0.5) * 20;
-            y += (Math.random() - 0.5) * 20;
-            
-            const nodoDiv = document.createElement('div');
-            nodoDiv.className = 'nodo nodo-actividad nodo-aparecer';
-            nodoDiv.id = `actividad-${actividad.id}`;
-            nodoDiv.dataset.actividadId = actividad.id;
-            nodoDiv.dataset.tacticaId = actividad.tactica_id;
-            nodoDiv.dataset.tipo = 'actividad';
-            nodoDiv.style.left = `${x}px`;
-            nodoDiv.style.top = `${y}px`;
-            nodoDiv.style.transform = 'translate(-50%, -50%)';
-            nodoDiv.style.animationDelay = `${index * 0.05 + 1.5}s`;
+            asteroideDiv.style.left = `${x}px`;
+            asteroideDiv.style.top = `${y}px`;
+            asteroideDiv.style.transform = 'translate(-50%, -50%)';
+            asteroideDiv.style.animationDelay = `${index * 0.05 + 1}s`;
             
             let estadoIcono = 'fa-clock';
             let estadoColor = '#f39c12';
@@ -2255,56 +2159,132 @@
                     break;
             }
             
-            nodoDiv.innerHTML = `
+            asteroideDiv.innerHTML = `
                 <div class="nodo-content">
                     <div class="nodo-icon" style="background: linear-gradient(135deg, ${estadoColor}, ${oscurecerColor(estadoColor, 20)})">
                         <i class="fas ${estadoIcono}"></i>
                     </div>
-                    <div class="nodo-title">${actividad.nombre.substring(0, 20)}${actividad.nombre.length > 20 ? '...' : ''}</div>
+                    <div class="nodo-title">${actividad.nombre.substring(0, 15)}${actividad.nombre.length > 15 ? '...' : ''}</div>
                 </div>
             `;
             
-            actividadesContainer.appendChild(nodoDiv);
+            asteroidesContainer.appendChild(asteroideDiv);
             
             // Agregar eventos
-            nodoDiv.addEventListener('click', function(e) {
+            asteroideDiv.addEventListener('click', function(e) {
                 e.stopPropagation();
                 seleccionarNodo(this.id);
-                mostrarDetallesActividad(actividad.id);
+                mostrarDetallesAsteroide(actividad.id);
             });
             
-            // Crear conexión con la táctica
+            // Crear conexión con el satélite
             mapa.conexiones.push({
-                id: `conexion-tactica-${tactica.id}-actividad-${actividad.id}`,
-                tipo: 'actividad',
-                sourceId: `tactica-${tactica.id}`,
-                targetId: `actividad-${actividad.id}`,
-                color: estadoColor
+                id: `orbita-satelite-${tactica.id}-asteroide-${actividad.id}`,
+                tipo: 'asteroide',
+                sourceId: `satelite-${tactica.id}`,
+                targetId: `asteroide-${actividad.id}`,
+                color: estadoColor,
+                gradiente: 'gradient-actividad'
             });
         });
         
-        // Aplicar ajuste final de posiciones
-        setTimeout(() => {
-            reposicionarTodoElMapa();
-        }, 200);
+        // Actualizar estadísticas finales
+        actualizarEstadisticas();
+        dibujarOrbitas();
+    }
+    
+    // ================================
+    // FUNCIONES DE DIBUJO DE ÓRBITAS
+    // ================================
+    
+    function dibujarOrbitas() {
+        if (!config.mostrarOrbitas || mapa.conexiones.length === 0) {
+            document.getElementById('conexionesSvg').innerHTML = '';
+            return;
+        }
+        
+        const svg = document.getElementById('conexionesSvg');
+        let svgHTML = '';
+        
+        // Mantener las definiciones de gradientes
+        svgHTML += '<defs>' +
+            '<linearGradient id="gradient-sol" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#FFD700" stop-opacity="0.6" /><stop offset="100%" stop-color="#FF8C00" stop-opacity="0.6" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-mercurio" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#8B8B8B" stop-opacity="0.5" /><stop offset="100%" stop-color="#696969" stop-opacity="0.5" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-venus" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#DAA520" stop-opacity="0.5" /><stop offset="100%" stop-color="#B8860B" stop-opacity="0.5" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-tierra" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#1E90FF" stop-opacity="0.5" /><stop offset="100%" stop-color="#4169E1" stop-opacity="0.5" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-marte" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#DC143C" stop-opacity="0.5" /><stop offset="100%" stop-color="#B22222" stop-opacity="0.5" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-jupiter" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#D2691E" stop-opacity="0.5" /><stop offset="100%" stop-color="#A0522D" stop-opacity="0.5" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-saturno" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#F0E68C" stop-opacity="0.5" /><stop offset="100%" stop-color="#DAA520" stop-opacity="0.5" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-urano" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#AFEEEE" stop-opacity="0.5" /><stop offset="100%" stop-color="#48D1CC" stop-opacity="0.5" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-neptuno" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#4169E1" stop-opacity="0.5" /><stop offset="100%" stop-color="#0000CD" stop-opacity="0.5" />' +
+            '</linearGradient>' +
+            '<filter id="glow">' +
+            '<feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>' +
+            '<feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>' +
+            '</filter></defs>';
+        
+        // Dibujar cada órbita
+        mapa.conexiones.forEach((orbita, index) => {
+            const sourcePos = obtenerPosicionNodo(orbita.sourceId);
+            const targetPos = obtenerPosicionNodo(orbita.targetId);
+            
+            if (!sourcePos || !targetPos) return;
+            
+            // Calcular puntos para curva elíptica (órbita)
+            const dx = targetPos.x - sourcePos.x;
+            const dy = targetPos.y - sourcePos.y;
+            const distancia = Math.sqrt(dx * dx + dy * dy);
+            
+            // Crear curva elíptica para simular órbita
+            const line = `<path d="M ${sourcePos.x},${sourcePos.y} A ${distancia/2},${distancia/2} 0 1,1 ${targetPos.x},${targetPos.y}" 
+                class="conexion" 
+                stroke="url(#${orbita.gradiente || 'gradient-sol'})" 
+                fill="none" 
+                stroke-width="1.5"
+                stroke-dasharray="5,5"
+                data-orbita-id="${orbita.id}"
+                style="animation: dashMove 20s linear infinite; animation-delay: ${index * 0.1}s" />`;
+            
+            svgHTML += line;
+        });
+        
+        svg.innerHTML = svgHTML;
+    }
+    
+    function obtenerPosicionNodo(nodoId) {
+        const nodo = document.getElementById(nodoId);
+        if (!nodo) return null;
+        
+        const rect = nodo.getBoundingClientRect();
+        const canvas = document.getElementById('mapaCanvas');
+        const canvasRect = canvas.getBoundingClientRect();
+        
+        const x = rect.left + rect.width / 2 - canvasRect.left;
+        const y = rect.top + rect.height / 2 - canvasRect.top;
+        
+        return { x, y };
     }
     
     // ================================
     // FUNCIONES DE EVENTOS Y CONTROLES
     // ================================
-    
-    function iniciarSistemaConexiones() {
-        // Usar requestAnimationFrame para mejor rendimiento
-        function actualizarFrame() {
-            if (config.mostrarConexiones) {
-                dibujarConexiones();
-            }
-            actualizarMinimap();
-            elementos.animacionFrame = requestAnimationFrame(actualizarFrame);
-        }
-        
-        elementos.animacionFrame = requestAnimationFrame(actualizarFrame);
-    }
     
     function inicializarEventos() {
         const canvas = document.getElementById('mapaCanvas');
@@ -2342,18 +2322,12 @@
             }
         });
         
-        // Detectar cambios en fullscreen
-        document.addEventListener('fullscreenchange', recalcularPosiciones);
-        document.addEventListener('webkitfullscreenchange', recalcularPosiciones);
-        document.addEventListener('mozfullscreenchange', recalcularPosiciones);
-        document.addEventListener('MSFullscreenChange', recalcularPosiciones);
-        
-        // Agregar evento al nodo objetivo
-        const objetivo = document.getElementById('nodo-objetivo');
-        objetivo.addEventListener('click', function(e) {
+        // Agregar evento al sol
+        const sol = document.getElementById('nodo-objetivo');
+        sol.addEventListener('click', function(e) {
             e.stopPropagation();
             seleccionarNodo('nodo-objetivo');
-            mostrarDetallesObjetivo();
+            mostrarDetallesSol();
         });
     }
     
@@ -2448,122 +2422,18 @@
     function actualizarTransformacion() {
         const nodosContainer = document.getElementById('nodosContainer');
         nodosContainer.style.transform = `translate(${config.translateX}px, ${config.translateY}px) scale(${config.zoomLevel})`;
-        
-        // Forzar redibujo de conexiones
-        if (config.mostrarConexiones) {
-            dibujarConexiones();
-        }
-        
         actualizarMinimap();
     }
     
-    // Funciones de conexiones dinámicas
-    function obtenerPosicionNodo(nodoId) {
-        const nodo = document.getElementById(nodoId);
-        if (!nodo) return null;
+    function toggleOrbitas() {
+        config.mostrarOrbitas = document.getElementById('mostrar-orbitas').checked;
+        const orbitasContainer = document.getElementById('orbitasContainer');
+        orbitasContainer.style.opacity = config.mostrarOrbitas ? '1' : '0';
         
-        const rect = nodo.getBoundingClientRect();
-        const canvas = document.getElementById('mapaCanvas');
-        const canvasRect = canvas.getBoundingClientRect();
-        
-        // Calcular posición relativa al viewport del canvas
-        const x = rect.left + rect.width / 2 - canvasRect.left;
-        const y = rect.top + rect.height / 2 - canvasRect.top;
-        
-        return { x, y };
-    }
-    
-    function dibujarConexiones() {
-        if (!config.mostrarConexiones || mapa.conexiones.length === 0) {
-            document.getElementById('conexionesSvg').innerHTML = '';
-            return;
-        }
-        
-        const svg = document.getElementById('conexionesSvg');
-        let svgHTML = '<defs>' +
-            '<linearGradient id="gradient-central" x1="0%" y1="0%" x2="100%" y2="0%">' +
-            '<stop offset="0%" stop-color="#9C27B0" stop-opacity="0.4" /><stop offset="100%" stop-color="#E91E63" stop-opacity="0.4" />' +
-            '</linearGradient>' +
-            '<linearGradient id="gradient-eje" x1="0%" y1="0%" x2="100%" y2="0%">' +
-            '<stop offset="0%" stop-color="#3498db" stop-opacity="0.5" /><stop offset="100%" stop-color="#2980b9" stop-opacity="0.5" />' +
-            '</linearGradient>' +
-            '<linearGradient id="gradient-estrategia" x1="0%" y1="0%" x2="100%" y2="0%">' +
-            '<stop offset="0%" stop-color="#2ecc71" stop-opacity="0.5" /><stop offset="100%" stop-color="#27ae60" stop-opacity="0.5" />' +
-            '</linearGradient>' +
-            '<linearGradient id="gradient-tactica" x1="0%" y1="0%" x2="100%" y2="0%">' +
-            '<stop offset="0%" stop-color="#e74c3c" stop-opacity="0.5" /><stop offset="100%" stop-color="#c0392b" stop-opacity="0.5" />' +
-            '</linearGradient>' +
-            '<linearGradient id="gradient-actividad" x1="0%" y1="0%" x2="100%" y2="0%">' +
-            '<stop offset="0%" stop-color="#f39c12" stop-opacity="0.5" /><stop offset="100%" stop-color="#d35400" stop-opacity="0.5" />' +
-            '</linearGradient>' +
-            '<filter id="glow">' +
-            '<feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>' +
-            '<feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>' +
-            '</filter></defs>';
-        
-        mapa.conexiones.forEach((conexion, index) => {
-            const sourcePos = obtenerPosicionNodo(conexion.sourceId);
-            const targetPos = obtenerPosicionNodo(conexion.targetId);
-            
-            if (!sourcePos || !targetPos) return;
-            
-            // Calcular puntos de control para curva Bezier
-            const midX = (sourcePos.x + targetPos.x) / 2;
-            const midY = (sourcePos.y + targetPos.y) / 2;
-            
-            // Crear curva suave
-            const dx = targetPos.x - sourcePos.x;
-            const dy = targetPos.y - sourcePos.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const offset = Math.min(distance * 0.2, 50);
-            
-            let claseConexion = 'conexion';
-            let gradientId = 'gradient-eje';
-            
-            switch(conexion.tipo) {
-                case 'central':
-                    claseConexion += ' conexion-central';
-                    gradientId = 'gradient-central';
-                    break;
-                case 'eje':
-                    claseConexion += ' conexion-eje';
-                    gradientId = 'gradient-eje';
-                    break;
-                case 'estrategia':
-                    claseConexion += ' conexion-estrategia';
-                    gradientId = 'gradient-estrategia';
-                    break;
-                case 'tactica':
-                    claseConexion += ' conexion-tactica';
-                    gradientId = 'gradient-tactica';
-                    break;
-                case 'actividad':
-                    claseConexion += ' conexion-actividad';
-                    gradientId = 'gradient-actividad';
-                    break;
-            }
-            
-            // Crear línea curva
-            const line = `<path d="M ${sourcePos.x},${sourcePos.y} Q ${midX + offset},${midY - offset} ${targetPos.x},${targetPos.y}" 
-                class="${claseConexion}" 
-                stroke="url(#${gradientId})" 
-                fill="none" 
-                stroke-width="2"
-                data-conexion-id="${conexion.id}"
-                style="animation-delay: ${index * 0.05}s" />`;
-            
-            svgHTML += line;
-        });
-        
-        svg.innerHTML = svgHTML;
-    }
-    
-    function toggleConexiones() {
-        config.mostrarConexiones = document.getElementById('mostrar-conexiones').checked;
-        if (!config.mostrarConexiones) {
-            document.getElementById('conexionesSvg').innerHTML = '';
+        if (config.mostrarOrbitas) {
+            dibujarOrbitas();
         } else {
-            dibujarConexiones();
+            document.getElementById('conexionesSvg').innerHTML = '';
         }
     }
     
@@ -2572,273 +2442,6 @@
         document.querySelectorAll('.nodo-title').forEach(titulo => {
             titulo.style.display = config.mostrarNombres ? 'block' : 'none';
         });
-    }
-    
-    // Crear partículas de fondo
-    function crearParticulas() {
-        const container = document.getElementById('particlesContainer');
-        const particulaCount = 60;
-        
-        for (let i = 0; i < particulaCount; i++) {
-            const particula = document.createElement('div');
-            particula.className = 'particle';
-            
-            const x = Math.random() * 100;
-            const y = Math.random() * 100;
-            const size = Math.random() * 2 + 1;
-            const duration = Math.random() * 15 + 10;
-            const delay = Math.random() * 5;
-            
-            particula.style.left = `${x}%`;
-            particula.style.top = `${y}%`;
-            particula.style.width = `${size}px`;
-            particula.style.height = `${size}px`;
-            particula.style.animation = `float ${duration}s infinite ${delay}s linear`;
-            particula.style.opacity = Math.random() * 0.2 + 0.1;
-            particula.style.backgroundColor = `rgba(52, 152, 219, ${Math.random() * 0.3})`;
-            
-            container.appendChild(particula);
-            elementos.particulas.push(particula);
-        }
-    }
-    
-    // ================================
-    // CARGAR DATOS DESDE API
-    // ================================
-    
-    async function cargarDatosDesdeAPI() {
-        mostrarCargando('Cargando datos estratégicos...', 60);
-        
-        try {
-            // Cargar estrategias desde la API con ejes
-            const respuesta = await fetch('/api/estrategias_foda_con_eje');
-            const data = await respuesta.json();
-            
-            if (data.success && data.estrategias) {
-                mapa.estrategias = data.estrategias.map(e => ({
-                    id: e.id,
-                    tipo_cruce: e.tipo_cruce,
-                    estrategia: e.estrategia,
-                    eje_id: e.eje_id || 'educacion',
-                    eje_texto: e.eje_texto || 'EDUCACIÓN'
-                }));
-                actualizarProgresoCarga(70);
-                
-                // Cargar tácticas desde el backend
-                await cargarTacticasDesdeBackend();
-                actualizarProgresoCarga(85);
-                
-                // Cargar actividades desde el backend
-                await cargarActividadesDesdeBackend();
-                actualizarProgresoCarga(95);
-                
-                // Crear nodos de estrategias
-                crearNodosEstrategias();
-                
-                // Crear conexiones
-                crearConexionesJerarquicas();
-                
-                actualizarProgresoCarga(100);
-                
-                setTimeout(() => {
-                    ocultarCargando();
-                    mostrarNotificacion('Mapa cargado exitosamente', 'success');
-                    animarEntrada();
-                }, 500);
-            } else {
-                throw new Error('Error en la respuesta de la API');
-            }
-        } catch (error) {
-            console.error('Error al cargar datos:', error);
-            mostrarNotificacion('Error al cargar datos. Usando datos de ejemplo.', 'error');
-            cargarDatosEjemplo();
-        }
-    }
-    
-    async function cargarTacticasDesdeBackend() {
-        try {
-            const respuesta = await fetch('/api/actividades');
-            if (!respuesta.ok) throw new Error('API no disponible');
-            
-            const data = await respuesta.json();
-            
-            if (data.success && data.actividades) {
-                mapa.tacticas = data.actividades.map(a => ({
-                    ...a,
-                    // Renombrar para consistencia
-                    nombre: a.nombre || a.descripcion || `Táctica ${a.id}`
-                }));
-                
-                // Asignar eje_id a cada táctica basado en su estrategia
-                mapa.tacticas.forEach(tactica => {
-                    const estrategia = mapa.estrategias.find(e => e.id === tactica.estrategia_id);
-                    if (estrategia) {
-                        tactica.eje_id = estrategia.eje_id;
-                    }
-                });
-            } else {
-                throw new Error('Formato de respuesta inválido');
-            }
-        } catch (error) {
-            console.error('Error al cargar tácticas:', error);
-            // Usar datos de ejemplo
-            mapa.tacticas = [
-                { id: 1, estrategia_id: 1, nombre: 'Capacitación en metodologías activas', eje_id: 'educacion' },
-                { id: 2, estrategia_id: 1, nombre: 'Actualización de planes de estudio', eje_id: 'educacion' },
-                { id: 3, estrategia_id: 2, nombre: 'Construcción de aulas', eje_id: 'educacion' },
-                { id: 4, estrategia_id: 3, nombre: 'Adquisición de equipos médicos', eje_id: 'salud' },
-                { id: 5, estrategia_id: 4, nombre: 'Talleres de formación técnica', eje_id: 'empleabilidad' },
-                { id: 6, estrategia_id: 5, nombre: 'Monitoreo de calidad del agua', eje_id: 'sostenibilidad_ambiental' }
-            ];
-        }
-    }
-    
-    async function cargarActividadesDesdeBackend() {
-        try {
-            const respuesta = await fetch('/api/tareas');
-            if (!respuesta.ok) throw new Error('API no disponible');
-            
-            const data = await respuesta.json();
-            
-            if (data.success && data.tareas) {
-                mapa.actividades = data.tareas.map(t => ({
-                    ...t,
-                    // Renombrar para consistencia
-                    nombre: t.nombre || `Actividad ${t.id}`
-                }));
-            } else {
-                throw new Error('Formato de respuesta inválido');
-            }
-        } catch (error) {
-            console.error('Error al cargar actividades:', error);
-            // Usar datos de ejemplo
-            mapa.actividades = [
-                { id: 1, tactica_id: 1, nombre: 'Organizar taller inicial', estado: 'completada' },
-                { id: 2, tactica_id: 1, nombre: 'Evaluar participantes', estado: 'en_progreso' },
-                { id: 3, tactica_id: 2, nombre: 'Revisar currículo actual', estado: 'pendiente' },
-                { id: 4, tactica_id: 3, nombre: 'Elaborar planos', estado: 'completada' },
-                { id: 5, tactica_id: 4, nombre: 'Cotizar equipos', estado: 'en_progreso' },
-                { id: 6, tactica_id: 5, nombre: 'Convocar participantes', estado: 'pendiente' }
-            ];
-        }
-    }
-    
-    function cargarDatosEjemplo() {
-        // Datos de ejemplo para cuando falla la API
-        mapa.estrategias = [
-            { id: 1, eje_id: 'educacion', estrategia: 'Capacitación docente en metodologías activas', tipo_cruce: 'FO' },
-            { id: 2, eje_id: 'educacion', estrategia: 'Mejora de infraestructura educativa', tipo_cruce: 'DA' },
-            { id: 3, eje_id: 'salud', estrategia: 'Equipamiento de centros de salud', tipo_cruce: 'FO' },
-            { id: 4, eje_id: 'empleabilidad', estrategia: 'Formación técnica para jóvenes', tipo_cruce: 'FA' },
-            { id: 5, eje_id: 'sostenibilidad_ambiental', estrategia: 'Monitoreo permanente de calidad del agua', tipo_cruce: 'DO' }
-        ];
-        
-        mapa.tacticas = [
-            { id: 1, estrategia_id: 1, nombre: 'Capacitación en metodologías activas', eje_id: 'educacion' },
-            { id: 2, estrategia_id: 1, nombre: 'Actualización de planes de estudio', eje_id: 'educacion' },
-            { id: 3, estrategia_id: 2, nombre: 'Construcción de aulas', eje_id: 'educacion' },
-            { id: 4, estrategia_id: 3, nombre: 'Adquisición de equipos médicos', eje_id: 'salud' },
-            { id: 5, estrategia_id: 4, nombre: 'Talleres de formación técnica', eje_id: 'empleabilidad' },
-            { id: 6, estrategia_id: 5, nombre: 'Monitoreo de calidad del agua', eje_id: 'sostenibilidad_ambiental' }
-        ];
-        
-        mapa.actividades = [
-            { id: 1, tactica_id: 1, nombre: 'Organizar taller inicial', estado: 'completada' },
-            { id: 2, tactica_id: 1, nombre: 'Evaluar participantes', estado: 'en_progreso' },
-            { id: 3, tactica_id: 2, nombre: 'Revisar currículo actual', estado: 'pendiente' },
-            { id: 4, tactica_id: 3, nombre: 'Elaborar planos', estado: 'completada' },
-            { id: 5, tactica_id: 4, nombre: 'Cotizar equipos', estado: 'en_progreso' },
-            { id: 6, tactica_id: 5, nombre: 'Convocar participantes', estado: 'pendiente' }
-        ];
-        
-        crearNodosEstrategias();
-        crearConexionesJerarquicas();
-        ocultarCargando();
-        animarEntrada();
-    }
-    
-    function crearConexionesJerarquicas() {
-        // Las conexiones ya se crearon al crear los nodos
-        actualizarEstadisticas();
-        dibujarConexiones();
-    }
-    
-    function actualizarContadoresEjes() {
-        mapa.ejes.forEach(eje => {
-            const count = mapa.estrategias.filter(e => e.eje_id === eje.id).length;
-            const counterElement = document.getElementById(`counter-${eje.id}`);
-            if (counterElement) {
-                counterElement.textContent = `${count} estrategias`;
-            }
-        });
-    }
-    
-    function actualizarEstadisticas() {
-        const totalEjes = mapa.ejes.length;
-        const totalEstrategias = mapa.estrategias.length;
-        const totalTacticas = mapa.tacticas.length;
-        const totalActividades = mapa.actividades.length;
-        const totalConexiones = mapa.conexiones.length;
-        const totalNodos = totalEjes + totalEstrategias + totalTacticas + totalActividades + 1; // +1 por el objetivo
-        
-        document.getElementById('total-ejes').textContent = `${totalEjes} Ejes`;
-        document.getElementById('total-estrategias').textContent = `${totalEstrategias} Estrategias`;
-        document.getElementById('total-tacticas').textContent = `${totalTacticas} Tácticas`;
-        document.getElementById('total-actividades').textContent = `${totalActividades} Actividades`;
-        document.getElementById('total-conexiones').textContent = `${totalConexiones} Conexiones`;
-        document.getElementById('contador-ejes').textContent = totalEjes;
-        document.getElementById('contador-estrategias').textContent = totalEstrategias;
-        document.getElementById('contador-tacticas').textContent = totalTacticas;
-        document.getElementById('contador-actividades').textContent = totalActividades;
-        document.getElementById('leyenda-activos').textContent = totalNodos;
-        document.getElementById('leyenda-conexiones').textContent = totalConexiones;
-    }
-    
-    // ================================
-    // FUNCIONES DE ANIMACIÓN Y VISUALIZACIÓN
-    // ================================
-    
-    function animarEntrada() {
-        const todosNodos = document.querySelectorAll('.nodo');
-        todosNodos.forEach((nodo, index) => {
-            nodo.classList.add('nodo-aparecer');
-            nodo.style.animationDelay = `${index * 0.02}s`;
-        });
-        
-        // Efecto de onda desde el centro
-        setTimeout(crearOndaCentro, 500);
-    }
-    
-    function crearOndaCentro() {
-        const canvas = document.getElementById('mapaCanvas');
-        const onda = document.createElement('div');
-        onda.style.cssText = `
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            border: 2px solid rgba(52, 152, 219, 0.5);
-            z-index: 0;
-            pointer-events: none;
-        `;
-        
-        canvas.appendChild(onda);
-        
-        let size = 10;
-        const animacion = setInterval(() => {
-            size += 20;
-            onda.style.width = `${size}px`;
-            onda.style.height = `${size}px`;
-            onda.style.opacity = 1 - (size / 500);
-            
-            if (size > 500) {
-                clearInterval(animacion);
-                onda.remove();
-            }
-        }, 20);
     }
     
     function seleccionarNodo(nodoId) {
@@ -2854,192 +2457,144 @@
     }
     
     // ================================
-    // FUNCIONES DE UI
+    // FUNCIONES DE ACTUALIZACIÓN
     // ================================
     
-    function mostrarDetallesEje(ejeId) {
+    function actualizarContadoresPlanetas() {
+        mapa.ejes.forEach(planeta => {
+            const count = mapa.estrategias.filter(e => e.eje_id === planeta.id).length;
+            const counterElement = document.getElementById(`contador-${planeta.id}`);
+            if (counterElement) {
+                counterElement.textContent = `${count} ${count === 1 ? 'luna' : 'lunas'}`;
+            }
+        });
+    }
+    
+    function actualizarEstadisticas() {
+        const totalPlanetas = mapa.ejes.length;
+        const totalLunas = mapa.estrategias.length;
+        const totalSatelites = mapa.tacticas.length;
+        const totalAsteroides = mapa.actividades.length;
+        const totalOrbitas = mapa.conexiones.length;
+        const totalCuerpos = totalPlanetas + totalLunas + totalSatelites + totalAsteroides + 1; // +1 por el sol
+        
+        document.getElementById('total-ejes').textContent = `${totalPlanetas} Planetas`;
+        document.getElementById('total-estrategias').textContent = `${totalLunas} Lunas`;
+        document.getElementById('total-tacticas').textContent = `${totalSatelites} Satélites`;
+        document.getElementById('total-actividades').textContent = `${totalAsteroides} Asteroides`;
+        document.getElementById('total-conexiones').textContent = `${totalOrbitas} Órbitas`;
+        document.getElementById('contador-ejes').textContent = totalPlanetas;
+        document.getElementById('contador-estrategias').textContent = totalLunas;
+        document.getElementById('contador-tacticas').textContent = totalSatelites;
+        document.getElementById('contador-actividades').textContent = totalAsteroides;
+        document.getElementById('leyenda-activos').textContent = totalCuerpos;
+        document.getElementById('leyenda-conexiones').textContent = totalOrbitas;
+    }
+    
+    function recalcularPosiciones() {
+        // Recrear órbitas para ajustarse al nuevo tamaño
+        crearOrbitas();
+        dibujarOrbitas();
+    }
+    
+    // ================================
+    // FUNCIONES DE DETALLES
+    // ================================
+    
+    function mostrarDetallesSol() {
         const panel = document.getElementById('panelDetalles');
         const titulo = document.getElementById('detalleTitulo');
         const contenido = document.getElementById('detalleContenido');
         
-        const eje = mapa.ejes.find(e => e.id === ejeId);
-        if (!eje) return;
-        
-        const estrategiasEje = mapa.estrategias.filter(e => e.eje_id === ejeId);
-        const tacticasEje = mapa.tacticas.filter(t => t.eje_id === ejeId);
-        
-        titulo.innerHTML = `<i class="fas fa-${eje.icono}"></i> ${eje.nombre}`;
-        
-        let estrategiasHTML = '';
-        if (estrategiasEje.length > 0) {
-            estrategiasHTML = `
-                <div class="seccion-detalles">
-                    <h4><i class="fas fa-chess-board"></i> Estrategias (${estrategiasEje.length})</h4>
-                    ${estrategiasEje.map(estrategia => `
-                        <div class="item-detalle" onclick="mostrarDetallesEstrategia(${estrategia.id})">
-                            <div class="item-tipo ${estrategia.tipo_cruce.toLowerCase()}">${estrategia.tipo_cruce}</div>
-                            <div class="item-texto">${estrategia.estrategia}</div>
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        let tacticasHTML = '';
-        if (tacticasEje.length > 0) {
-            tacticasHTML = `
-                <div class="seccion-detalles">
-                    <h4><i class="fas fa-tasks"></i> Tácticas (${tacticasEje.length})</h4>
-                    ${tacticasEje.map(tactica => `
-                        <div class="item-detalle" onclick="mostrarDetallesTactica(${tactica.id})">
-                            <div class="item-texto">${tactica.nombre}</div>
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
+        titulo.innerHTML = `<i class="fas fa-sun"></i> Sol Estratégico`;
         
         contenido.innerHTML = `
-            <div class="detalle-eje">
-                <div class="encabezado-detalle" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)});">
+            <div class="detalle-sol">
+                <div class="encabezado-detalle" style="background: linear-gradient(135deg, #FFD700, #FF8C00);">
                     <div class="icono-grande">
-                        <i class="fas fa-${eje.icono}"></i>
+                        <i class="fas fa-sun"></i>
                     </div>
-                    <h3>${eje.nombre}</h3>
-                    <p>${eje.descripcion}</p>
+                    <h3>SOL CENTRAL</h3>
+                    <p>Objetivo Estratégico del Sistema</p>
+                </div>
+                
+                <div class="descripcion-objetivo">
+                    <p>Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras, a través de la repotenciación de sistemas comunitarios y el monitoreo estricto de su calidad; este compromiso se complementa con la mejora de equipamiento en salud, la intervención en infraestructura sanitaria y lúdica de 4 unidades educativas, la reubicación estratégica de al menos el 60% del personal local hacia nuevos departamentos, y una cooperación técnica con los GADs y niveles distritales, todo dinamizado por un sistema de comunicación comunitaria que transparente la propuesta de valor y los beneficios del proyecto en el AID y AII.</p>
                 </div>
                 
                 <div class="estadisticas-detalle">
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${estrategiasEje.length}</div>
-                        <div class="estadistica-label">Estrategias</div>
+                        <div class="estadistica-valor">${mapa.ejes.length}</div>
+                        <div class="estadistica-label">Planetas</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${tacticasEje.length}</div>
-                        <div class="estadistica-label">Tácticas</div>
+                        <div class="estadistica-valor">${mapa.estrategias.length}</div>
+                        <div class="estadistica-label">Lunas</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${mapa.actividades.filter(a => mapa.tacticas.find(t => t.id === a.tactica_id && t.eje_id === ejeId)).length}</div>
-                        <div class="estadistica-label">Actividades</div>
+                        <div class="estadistica-valor">${mapa.tacticas.length}</div>
+                        <div class="estadistica-label">Satélites</div>
                     </div>
                 </div>
                 
-                ${estrategiasHTML}
-                ${tacticasHTML}
+                <div class="planetas-lista">
+                    <h4><i class="fas fa-globe-americas"></i> Planetas del Sistema</h4>
+                    ${mapa.ejes.map(planeta => `
+                        <div class="item-detalle" onclick="mostrarDetallesPlaneta('${planeta.id}')">
+                            <div class="item-icono" style="background: ${planeta.color}">
+                                <i class="fas fa-${planeta.icono}"></i>
+                            </div>
+                            <div class="item-texto">
+                                <div class="item-titulo">${planeta.nombre}</div>
+                                <div class="item-subtitulo">${planeta.subtitulo}</div>
+                            </div>
+                            <div class="item-badge">${mapa.estrategias.filter(e => e.eje_id === planeta.id).length} lunas</div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
             
             <style>
-                .encabezado-detalle {
-                    padding: 30px;
-                    border-radius: 15px;
-                    margin-bottom: 20px;
-                    text-align: center;
-                    color: white;
-                }
-                
-                .icono-grande {
-                    width: 80px;
-                    height: 80px;
-                    background: rgba(255,255,255,0.2);
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    margin: 0 auto 15px;
-                    font-size: 32px;
-                }
-                
-                .encabezado-detalle h3 {
-                    font-size: 24px;
-                    margin-bottom: 10px;
-                }
-                
-                .encabezado-detalle p {
-                    opacity: 0.9;
-                    font-size: 14px;
-                }
-                
-                .estadisticas-detalle {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 15px;
-                    margin-bottom: 25px;
-                }
-                
-                .estadistica-item {
+                .descripcion-objetivo {
                     background: rgba(255,255,255,0.05);
                     border-radius: 10px;
-                    padding: 15px;
-                    text-align: center;
-                }
-                
-                .estadistica-valor {
-                    font-size: 28px;
-                    font-weight: bold;
-                    color: white;
-                    margin-bottom: 5px;
-                }
-                
-                .estadistica-label {
-                    font-size: 12px;
-                    color: rgba(255,255,255,0.7);
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-                
-                .seccion-detalles {
-                    margin-bottom: 25px;
-                }
-                
-                .seccion-detalles h4 {
-                    font-size: 16px;
-                    color: white;
-                    margin-bottom: 15px;
-                    display: flex;
-                    align-items: center;
-                    gap: 10px;
-                }
-                
-                .item-detalle {
-                    background: rgba(255,255,255,0.05);
-                    border-radius: 10px;
-                    padding: 15px;
-                    margin-bottom: 10px;
-                    display: flex;
-                    align-items: center;
-                    gap: 15px;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    border-left: 4px solid ${eje.color};
-                }
-                
-                .item-detalle:hover {
-                    background: rgba(255,255,255,0.1);
-                    transform: translateX(5px);
-                }
-                
-                .item-tipo {
-                    background: ${eje.color};
-                    color: white;
-                    padding: 4px 10px;
-                    border-radius: 15px;
-                    font-size: 11px;
-                    font-weight: bold;
-                    min-width: 40px;
-                    text-align: center;
-                }
-                
-                .item-texto {
-                    flex: 1;
+                    padding: 20px;
+                    margin: 20px 0;
+                    line-height: 1.6;
                     color: rgba(255,255,255,0.9);
                     font-size: 14px;
                 }
                 
-                .item-detalle .fa-chevron-right {
-                    color: rgba(255,255,255,0.5);
-                    font-size: 12px;
+                .item-icono {
+                    width: 45px;
+                    height: 45px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 18px;
+                }
+                
+                .item-titulo {
+                    font-weight: 600;
+                    color: white;
+                    font-size: 14px;
+                }
+                
+                .item-subtitulo {
+                    font-size: 11px;
+                    color: rgba(255,255,255,0.7);
+                    margin-top: 2px;
+                }
+                
+                .item-badge {
+                    font-size: 11px;
+                    padding: 4px 10px;
+                    background: rgba(255,255,255,0.1);
+                    border-radius: 12px;
+                    color: rgba(255,255,255,0.9);
                 }
             </style>
         `;
@@ -3047,36 +2602,32 @@
         panel.classList.add('open');
     }
     
-    function mostrarDetallesEstrategia(estrategiaId) {
+    function mostrarDetalleObjetivo() {
+        mostrarDetallesSol();
+    }
+    
+    function mostrarDetallesPlaneta(planetaId) {
         const panel = document.getElementById('panelDetalles');
         const titulo = document.getElementById('detalleTitulo');
         const contenido = document.getElementById('detalleContenido');
         
-        const estrategia = mapa.estrategias.find(e => e.id === estrategiaId);
-        if (!estrategia) return;
+        const planeta = mapa.ejes.find(e => e.id === planetaId);
+        if (!planeta) return;
         
-        const eje = mapa.ejes.find(e => e.id === estrategia.eje_id);
-        const tacticas = mapa.tacticas.filter(t => t.estrategia_id === estrategiaId);
+        const lunasPlaneta = mapa.estrategias.filter(e => e.eje_id === planetaId);
+        const satelitesPlaneta = mapa.tacticas.filter(t => t.eje_id === planetaId);
         
-        titulo.innerHTML = `<i class="fas fa-chess-board"></i> Estrategia #${estrategiaId}`;
+        titulo.innerHTML = `<i class="fas fa-${planeta.icono}"></i> ${planeta.nombre}`;
         
-        let tipoTexto = '';
-        switch(estrategia.tipo_cruce) {
-            case 'FO': tipoTexto = 'FORTALEZA + OPORTUNIDAD'; break;
-            case 'DO': tipoTexto = 'DEBILIDAD + OPORTUNIDAD'; break;
-            case 'FA': tipoTexto = 'FORTALEZA + AMENAZA'; break;
-            case 'DA': tipoTexto = 'DEBILIDAD + AMENAZA'; break;
-            default: tipoTexto = estrategia.tipo_cruce;
-        }
-        
-        let tacticasHTML = '';
-        if (tacticas.length > 0) {
-            tacticasHTML = `
+        let lunasHTML = '';
+        if (lunasPlaneta.length > 0) {
+            lunasHTML = `
                 <div class="seccion-detalles">
-                    <h4><i class="fas fa-tasks"></i> Tácticas (${tacticas.length})</h4>
-                    ${tacticas.map(tactica => `
-                        <div class="item-detalle" onclick="mostrarDetallesTactica(${tactica.id})">
-                            <div class="item-texto">${tactica.nombre}</div>
+                    <h4><i class="fas fa-moon"></i> Lunas (${lunasPlaneta.length})</h4>
+                    ${lunasPlaneta.map(luna => `
+                        <div class="item-detalle" onclick="mostrarDetallesLuna(${luna.id})">
+                            <div class="item-tipo ${luna.tipo_cruce.toLowerCase()}">${luna.tipo_cruce}</div>
+                            <div class="item-texto">${luna.estrategia.substring(0, 60)}${luna.estrategia.length > 60 ? '...' : ''}</div>
                             <i class="fas fa-chevron-right"></i>
                         </div>
                     `).join('')}
@@ -3085,50 +2636,55 @@
         }
         
         contenido.innerHTML = `
-            <div class="detalle-estrategia">
-                <div class="encabezado-detalle" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+            <div class="detalle-planeta">
+                <div class="encabezado-detalle" style="background: linear-gradient(135deg, ${planeta.color}, ${oscurecerColor(planeta.color, 20)});">
                     <div class="icono-grande">
-                        <i class="fas fa-chess-board"></i>
+                        <i class="fas fa-${planeta.icono}"></i>
                     </div>
-                    <div class="badge-eje" style="background: ${eje ? eje.color : '#3498db'}">
-                        ${eje ? eje.nombre : 'EJE'}
+                    <h3>${planeta.nombre}</h3>
+                    <p>${planeta.descripcion}</p>
+                    <div class="planeta-info">
+                        <span><i class="fas fa-sync-alt"></i> Órbita: ${sistemaSolarConfig.radios.planeta} UA</span>
+                        <span><i class="fas fa-clock"></i> Período: ${60}s</span>
                     </div>
-                    <h3>${tipoTexto}</h3>
-                    <p>${estrategia.estrategia}</p>
                 </div>
                 
                 <div class="estadisticas-detalle">
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${tacticas.length}</div>
-                        <div class="estadistica-label">Tácticas</div>
+                        <div class="estadistica-valor">${lunasPlaneta.length}</div>
+                        <div class="estadistica-label">Lunas</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${mapa.actividades.filter(a => tacticas.find(t => t.id === a.tactica_id)).length}</div>
-                        <div class="estadistica-label">Actividades</div>
+                        <div class="estadistica-valor">${satelitesPlaneta.length}</div>
+                        <div class="estadistica-label">Satélites</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${tacticas.filter(t => mapa.actividades.filter(a => a.tactica_id === t.id && a.estado === 'completada').length > 0).length}</div>
-                        <div class="estadistica-label">En progreso</div>
+                        <div class="estadistica-valor">${mapa.actividades.filter(a => satelitesPlaneta.find(t => t.id === a.tactica_id)).length}</div>
+                        <div class="estadistica-label">Asteroides</div>
                     </div>
                 </div>
                 
-                ${tacticasHTML}
+                ${lunasHTML}
                 
-                <button class="btn-accion" onclick="seleccionarNodo('nodo-${estrategia.eje_id}')">
-                    <i class="fas fa-arrow-up"></i> Ver eje padre: ${eje ? eje.nombre : 'Eje'}
+                <button class="btn-accion" onclick="seleccionarNodo('nodo-objetivo')">
+                    <i class="fas fa-arrow-up"></i> Navegar al Sol Central
                 </button>
             </div>
             
             <style>
-                .badge-eje {
-                    display: inline-block;
-                    padding: 5px 15px;
-                    background: ${eje ? eje.color : '#3498db'};
-                    color: white;
-                    border-radius: 20px;
+                .planeta-info {
+                    display: flex;
+                    justify-content: center;
+                    gap: 20px;
+                    margin-top: 10px;
                     font-size: 12px;
-                    font-weight: bold;
-                    margin-bottom: 15px;
+                    color: rgba(255,255,255,0.8);
+                }
+                
+                .planeta-info span {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
                 }
                 
                 .btn-accion {
@@ -3158,373 +2714,20 @@
         panel.classList.add('open');
     }
     
-    function mostrarDetallesTactica(tacticaId) {
-        const panel = document.getElementById('panelDetalles');
-        const titulo = document.getElementById('detalleTitulo');
-        const contenido = document.getElementById('detalleContenido');
-        
-        const tactica = mapa.tacticas.find(t => t.id === tacticaId);
-        if (!tactica) return;
-        
-        const estrategia = mapa.estrategias.find(e => e.id === tactica.estrategia_id);
-        const actividades = mapa.actividades.filter(a => a.tactica_id === tacticaId);
-        
-        titulo.innerHTML = `<i class="fas fa-tasks"></i> Táctica #${tacticaId}`;
-        
-        let actividadesHTML = '';
-        if (actividades.length > 0) {
-            actividadesHTML = `
-                <div class="seccion-detalles">
-                    <h4><i class="fas fa-check-circle"></i> Actividades (${actividades.length})</h4>
-                    ${actividades.map(actividad => {
-                        let estadoIcono = 'fa-clock';
-                        let estadoColor = '#f39c12';
-                        let estadoTexto = 'Pendiente';
-                        
-                        switch(actividad.estado) {
-                            case 'completada':
-                                estadoIcono = 'fa-check-circle';
-                                estadoColor = '#2ecc71';
-                                estadoTexto = 'Completada';
-                                break;
-                            case 'en_progreso':
-                                estadoIcono = 'fa-spinner';
-                                estadoColor = '#3498db';
-                                estadoTexto = 'En progreso';
-                                break;
-                        }
-                        
-                        return `
-                            <div class="item-detalle" onclick="mostrarDetallesActividad(${actividad.id})">
-                                <div class="item-estado" style="background: ${estadoColor}">
-                                    <i class="fas ${estadoIcono}"></i>
-                                </div>
-                                <div class="item-texto">${actividad.nombre}</div>
-                                <div class="item-badge" style="color: ${estadoColor}">${estadoTexto}</div>
-                                <i class="fas fa-chevron-right"></i>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-        
-        contenido.innerHTML = `
-            <div class="detalle-tactica">
-                <div class="encabezado-detalle" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
-                    <div class="icono-grande">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <h3>${tactica.nombre}</h3>
-                    <p>Táctica de la estrategia: ${estrategia ? estrategia.estrategia.substring(0, 50) + '...' : 'No especificada'}</p>
-                </div>
-                
-                <div class="estadisticas-detalle">
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${actividades.length}</div>
-                        <div class="estadistica-label">Actividades</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${actividades.filter(a => a.estado === 'completada').length}</div>
-                        <div class="estadistica-label">Completadas</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${actividades.filter(a => a.estado === 'en_progreso').length}</div>
-                        <div class="estadistica-label">En progreso</div>
-                    </div>
-                </div>
-                
-                ${actividadesHTML}
-                
-                <button class="btn-accion" onclick="seleccionarNodo('estrategia-${tactica.estrategia_id}')">
-                    <i class="fas fa-arrow-up"></i> Ver estrategia padre
-                </button>
-            </div>
-            
-            <style>
-                .item-estado {
-                    width: 30px;
-                    height: 30px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                    font-size: 14px;
-                }
-                
-                .item-badge {
-                    font-size: 11px;
-                    padding: 3px 10px;
-                    border-radius: 12px;
-                    background: rgba(255,255,255,0.1);
-                }
-            </style>
-        `;
-        
-        panel.classList.add('open');
+    function mostrarDetallesLuna(lunaId) {
+        // Similar a las funciones anteriores pero para lunas
+        // Implementar según sea necesario
+        console.log('Mostrando detalles de luna:', lunaId);
     }
     
-    function mostrarDetallesActividad(actividadId) {
-        const panel = document.getElementById('panelDetalles');
-        const titulo = document.getElementById('detalleTitulo');
-        const contenido = document.getElementById('detalleContenido');
-        
-        const actividad = mapa.actividades.find(a => a.id === actividadId);
-        if (!actividad) return;
-        
-        const tactica = mapa.tacticas.find(t => t.id === actividad.tactica_id);
-        
-        let estadoIcono = 'fa-clock';
-        let estadoColor = '#f39c12';
-        let estadoTexto = 'Pendiente';
-        
-        switch(actividad.estado) {
-            case 'completada':
-                estadoIcono = 'fa-check-circle';
-                estadoColor = '#2ecc71';
-                estadoTexto = 'Completada';
-                break;
-            case 'en_progreso':
-                estadoIcono = 'fa-spinner';
-                estadoColor = '#3498db';
-                estadoTexto = 'En progreso';
-                break;
-        }
-        
-        titulo.innerHTML = `<i class="fas ${estadoIcono}"></i> Actividad #${actividadId}`;
-        
-        contenido.innerHTML = `
-            <div class="detalle-actividad">
-                <div class="encabezado-detalle" style="background: linear-gradient(135deg, ${estadoColor}, ${oscurecerColor(estadoColor, 20)});">
-                    <div class="icono-grande">
-                        <i class="fas ${estadoIcono}"></i>
-                    </div>
-                    <div class="estado-badge">${estadoTexto}</div>
-                    <h3>${actividad.nombre}</h3>
-                    <p>Actividad de la táctica: ${tactica ? tactica.nombre.substring(0, 50) + '...' : 'No especificada'}</p>
-                </div>
-                
-                <div class="info-detalle">
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="fas fa-calendar"></i> Estado
-                        </div>
-                        <div class="info-value" style="color: ${estadoColor}">
-                            ${estadoTexto}
-                        </div>
-                    </div>
-                    
-                    <div class="info-item">
-                        <div class="info-label">
-                            <i class="fas fa-layer-group"></i> Jerarquía
-                        </div>
-                        <div class="info-value">
-                            ${tactica ? 
-                                `Táctica → Actividad` : 
-                                `Actividad independiente`
-                            }
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="acciones-detalle">
-                    <button class="btn-accion" onclick="cambiarEstadoActividad(${actividadId}, 'pendiente')" style="background: ${actividad.estado === 'pendiente' ? estadoColor : 'rgba(255,255,255,0.1)'}">
-                        <i class="fas fa-clock"></i> Pendiente
-                    </button>
-                    <button class="btn-accion" onclick="cambiarEstadoActividad(${actividadId}, 'en_progreso')" style="background: ${actividad.estado === 'en_progreso' ? estadoColor : 'rgba(255,255,255,0.1)'}">
-                        <i class="fas fa-spinner"></i> En progreso
-                    </button>
-                    <button class="btn-accion" onclick="cambiarEstadoActividad(${actividadId}, 'completada')" style="background: ${actividad.estado === 'completada' ? estadoColor : 'rgba(255,255,255,0.1)'}">
-                        <i class="fas fa-check-circle"></i> Completada
-                    </button>
-                </div>
-                
-                <button class="btn-accion" onclick="seleccionarNodo('tactica-${actividad.tactica_id}')">
-                    <i class="fas fa-arrow-up"></i> Ver táctica padre
-                </button>
-            </div>
-            
-            <style>
-                .estado-badge {
-                    display: inline-block;
-                    padding: 8px 20px;
-                    background: rgba(255,255,255,0.2);
-                    color: white;
-                    border-radius: 20px;
-                    font-size: 14px;
-                    font-weight: bold;
-                    margin-bottom: 15px;
-                }
-                
-                .info-detalle {
-                    background: rgba(255,255,255,0.05);
-                    border-radius: 10px;
-                    padding: 20px;
-                    margin: 20px 0;
-                }
-                
-                .info-item {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 10px 0;
-                    border-bottom: 1px solid rgba(255,255,255,0.1);
-                }
-                
-                .info-item:last-child {
-                    border-bottom: none;
-                }
-                
-                .info-label {
-                    color: rgba(255,255,255,0.7);
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                }
-                
-                .info-value {
-                    color: white;
-                    font-weight: 600;
-                }
-                
-                .acciones-detalle {
-                    display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 10px;
-                    margin: 20px 0;
-                }
-                
-                .acciones-detalle .btn-accion {
-                    margin: 0;
-                    padding: 10px;
-                    font-size: 12px;
-                }
-            </style>
-        `;
-        
-        panel.classList.add('open');
+    function mostrarDetallesSatelite(sateliteId) {
+        // Implementar según sea necesario
+        console.log('Mostrando detalles de satélite:', sateliteId);
     }
     
-    function cambiarEstadoActividad(actividadId, nuevoEstado) {
-        const actividad = mapa.actividades.find(a => a.id === actividadId);
-        if (actividad) {
-            actividad.estado = nuevoEstado;
-            
-            // Actualizar nodo visualmente
-            const nodoActividad = document.getElementById(`actividad-${actividadId}`);
-            if (nodoActividad) {
-                let estadoColor = '#f39c12';
-                let estadoIcono = 'fa-clock';
-                
-                switch(nuevoEstado) {
-                    case 'completada':
-                        estadoColor = '#2ecc71';
-                        estadoIcono = 'fa-check-circle';
-                        break;
-                    case 'en_progreso':
-                        estadoColor = '#3498db';
-                        estadoIcono = 'fa-spinner';
-                        break;
-                }
-                
-                const icono = nodoActividad.querySelector('.nodo-icon');
-                if (icono) {
-                    icono.style.background = `linear-gradient(135deg, ${estadoColor}, ${oscurecerColor(estadoColor, 20)})`;
-                    icono.innerHTML = `<i class="fas ${estadoIcono}"></i>`;
-                }
-            }
-            
-            // Actualizar conexión
-            const conexion = mapa.conexiones.find(c => c.targetId === `actividad-${actividadId}`);
-            if (conexion) {
-                conexion.color = estadoColor;
-            }
-            
-            dibujarConexiones();
-            mostrarDetallesActividad(actividadId);
-            mostrarNotificacion(`Actividad actualizada: ${nuevoEstado}`, 'success');
-        }
-    }
-    
-    function mostrarDetallesObjetivo() {
-        const panel = document.getElementById('panelDetalles');
-        const titulo = document.getElementById('detalleTitulo');
-        const contenido = document.getElementById('detalleContenido');
-        
-        titulo.innerHTML = `<i class="fas fa-brain"></i> Objetivo Estratégico`;
-        
-        contenido.innerHTML = `
-            <div class="detalle-objetivo">
-                <div class="encabezado-detalle" style="background: linear-gradient(135deg, #9C27B0, #E91E63);">
-                    <div class="icono-grande">
-                        <i class="fas fa-brain"></i>
-                    </div>
-                    <h3>OBJETIVO ESTRATÉGICO</h3>
-                    <p>Proyecto El Domo</p>
-                </div>
-                
-                <div class="descripcion-objetivo">
-                    <p>Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras, a través de la repotenciación de sistemas comunitarios y el monitoreo estricto de su calidad; este compromiso se complementa con la mejora de equipamiento en salud, la intervención en infraestructura sanitaria y lúdica de 4 unidades educativas, la reubicación estratégica de al menos el 60% del personal local hacia nuevos departamentos, y una cooperación técnica con los GADs y niveles distritales, todo dinamizado por un sistema de comunicación comunitaria que transparente la propuesta de valor y los beneficios del proyecto en el AID y AII.</p>
-                </div>
-                
-                <div class="estadisticas-detalle">
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${mapa.ejes.length}</div>
-                        <div class="estadistica-label">Ejes Estratégicos</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${mapa.estrategias.length}</div>
-                        <div class="estadistica-label">Estrategias</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${mapa.tacticas.length}</div>
-                        <div class="estadistica-label">Tácticas</div>
-                    </div>
-                </div>
-                
-                <div class="ejes-lista">
-                    <h4><i class="fas fa-layer-group"></i> Ejes Estratégicos</h4>
-                    ${mapa.ejes.map(eje => `
-                        <div class="item-detalle" onclick="mostrarDetallesEje('${eje.id}')">
-                            <div class="item-icono" style="background: ${eje.color}">
-                                <i class="fas fa-${eje.icono}"></i>
-                            </div>
-                            <div class="item-texto">${eje.nombre}</div>
-                            <div class="item-badge">${mapa.estrategias.filter(e => e.eje_id === eje.id).length} estrategias</div>
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            
-            <style>
-                .descripcion-objetivo {
-                    background: rgba(255,255,255,0.05);
-                    border-radius: 10px;
-                    padding: 20px;
-                    margin: 20px 0;
-                    line-height: 1.6;
-                    color: rgba(255,255,255,0.9);
-                }
-                
-                .item-icono {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    color: white;
-                }
-            </style>
-        `;
-        
-        panel.classList.add('open');
-    }
-    
-    function mostrarDetalleObjetivo() {
-        mostrarDetallesObjetivo();
+    function mostrarDetallesAsteroide(asteroideId) {
+        // Implementar según sea necesario
+        console.log('Mostrando detalles de asteroide:', asteroideId);
     }
     
     function cerrarPanel() {
@@ -3544,34 +2747,32 @@
         
         const todosNodos = document.querySelectorAll('.nodo');
         const niveles = {
-            'objetivo': ['nodo-objetivo'],
-            'ejes': ['nodo-eje'],
-            'estrategias': ['nodo-estrategia'],
-            'tacticas': ['nodo-tactica'],
-            'actividades': ['nodo-actividad']
+            'sol': ['nodo-sol'],
+            'planetas': ['nodo-planeta'],
+            'lunas': ['nodo-luna'],
+            'satelites': ['nodo-satelite'],
+            'asteroides': ['nodo-asteroide']
         };
         
         todosNodos.forEach(nodo => {
             const tipo = Array.from(nodo.classList).find(cls => 
-                ['nodo-eje', 'nodo-estrategia', 'nodo-tactica', 'nodo-actividad'].includes(cls)
+                ['nodo-sol', 'nodo-planeta', 'nodo-luna', 'nodo-satelite', 'nodo-asteroide'].includes(cls)
             );
             
             const mostrar = config.filtroNivel === 'todos' || 
                            niveles[config.filtroNivel]?.includes(tipo) ||
-                           (config.filtroNivel === 'objetivo' && nodo.id === 'nodo-objetivo');
+                           (config.filtroNivel === 'sol' && nodo.id === 'nodo-objetivo');
             
             nodo.style.display = mostrar ? 'block' : 'none';
             nodo.style.opacity = mostrar ? '1' : '0.1';
             nodo.style.pointerEvents = mostrar ? 'auto' : 'none';
         });
         
-        // Reaplicar filtro de eje si está activo
         if (config.filtroEje !== 'todos') {
             filtrarPorEje();
         }
         
-        // Redibujar conexiones
-        dibujarConexiones();
+        dibujarOrbitas();
         mostrarNotificacion(`Filtro aplicado: ${config.filtroNivel}`, 'info');
     }
     
@@ -3579,7 +2780,6 @@
         config.filtroEje = document.getElementById('filtro-eje').value;
         
         if (config.filtroEje === 'todos') {
-            // Mostrar todos los nodos según el filtro de nivel
             aplicarFiltro();
             return;
         }
@@ -3590,46 +2790,35 @@
             const ejeId = nodo.dataset.ejeId;
             
             if (nodo.id === 'nodo-objetivo') {
-                // El objetivo siempre visible
                 nodo.style.opacity = '1';
                 nodo.style.pointerEvents = 'auto';
                 nodo.style.display = 'block';
             } else if (ejeId === config.filtroEje) {
-                // Mostrar nodos del eje seleccionado
                 nodo.style.opacity = '1';
                 nodo.style.pointerEvents = 'auto';
                 nodo.style.display = 'block';
-            } else if (nodo.classList.contains('nodo-eje') && nodo.id === `nodo-${config.filtroEje}`) {
-                // Mostrar el eje seleccionado
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-                nodo.style.display = 'block';
-            } else if (nodo.id === 'nodo-objetivo') {
-                // El objetivo siempre visible
+            } else if (nodo.classList.contains('nodo-planeta') && nodo.id === `planeta-${config.filtroEje}`) {
                 nodo.style.opacity = '1';
                 nodo.style.pointerEvents = 'auto';
                 nodo.style.display = 'block';
             } else {
-                // Ocultar otros nodos
                 nodo.style.opacity = '0.1';
                 nodo.style.pointerEvents = 'none';
                 nodo.style.display = 'block';
             }
         });
         
-        // Resaltar el eje seleccionado
-        const ejeSeleccionado = document.getElementById(`nodo-${config.filtroEje}`);
-        if (ejeSeleccionado) {
+        const planetaSeleccionado = document.getElementById(`planeta-${config.filtroEje}`);
+        if (planetaSeleccionado) {
             if (config.nodoSeleccionado) {
                 config.nodoSeleccionado.classList.remove('seleccionado');
             }
-            ejeSeleccionado.classList.add('seleccionado');
-            config.nodoSeleccionado = ejeSeleccionado;
+            planetaSeleccionado.classList.add('seleccionado');
+            config.nodoSeleccionado = planetaSeleccionado;
         }
         
-        // Redibujar conexiones
-        dibujarConexiones();
-        mostrarNotificacion(`Mostrando eje: ${config.filtroEje}`, 'info');
+        dibujarOrbitas();
+        mostrarNotificacion(`Mostrando planeta: ${config.filtroEje}`, 'info');
     }
     
     // ================================
@@ -3664,14 +2853,8 @@
         
         if (config.animacionesActivas) {
             icon.className = 'fas fa-pause';
-            document.querySelectorAll('.conexion, .nodo-icon-pulse').forEach(elemento => {
-                elemento.style.animationPlayState = 'running';
-            });
         } else {
             icon.className = 'fas fa-play';
-            document.querySelectorAll('.conexion, .nodo-icon-pulse').forEach(elemento => {
-                elemento.style.animationPlayState = 'paused';
-            });
         }
         
         mostrarNotificacion(`Animaciones ${config.animacionesActivas ? 'activadas' : 'pausadas'}`, 'info');
@@ -3680,13 +2863,11 @@
     function cambiarModo(modo) {
         config.modo = modo;
         
-        // Actualizar botones
         document.querySelectorAll('.modo-btn').forEach(btn => {
             btn.classList.remove('active');
         });
         document.getElementById(`modo-${modo}`).classList.add('active');
         
-        // Cambiar cursor
         const canvas = document.getElementById('mapaCanvas');
         canvas.style.cursor = modo === 'navegacion' ? 'grab' : 'pointer';
         
@@ -3694,17 +2875,30 @@
     }
     
     function exportMap() {
-        mostrarNotificacion('Preparando exportación del mapa...', 'success');
+        mostrarNotificacion('Exportando sistema solar...', 'success');
         
-        // En una implementación real, aquí se exportaría el mapa como imagen
+        // Simular exportación
         setTimeout(() => {
-            mostrarNotificacion('Mapa exportado exitosamente', 'success');
+            mostrarNotificacion('Sistema solar exportado exitosamente', 'success');
         }, 1500);
     }
     
-    function recalcularPosiciones() {
-        // Esta función se llama cuando se redimensiona la ventana
-        dibujarConexiones();
+    function reposicionarTodoElMapa() {
+        mostrarNotificacion('Reordenando sistema solar...', 'info');
+        
+        // Detener animaciones actuales
+        if (elementos.animacionFrame) {
+            cancelAnimationFrame(elementos.animacionFrame);
+        }
+        
+        // Reposicionar todos los elementos
+        inicializarSistemaSolar();
+        
+        // Reiniciar animaciones después de un breve retraso
+        setTimeout(() => {
+            iniciarAnimaciones();
+            mostrarNotificacion('Sistema solar reorganizado', 'success');
+        }, 500);
     }
     
     function actualizarMinimap() {
@@ -3724,8 +2918,23 @@
     }
     
     // ================================
-    // FUNCIONES DE CARGA
+    // FUNCIONES AUXILIARES
     // ================================
+    
+    function oscurecerColor(color, percent) {
+        // Convertir color hex a RGB
+        let r = parseInt(color.substr(1, 2), 16);
+        let g = parseInt(color.substr(3, 2), 16);
+        let b = parseInt(color.substr(5, 2), 16);
+        
+        // Oscurecer
+        r = Math.max(0, Math.floor(r * (100 - percent) / 100));
+        g = Math.max(0, Math.floor(g * (100 - percent) / 100));
+        b = Math.max(0, Math.floor(b * (100 - percent) / 100));
+        
+        // Convertir de vuelta a hex
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    }
     
     function mostrarCargando(mensaje, progreso) {
         const overlay = document.getElementById('cargandoOverlay');
@@ -3759,7 +2968,7 @@
             padding: 15px 20px;
             background: ${tipo === 'success' ? 'rgba(46, 204, 113, 0.9)' : 
                          tipo === 'error' ? 'rgba(231, 76, 60, 0.9)' : 
-                         'rgba(52, 152, 219, 0.9)'};
+                         'rgba(255, 215, 0, 0.9)'};
             color: white;
             border-radius: 10px;
             font-weight: 600;
