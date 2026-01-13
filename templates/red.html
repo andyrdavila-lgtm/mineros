@@ -1,7 +1,7 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Mapa Neuronal Estratégico - Versión Final -->
+<!-- Mapa Neuronal Estratégico - Versión Corregida -->
 <div class="mapa-neuronal-container" id="mapaFullscreen">
     <!-- Cabecera principal -->
     <div class="mapa-header-glass">
@@ -71,8 +71,8 @@
                 <option value="educacion">Educación</option>
                 <option value="salud">Salud</option>
                 <option value="empleabilidad">Empleabilidad</option>
-                <option value="desarrollo">Desarrollo Económico</option>
-                <option value="agua">Sostenibilidad Ambiental</option>
+                <option value="desarrollo_economico">Desarrollo Económico</option>
+                <option value="sostenibilidad_ambiental">Sostenibilidad Ambiental</option>
                 <option value="comunicacion">Comunicación</option>
                 <option value="institucional">Institucional</option>
             </select>
@@ -596,7 +596,7 @@
         width: 100%;
         height: 100%;
         pointer-events: none;
-        z-index: 2;
+        z-index: 5;
     }
     
     .conexion {
@@ -1231,6 +1231,26 @@
         border-radius: 10px;
     }
     
+    /* Mejor espaciado entre nodos */
+    .ejes-container, .estrategias-container, 
+    .actividades-container, .tareas-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 30px;
+    }
+    
+    .nodo-aparecer {
+        position: relative;
+        margin: 10px;
+    }
+    
+    /* Mejor visibilidad de nodos ocultos por filtro */
+    .nodo[style*="opacity: 0.1"] {
+        transition: opacity 0.3s ease;
+    }
+    
     /* Responsive */
     @media (max-width: 1200px) {
         .panel-controles {
@@ -1394,14 +1414,14 @@
                 descripcion: 'Formación técnica y oportunidades de empleo local'
             },
             { 
-                id: 'desarrollo', 
+                id: 'desarrollo_economico', 
                 nombre: 'DESARROLLO ECONÓMICO', 
                 icono: 'chart-line', 
                 color: '#9b59b6',
                 descripcion: 'Impulso al desarrollo económico comunitario'
             },
             { 
-                id: 'agua', 
+                id: 'sostenibilidad_ambiental', 
                 nombre: 'SOSTENIBILIDAD AMBIENTAL', 
                 icono: 'tint', 
                 color: '#1abc9c',
@@ -1426,7 +1446,7 @@
         const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
         const centroX = canvasRect.width / 2;
         const centroY = canvasRect.height / 2;
-        const radio = Math.min(canvasRect.width, canvasRect.height) * 0.35;
+        const radio = Math.min(canvasRect.width, canvasRect.height) * 0.4; // Aumentado para mejor espaciado
         
         mapa.ejes.forEach((eje, index) => {
             const angulo = (2 * Math.PI / mapa.ejes.length) * index - Math.PI / 2;
@@ -1651,19 +1671,27 @@
     function actualizarTransformacion() {
         const nodosContainer = document.getElementById('nodosContainer');
         nodosContainer.style.transform = `translate(${config.translateX}px, ${config.translateY}px) scale(${config.zoomLevel})`;
+        
+        // Forzar redibujo de conexiones
+        if (config.mostrarConexiones) {
+            dibujarConexiones();
+        }
+        
+        actualizarMinimap();
     }
     
-    // Funciones de conexiones dinámicas
+    // Funciones de conexiones dinámicas - CORREGIDA
     function obtenerPosicionNodo(nodoId) {
         const nodo = document.getElementById(nodoId);
         if (!nodo) return null;
         
         const rect = nodo.getBoundingClientRect();
-        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+        const canvas = document.getElementById('mapaCanvas');
+        const canvasRect = canvas.getBoundingClientRect();
         
-        // Calcular posición relativa al canvas considerando el zoom y pan
-        const x = (rect.left + rect.width / 2 - canvasRect.left - config.translateX) / config.zoomLevel;
-        const y = (rect.top + rect.height / 2 - canvasRect.top - config.translateY) / config.zoomLevel;
+        // Calcular posición relativa al viewport del canvas
+        const x = rect.left + rect.width / 2 - canvasRect.left;
+        const y = rect.top + rect.height / 2 - canvasRect.top;
         
         return { x, y };
     }
@@ -1757,6 +1785,8 @@
         config.mostrarConexiones = document.getElementById('mostrar-conexiones').checked;
         if (!config.mostrarConexiones) {
             document.getElementById('conexionesSvg').innerHTML = '';
+        } else {
+            dibujarConexiones();
         }
     }
     
@@ -1795,25 +1825,31 @@
         }
     }
     
-    // Cargar datos desde API
+    // Cargar datos desde API - USANDO BACKEND REAL
     async function cargarDatosDesdeAPI() {
         mostrarCargando('Cargando datos estratégicos...', 60);
         
         try {
-            // Cargar estrategias desde la API
+            // Cargar estrategias desde la API con ejes
             const respuesta = await fetch('/api/estrategias_foda_con_eje');
             const data = await respuesta.json();
             
             if (data.success && data.estrategias) {
-                mapa.estrategias = data.estrategias;
+                mapa.estrategias = data.estrategias.map(e => ({
+                    id: e.id,
+                    tipo_cruce: e.tipo_cruce,
+                    estrategia: e.estrategia,
+                    eje_id: e.eje_id || 'educacion',
+                    eje_texto: e.eje_texto || 'EDUCACIÓN'
+                }));
                 actualizarProgresoCarga(70);
                 
-                // Cargar actividades para cada estrategia
-                await cargarActividades();
+                // Cargar actividades desde el backend
+                await cargarActividadesDesdeBackend();
                 actualizarProgresoCarga(85);
                 
-                // Cargar tareas para cada actividad
-                await cargarTareas();
+                // Cargar tareas desde el backend
+                await cargarTareasDesdeBackend();
                 actualizarProgresoCarga(95);
                 
                 // Crear nodos de estrategias
@@ -1839,43 +1875,63 @@
         }
     }
     
-    async function cargarActividades() {
+    async function cargarActividadesDesdeBackend() {
         try {
-            // Aquí iría la llamada real a la API
-            // const respuesta = await fetch('/api/actividades');
-            // mapa.actividades = await respuesta.json();
+            const respuesta = await fetch('/api/actividades');
+            if (!respuesta.ok) throw new Error('API no disponible');
             
-            // Datos de ejemplo
+            const data = await respuesta.json();
+            
+            if (data.success && data.actividades) {
+                mapa.actividades = data.actividades;
+                
+                // Asignar eje_id a cada actividad basado en su estrategia
+                mapa.actividades.forEach(actividad => {
+                    const estrategia = mapa.estrategias.find(e => e.id === actividad.estrategia_id);
+                    if (estrategia) {
+                        actividad.eje_id = estrategia.eje_id;
+                    }
+                });
+            } else {
+                throw new Error('Formato de respuesta inválido');
+            }
+        } catch (error) {
+            console.error('Error al cargar actividades:', error);
+            // Usar datos de ejemplo
             mapa.actividades = [
                 { id: 1, estrategia_id: 1, nombre: 'Capacitación en metodologías activas', eje_id: 'educacion' },
                 { id: 2, estrategia_id: 1, nombre: 'Actualización de planes de estudio', eje_id: 'educacion' },
                 { id: 3, estrategia_id: 2, nombre: 'Construcción de aulas', eje_id: 'educacion' },
                 { id: 4, estrategia_id: 3, nombre: 'Adquisición de equipos médicos', eje_id: 'salud' },
                 { id: 5, estrategia_id: 4, nombre: 'Talleres de formación técnica', eje_id: 'empleabilidad' },
-                { id: 6, estrategia_id: 5, nombre: 'Monitoreo de calidad del agua', eje_id: 'agua' }
+                { id: 6, estrategia_id: 5, nombre: 'Monitoreo de calidad del agua', eje_id: 'sostenibilidad_ambiental' }
             ];
-        } catch (error) {
-            console.error('Error al cargar actividades:', error);
         }
     }
     
-    async function cargarTareas() {
+    async function cargarTareasDesdeBackend() {
         try {
-            // Aquí iría la llamada real a la API
-            // const respuesta = await fetch('/api/tareas');
-            // mapa.tareas = await respuesta.json();
+            const respuesta = await fetch('/api/tareas');
+            if (!respuesta.ok) throw new Error('API no disponible');
             
-            // Datos de ejemplo
-            mapa.tareas = [
-                { id: 1, actividad_id: 1, nombre: 'Organizar taller inicial', estado: 'completada' },
-                { id: 2, actividad_id: 1, nombre: 'Evaluar participantes', estado: 'en-progreso' },
-                { id: 3, actividad_id: 2, nombre: 'Revisar currículo actual', estado: 'pendiente' },
-                { id: 4, actividad_id: 3, nombre: 'Elaborar planos', estado: 'completada' },
-                { id: 5, actividad_id: 4, nombre: 'Cotizar equipos', estado: 'en-progreso' },
-                { id: 6, actividad_id: 5, nombre: 'Convocar participantes', estado: 'pendiente' }
-            ];
+            const data = await respuesta.json();
+            
+            if (data.success && data.tareas) {
+                mapa.tareas = data.tareas;
+            } else {
+                throw new Error('Formato de respuesta inválido');
+            }
         } catch (error) {
             console.error('Error al cargar tareas:', error);
+            // Usar datos de ejemplo
+            mapa.tareas = [
+                { id: 1, actividad_id: 1, nombre: 'Organizar taller inicial', estado: 'completada' },
+                { id: 2, actividad_id: 1, nombre: 'Evaluar participantes', estado: 'en_progreso' },
+                { id: 3, actividad_id: 2, nombre: 'Revisar currículo actual', estado: 'pendiente' },
+                { id: 4, actividad_id: 3, nombre: 'Elaborar planos', estado: 'completada' },
+                { id: 5, actividad_id: 4, nombre: 'Cotizar equipos', estado: 'en_progreso' },
+                { id: 6, actividad_id: 5, nombre: 'Convocar participantes', estado: 'pendiente' }
+            ];
         }
     }
     
@@ -1886,7 +1942,7 @@
             { id: 2, eje_id: 'educacion', estrategia: 'Mejora de infraestructura educativa', tipo_cruce: 'DA' },
             { id: 3, eje_id: 'salud', estrategia: 'Equipamiento de centros de salud', tipo_cruce: 'FO' },
             { id: 4, eje_id: 'empleabilidad', estrategia: 'Formación técnica para jóvenes', tipo_cruce: 'FA' },
-            { id: 5, eje_id: 'agua', estrategia: 'Monitoreo permanente de calidad del agua', tipo_cruce: 'DO' }
+            { id: 5, eje_id: 'sostenibilidad_ambiental', estrategia: 'Monitoreo permanente de calidad del agua', tipo_cruce: 'DO' }
         ];
         
         crearNodosEstrategias();
@@ -1916,7 +1972,7 @@
             const total = estrategiasDelEje.length;
             
             const angulo = (2 * Math.PI / total) * indice;
-            const radio = 120;
+            const radio = 180; // Aumentado para mejor espaciado
             
             const x = (ejeRect.left + ejeRect.width / 2 - canvasRect.left) + radio * Math.cos(angulo);
             const y = (ejeRect.top + ejeRect.height / 2 - canvasRect.top) + radio * Math.sin(angulo);
@@ -1947,7 +2003,7 @@
                         <i class="fas fa-chess-board"></i>
                     </div>
                     <div class="nodo-title">${tipoTexto}</div>
-                    <div class="nodo-counter">${estrategia.eje_id.toUpperCase()}</div>
+                    <div class="nodo-counter">${estrategia.eje_texto || eje.nombre}</div>
                 </div>
             `;
             
@@ -1984,7 +2040,7 @@
         
         actividades.forEach((actividad, index) => {
             const angulo = (2 * Math.PI / actividades.length) * index;
-            const radio = 80;
+            const radio = 100; // Aumentado para mejor espaciado
             
             const x = estrategiaX + radio * Math.cos(angulo);
             const y = estrategiaY + radio * Math.sin(angulo);
@@ -2005,7 +2061,7 @@
                     <div class="nodo-icon">
                         <i class="fas fa-tasks"></i>
                     </div>
-                    <div class="nodo-title">${actividad.nombre.substring(0, 30)}...</div>
+                    <div class="nodo-title">${actividad.nombre.substring(0, 30)}${actividad.nombre.length > 30 ? '...' : ''}</div>
                 </div>
             `;
             
@@ -2040,7 +2096,7 @@
         
         tareas.forEach((tarea, index) => {
             const angulo = (2 * Math.PI / tareas.length) * index;
-            const radio = 60;
+            const radio = 70; // Aumentado para mejor espaciado
             
             const x = actividadX + radio * Math.cos(angulo);
             const y = actividadY + radio * Math.sin(angulo);
@@ -2063,7 +2119,7 @@
                     estadoIcono = 'fa-check-circle';
                     estadoColor = '#2ecc71';
                     break;
-                case 'en-progreso':
+                case 'en_progreso':
                     estadoIcono = 'fa-spinner';
                     estadoColor = '#3498db';
                     break;
@@ -2074,7 +2130,7 @@
                     <div class="nodo-icon" style="background: linear-gradient(135deg, ${estadoColor}, ${oscurecerColor(estadoColor, 20)})">
                         <i class="fas ${estadoIcono}"></i>
                     </div>
-                    <div class="nodo-title">${tarea.nombre.substring(0, 20)}...</div>
+                    <div class="nodo-title">${tarea.nombre.substring(0, 20)}${tarea.nombre.length > 20 ? '...' : ''}</div>
                 </div>
             `;
             
@@ -2101,6 +2157,7 @@
     function crearConexionesJerarquicas() {
         // Las conexiones ya se crearon al crear los nodos
         actualizarEstadisticas();
+        dibujarConexiones();
     }
     
     function actualizarContadoresEjes() {
@@ -2517,7 +2574,7 @@
                                 estadoColor = '#2ecc71';
                                 estadoTexto = 'Completada';
                                 break;
-                            case 'en-progreso':
+                            case 'en_progreso':
                                 estadoIcono = 'fa-spinner';
                                 estadoColor = '#3498db';
                                 estadoTexto = 'En progreso';
@@ -2559,7 +2616,7 @@
                         <div class="estadistica-label">Completadas</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${tareas.filter(t => t.estado === 'en-progreso').length}</div>
+                        <div class="estadistica-valor">${tareas.filter(t => t.estado === 'en_progreso').length}</div>
                         <div class="estadistica-label">En progreso</div>
                     </div>
                 </div>
@@ -2615,7 +2672,7 @@
                 estadoColor = '#2ecc71';
                 estadoTexto = 'Completada';
                 break;
-            case 'en-progreso':
+            case 'en_progreso':
                 estadoIcono = 'fa-spinner';
                 estadoColor = '#3498db';
                 estadoTexto = 'En progreso';
@@ -2662,7 +2719,7 @@
                     <button class="btn-accion" onclick="cambiarEstadoTarea(${tareaId}, 'pendiente')" style="background: ${tarea.estado === 'pendiente' ? estadoColor : 'rgba(255,255,255,0.1)'}">
                         <i class="fas fa-clock"></i> Pendiente
                     </button>
-                    <button class="btn-accion" onclick="cambiarEstadoTarea(${tareaId}, 'en-progreso')" style="background: ${tarea.estado === 'en-progreso' ? estadoColor : 'rgba(255,255,255,0.1)'}">
+                    <button class="btn-accion" onclick="cambiarEstadoTarea(${tareaId}, 'en_progreso')" style="background: ${tarea.estado === 'en_progreso' ? estadoColor : 'rgba(255,255,255,0.1)'}">
                         <i class="fas fa-spinner"></i> En progreso
                     </button>
                     <button class="btn-accion" onclick="cambiarEstadoTarea(${tareaId}, 'completada')" style="background: ${tarea.estado === 'completada' ? estadoColor : 'rgba(255,255,255,0.1)'}">
@@ -2752,7 +2809,7 @@
                         estadoColor = '#2ecc71';
                         estadoIcono = 'fa-check-circle';
                         break;
-                    case 'en-progreso':
+                    case 'en_progreso':
                         estadoColor = '#3498db';
                         estadoIcono = 'fa-spinner';
                         break;
@@ -2771,6 +2828,7 @@
                 conexion.color = estadoColor;
             }
             
+            dibujarConexiones();
             mostrarDetallesTarea(tareaId);
             mostrarNotificacion(`Tarea actualizada: ${nuevoEstado}`, 'success');
         }
@@ -2864,44 +2922,40 @@
         }
     }
     
-    // Funciones de filtrado
+    // Funciones de filtrado - CORREGIDAS
     function aplicarFiltro() {
         config.filtroNivel = document.getElementById('filtro-nivel').value;
         
         const todosNodos = document.querySelectorAll('.nodo');
+        const niveles = {
+            'objetivo': ['nodo-objetivo'],
+            'ejes': ['nodo-eje'],
+            'estrategias': ['nodo-estrategia'],
+            'actividades': ['nodo-actividad'],
+            'tareas': ['nodo-tarea']
+        };
         
         todosNodos.forEach(nodo => {
-            const tipo = nodo.dataset.tipo || (nodo.id === 'nodo-objetivo' ? 'objetivo' : '');
+            const tipo = Array.from(nodo.classList).find(cls => 
+                ['nodo-eje', 'nodo-estrategia', 'nodo-actividad', 'nodo-tarea'].includes(cls)
+            );
             
-            if (config.filtroNivel === 'todos') {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (config.filtroNivel === 'objetivo' && nodo.id === 'nodo-objetivo') {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (config.filtroNivel === 'ejes' && tipo === 'eje') {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (config.filtroNivel === 'estrategias' && tipo === 'estrategia') {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (config.filtroNivel === 'actividades' && tipo === 'actividad') {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (config.filtroNivel === 'tareas' && tipo === 'tarea') {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else {
-                nodo.style.opacity = '0.2';
-                nodo.style.pointerEvents = 'none';
-            }
+            const mostrar = config.filtroNivel === 'todos' || 
+                           niveles[config.filtroNivel]?.includes(tipo) ||
+                           (config.filtroNivel === 'objetivo' && nodo.id === 'nodo-objetivo');
+            
+            nodo.style.display = mostrar ? 'block' : 'none';
+            nodo.style.opacity = mostrar ? '1' : '0.1';
+            nodo.style.pointerEvents = mostrar ? 'auto' : 'none';
         });
         
-        // Aplicar también filtro por eje si está activo
+        // Reaplicar filtro de eje si está activo
         if (config.filtroEje !== 'todos') {
             filtrarPorEje();
         }
         
+        // Redibujar conexiones
+        dibujarConexiones();
         mostrarNotificacion(`Filtro aplicado: ${config.filtroNivel}`, 'info');
     }
     
@@ -2917,36 +2971,48 @@
         const todosNodos = document.querySelectorAll('.nodo');
         
         todosNodos.forEach(nodo => {
-            const ejeId = nodo.dataset.ejeId || 
-                         (nodo.id === 'nodo-objetivo' ? 'todos' : 
-                          (nodo.id.startsWith('estrategia-') ? mapa.estrategias.find(e => e.id === parseInt(nodo.id.replace('estrategia-', '')))?.eje_id : null));
+            const ejeId = nodo.dataset.ejeId;
             
             if (nodo.id === 'nodo-objetivo') {
                 // El objetivo siempre visible
                 nodo.style.opacity = '1';
                 nodo.style.pointerEvents = 'auto';
+                nodo.style.display = 'block';
             } else if (ejeId === config.filtroEje) {
                 // Mostrar nodos del eje seleccionado
                 nodo.style.opacity = '1';
                 nodo.style.pointerEvents = 'auto';
-            } else if (nodo.dataset.tipo === 'eje' && nodo.id === `nodo-${config.filtroEje}`) {
+                nodo.style.display = 'block';
+            } else if (nodo.classList.contains('nodo-eje') && nodo.id === `nodo-${config.filtroEje}`) {
                 // Mostrar el eje seleccionado
                 nodo.style.opacity = '1';
                 nodo.style.pointerEvents = 'auto';
+                nodo.style.display = 'block';
+            } else if (nodo.id === 'nodo-objetivo') {
+                // El objetivo siempre visible
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+                nodo.style.display = 'block';
             } else {
                 // Ocultar otros nodos
                 nodo.style.opacity = '0.1';
                 nodo.style.pointerEvents = 'none';
+                nodo.style.display = 'block';
             }
         });
         
         // Resaltar el eje seleccionado
         const ejeSeleccionado = document.getElementById(`nodo-${config.filtroEje}`);
         if (ejeSeleccionado) {
+            if (config.nodoSeleccionado) {
+                config.nodoSeleccionado.classList.remove('seleccionado');
+            }
             ejeSeleccionado.classList.add('seleccionado');
             config.nodoSeleccionado = ejeSeleccionado;
         }
         
+        // Redibujar conexiones
+        dibujarConexiones();
         mostrarNotificacion(`Mostrando eje: ${config.filtroEje}`, 'info');
     }
     
