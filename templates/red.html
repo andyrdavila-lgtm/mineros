@@ -1,7 +1,7 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Mapa Neuronal Estratégico - Versión Corregida -->
+<!-- Mapa Neuronal Estratégico - Versión Mejorada con Sistema Anti-Colisiones -->
 <div class="mapa-neuronal-container" id="mapaFullscreen">
     <!-- Cabecera principal -->
     <div class="mapa-header-glass">
@@ -59,6 +59,13 @@
                 </button>
                 <button class="control-btn tooltip" onclick="cargarDatosDesdeAPI()" data-tooltip="Actualizar datos">
                     <i class="fas fa-sync"></i>
+                </button>
+                <!-- Nuevos botones de optimización -->
+                <button class="control-btn tooltip" onclick="reposicionarTodoElMapa()" data-tooltip="Optimizar distribución">
+                    <i class="fas fa-sitemap"></i>
+                </button>
+                <button class="control-btn tooltip" onclick="verificarYCorregirColisiones()" data-tooltip="Verificar colisiones">
+                    <i class="fas fa-exclamation-triangle"></i>
                 </button>
             </div>
         </div>
@@ -405,7 +412,7 @@
     
     .controles-grid {
         display: grid;
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(7, 1fr);
         gap: 8px;
     }
     
@@ -1272,12 +1279,46 @@
         transition: opacity 0.3s ease;
     }
     
+    /* Estilos para botones de optimización */
+    .control-btn.warning {
+        background: rgba(231, 76, 60, 0.2);
+        border: 1px solid rgba(231, 76, 60, 0.3);
+    }
+    
+    .control-btn.warning:hover {
+        background: rgba(231, 76, 60, 0.4);
+    }
+    
+    .control-btn.success {
+        background: rgba(46, 204, 113, 0.2);
+        border: 1px solid rgba(46, 204, 113, 0.3);
+    }
+    
+    .control-btn.success:hover {
+        background: rgba(46, 204, 113, 0.4);
+    }
+    
+    /* Aumentar el z-index de nodos para mejor visualización */
+    .nodo-eje { z-index: 90; }
+    .nodo-estrategia { z-index: 80; }
+    .nodo-tactica { z-index: 70; }
+    .nodo-actividad { z-index: 60; }
+    
+    .nodo:hover {
+        z-index: 1000 !important;
+        transform: scale(1.05);
+    }
+    
     /* Responsive */
     @media (max-width: 1200px) {
         .panel-controles {
             width: 300px;
             top: 90px;
             right: 10px;
+        }
+        
+        .controles-grid {
+            grid-template-columns: repeat(4, 1fr);
         }
         
         .panel-detalles {
@@ -1325,6 +1366,10 @@
             top: 110px;
         }
         
+        .controles-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
         .panel-detalles {
             width: 100%;
             right: -100%;
@@ -1352,7 +1397,9 @@
 </style>
 
 <script>
-    // Variables globales
+    // ================================
+    // VARIABLES GLOBALES
+    // ================================
     let mapa = {
         ejes: [],
         estrategias: [],
@@ -1380,36 +1427,413 @@
     let elementos = {
         particulas: [],
         intervaloConexiones: null,
-        animacionFrame: null
+        animacionFrame: null,
+        nodosPosiciones: new Map()
     };
     
-    // Función para verificar colisiones entre nodos
-    function verificarColision(x, y, radioMinimo = 120, tipoNodo = '') {
-        const todosNodos = document.querySelectorAll('.nodo:not([style*="display: none"]):not(.nodo-central)');
+    // ================================
+    // ALGORITMO DE FUERZA DIRECTA MEJORADO
+    // ================================
+    
+    // Configuración del algoritmo de fuerza
+    const fuerzaConfig = {
+        repulsion: 100,        // Fuerza de repulsión entre nodos
+        atraccionCentral: 0.1, // Fuerza de atracción al centro
+        atraccionConexiones: 0.5, // Fuerza de atracción entre nodos conectados
+        friccion: 0.8,         // Fricción para estabilizar
+        maxIteraciones: 100,   // Máximo de iteraciones para ajuste
+        umbralColision: 120    // Distancia mínima entre nodos
+    };
+    
+    // Sistema de grid para evitar colisiones
+    const gridConfig = {
+        cellSize: 150, // Tamaño de celda en píxeles
+        grid: new Map() // Mapa de posiciones ocupadas
+    };
+    
+    // ================================
+    // FUNCIONES DEL ALGORITMO DE FUERZA
+    // ================================
+    
+    // Función para calcular posición libre con algoritmo de fuerza
+    function calcularPosicionLibre(x, y, tipoNodo = '', nodoId = '') {
+        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+        const centroX = canvasRect.width / 2;
+        const centroY = canvasRect.height / 2;
+        
+        // Si es nodo objetivo, mantener en el centro
+        if (nodoId === 'nodo-objetivo') {
+            return { x: centroX, y: centroY };
+        }
+        
+        // Si es un eje, usar distribución circular
+        if (tipoNodo === 'eje') {
+            // Encontrar el índice del eje
+            const index = mapa.ejes.findIndex(e => `nodo-${e.id}` === nodoId);
+            if (index >= 0) {
+                const totalEjes = mapa.ejes.length;
+                const angulo = (2 * Math.PI / totalEjes) * index - Math.PI / 2;
+                const radio = Math.min(canvasRect.width, canvasRect.height) * 0.35; // Reducido para más espacio
+                
+                let posX = centroX + radio * Math.cos(angulo);
+                let posY = centroY + radio * Math.sin(angulo);
+                
+                // Aplicar repulsión con otros nodos
+                const nuevaPos = aplicarRepulsion(posX, posY, nodoId, 'eje');
+                
+                return nuevaPos;
+            }
+        }
+        
+        // Para otros nodos, calcular posición en círculo alrededor del padre
+        let posX = x;
+        let posY = y;
+        
+        // Aplicar algoritmo de fuerza para evitar colisiones
+        const nuevaPos = aplicarRepulsion(posX, posY, nodoId, tipoNodo);
+        
+        return nuevaPos;
+    }
+    
+    function aplicarRepulsion(x, y, nodoId, tipoNodo) {
+        const todosNodos = document.querySelectorAll('.nodo');
+        let fuerzaX = 0;
+        let fuerzaY = 0;
         
         for (const nodo of todosNodos) {
-            if (!nodo.style.left || !nodo.style.top) continue;
+            if (!nodo.style.left || !nodo.style.top || nodo.id === nodoId) continue;
             
             const nodoX = parseFloat(nodo.style.left);
             const nodoY = parseFloat(nodo.style.top);
             
-            const distancia = Math.sqrt(Math.pow(x - nodoX, 2) + Math.pow(y - nodoY, 2));
+            const dx = x - nodoX;
+            const dy = y - nodoY;
+            const distancia = Math.sqrt(dx * dx + dy * dy);
             
-            // Aumentar radio mínimo para nodos del mismo tipo
-            const radioAjustado = tipoNodo && nodo.classList.contains(tipoNodo) ? radioMinimo * 1.5 : radioMinimo;
-            
-            if (distancia < radioAjustado) {
-                // Ajustar posición para evitar colisión
-                const angulo = Math.atan2(y - nodoY, x - nodoX);
-                return {
-                    x: nodoX + radioAjustado * Math.cos(angulo),
-                    y: nodoY + radioAjustado * Math.sin(angulo)
-                };
+            // Si los nodos están demasiado cerca, aplicar fuerza de repulsión
+            if (distancia < fuerzaConfig.umbralColision && distancia > 0) {
+                const fuerza = (fuerzaConfig.umbralColision - distancia) / distancia * fuerzaConfig.repulsion;
+                fuerzaX += (dx / distancia) * fuerza;
+                fuerzaY += (dy / distancia) * fuerza;
             }
         }
         
+        // Aplicar fuerzas con fricción
+        return {
+            x: x + fuerzaX * fuerzaConfig.friccion,
+            y: y + fuerzaY * fuerzaConfig.friccion
+        };
+    }
+    
+    // Función para ajustar todas las posiciones de nodos
+    function ajustarPosicionesNodos() {
+        const nodos = document.querySelectorAll('.nodo');
+        let ajustesRealizados = false;
+        
+        // Aplicar múltiples iteraciones para mejor ajuste
+        for (let iteracion = 0; iteracion < fuerzaConfig.maxIteraciones; iteracion++) {
+            let maxAjuste = 0;
+            
+            nodos.forEach(nodo => {
+                if (!nodo.style.left || !nodo.style.top) return;
+                
+                const x = parseFloat(nodo.style.left);
+                const y = parseFloat(nodo.style.top);
+                
+                // Calcular nuevas posiciones
+                const nuevaPos = aplicarRepulsion(x, y, nodo.id, nodo.dataset.tipo);
+                
+                // Aplicar atracción al centro para nodos muy alejados
+                const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+                const centroX = canvasRect.width / 2;
+                const centroY = canvasRect.height / 2;
+                
+                const dxCentro = centroX - nuevaPos.x;
+                const dyCentro = centroY - nuevaPos.y;
+                const distCentro = Math.sqrt(dxCentro * dxCentro + dyCentro * dyCentro);
+                
+                // Solo aplicar atracción al centro si está muy lejos
+                if (distCentro > 800) {
+                    nuevaPos.x += dxCentro * fuerzaConfig.atraccionCentral;
+                    nuevaPos.y += dyCentro * fuerzaConfig.atraccionCentral;
+                }
+                
+                // Aplicar atracción a nodos conectados
+                if (nodo.id !== 'nodo-objetivo') {
+                    const conexionesNodo = mapa.conexiones.filter(c => 
+                        c.sourceId === nodo.id || c.targetId === nodo.id
+                    );
+                    
+                    conexionesNodo.forEach(conexion => {
+                        const otroNodoId = conexion.sourceId === nodo.id ? conexion.targetId : conexion.sourceId;
+                        const otroNodo = document.getElementById(otroNodoId);
+                        
+                        if (otroNodo && otroNodo.style.left && otroNodo.style.top) {
+                            const otroX = parseFloat(otroNodo.style.left);
+                            const otroY = parseFloat(otroNodo.style.top);
+                            
+                            const dx = otroX - nuevaPos.x;
+                            const dy = otroY - nuevaPos.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            
+                            // Aplicar atracción para mantener conexiones visibles
+                            if (dist > 50 && dist < 500) {
+                                nuevaPos.x += dx * fuerzaConfig.atraccionConexiones * 0.1;
+                                nuevaPos.y += dy * fuerzaConfig.atraccionConexiones * 0.1;
+                            }
+                        }
+                    });
+                }
+                
+                // Calcular cuanto se movió
+                const ajusteX = nuevaPos.x - x;
+                const ajusteY = nuevaPos.y - y;
+                const ajusteTotal = Math.sqrt(ajusteX * ajusteX + ajusteY * ajusteY);
+                
+                if (ajusteTotal > maxAjuste) maxAjuste = ajusteTotal;
+                
+                // Aplicar nueva posición
+                nodo.style.left = `${nuevaPos.x}px`;
+                nodo.style.top = `${nuevaPos.y}px`;
+            });
+            
+            // Si los ajustes son muy pequeños, detener
+            if (maxAjuste < 0.5) break;
+            ajustesRealizados = true;
+        }
+        
+        return ajustesRealizados;
+    }
+    
+    // Función para encontrar posición libre en grid
+    function encontrarPosicionEnGrid(x, y, ancho, alto) {
+        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+        const gridX = Math.round(x / gridConfig.cellSize);
+        const gridY = Math.round(y / gridConfig.cellSize);
+        
+        // Intentar posiciones cercanas en espiral
+        for (let radio = 0; radio < 10; radio++) {
+            for (let ang = 0; ang < 2 * Math.PI; ang += Math.PI / 4) {
+                const testGridX = gridX + Math.round(radio * Math.cos(ang));
+                const testGridY = gridY + Math.round(radio * Math.sin(ang));
+                const testX = testGridX * gridConfig.cellSize;
+                const testY = testGridY * gridConfig.cellSize;
+                
+                const key = `${testGridX},${testGridY}`;
+                
+                if (!gridConfig.grid.has(key)) {
+                    // Verificar que esté dentro del canvas
+                    if (testX >= 50 && testX <= canvasRect.width - 50 &&
+                        testY >= 50 && testY <= canvasRect.height - 50) {
+                        gridConfig.grid.set(key, true);
+                        return { x: testX, y: testY };
+                    }
+                }
+            }
+        }
+        
+        // Si no encuentra posición en grid, usar posición original
         return { x, y };
     }
+    
+    // Sistema de capas concéntricas con sectores
+    function distribuirEnCapasConSectores() {
+        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+        const centroX = canvasRect.width / 2;
+        const centroY = canvasRect.height / 2;
+        
+        // Definir radios por capa
+        const radios = {
+            ejes: Math.min(canvasRect.width, canvasRect.height) * 0.32,
+            estrategias: Math.min(canvasRect.width, canvasRect.height) * 0.45,
+            tacticas: Math.min(canvasRect.width, canvasRect.height) * 0.58,
+            actividades: Math.min(canvasRect.width, canvasRect.height) * 0.70
+        };
+        
+        // Distribuir ejes en círculo
+        mapa.ejes.forEach((eje, index) => {
+            const nodo = document.getElementById(`nodo-${eje.id}`);
+            if (!nodo) return;
+            
+            const totalEjes = mapa.ejes.length;
+            const angulo = (2 * Math.PI / totalEjes) * index - Math.PI / 2;
+            
+            // Posición base
+            let x = centroX + radios.ejes * Math.cos(angulo);
+            let y = centroY + radios.ejes * Math.sin(angulo);
+            
+            // Añadir pequeño desplazamiento aleatorio
+            x += (Math.random() - 0.5) * 40;
+            y += (Math.random() - 0.5) * 40;
+            
+            nodo.style.left = `${x}px`;
+            nodo.style.top = `${y}px`;
+        });
+        
+        // Distribuir estrategias en sectores alrededor de cada eje
+        mapa.estrategias.forEach((estrategia) => {
+            const nodo = document.getElementById(`estrategia-${estrategia.id}`);
+            if (!nodo) return;
+            
+            const ejeNodo = document.getElementById(`nodo-${estrategia.eje_id}`);
+            if (!ejeNodo) return;
+            
+            const estrategiasDelEje = mapa.estrategias.filter(e => e.eje_id === estrategia.eje_id);
+            const index = estrategiasDelEje.findIndex(e => e.id === estrategia.id);
+            const total = estrategiasDelEje.length;
+            
+            // Obtener posición del eje
+            const ejeX = parseFloat(ejeNodo.style.left);
+            const ejeY = parseFloat(ejeNodo.style.top);
+            
+            // Calcular ángulo hacia el centro desde el eje
+            const dx = centroX - ejeX;
+            const dy = centroY - ejeY;
+            const anguloBase = Math.atan2(dy, dx);
+            
+            // Distribuir en arco de 120 grados
+            const anguloSpread = Math.PI * 0.67; // 120 grados
+            const anguloInicio = anguloBase - anguloSpread / 2;
+            const angulo = anguloInicio + (anguloSpread / (total - 1 || 1)) * index;
+            
+            // Posicionar estrategia
+            let x = ejeX + radios.estrategias * Math.cos(angulo);
+            let y = ejeY + radios.estrategias * Math.sin(angulo);
+            
+            nodo.style.left = `${x}px`;
+            nodo.style.top = `${y}px`;
+        });
+        
+        // Distribuir tácticas en círculos más pequeños
+        mapa.tacticas.forEach((tactica) => {
+            const nodo = document.getElementById(`tactica-${tactica.id}`);
+            if (!nodo) return;
+            
+            const estrategiaNodo = document.getElementById(`estrategia-${tactica.estrategia_id}`);
+            if (!estrategiaNodo) return;
+            
+            const tacticasDeEstrategia = mapa.tacticas.filter(t => t.estrategia_id === tactica.estrategia_id);
+            const index = tacticasDeEstrategia.findIndex(t => t.id === tactica.id);
+            const total = tacticasDeEstrategia.length;
+            
+            const estrategiaX = parseFloat(estrategiaNodo.style.left);
+            const estrategiaY = parseFloat(estrategiaNodo.style.top);
+            
+            // Distribuir en círculo completo
+            const angulo = (2 * Math.PI / total) * index;
+            
+            let x = estrategiaX + 120 * Math.cos(angulo);
+            let y = estrategiaY + 120 * Math.sin(angulo);
+            
+            nodo.style.left = `${x}px`;
+            nodo.style.top = `${y}px`;
+        });
+        
+        // Distribuir actividades
+        mapa.actividades.forEach((actividad) => {
+            const nodo = document.getElementById(`actividad-${actividad.id}`);
+            if (!nodo) return;
+            
+            const tacticaNodo = document.getElementById(`tactica-${actividad.tactica_id}`);
+            if (!tacticaNodo) return;
+            
+            const actividadesDeTactica = mapa.actividades.filter(a => a.tactica_id === actividad.tactica_id);
+            const index = actividadesDeTactica.findIndex(a => a.id === actividad.id);
+            const total = actividadesDeTactica.length;
+            
+            const tacticaX = parseFloat(tacticaNodo.style.left);
+            const tacticaY = parseFloat(tacticaNodo.style.top);
+            
+            const angulo = (2 * Math.PI / total) * index;
+            
+            let x = tacticaX + 80 * Math.cos(angulo);
+            let y = tacticaY + 80 * Math.sin(angulo);
+            
+            nodo.style.left = `${x}px`;
+            nodo.style.top = `${y}px`;
+        });
+    }
+    
+    // Función principal de reposicionamiento
+    function reposicionarTodoElMapa() {
+        console.log("Reposicionando mapa para evitar colisiones...");
+        
+        // Usar distribución jerárquica mejorada
+        distribuirEnCapasConSectores();
+        
+        // Aplicar algoritmo de fuerza para ajustes finos
+        setTimeout(() => {
+            ajustarPosicionesNodos();
+            
+            // Verificar colisiones restantes
+            const colisiones = verificarColisiones();
+            if (colisiones.length > 0) {
+                console.log(`Colisiones detectadas: ${colisiones.length}`);
+                
+                // Si hay colisiones, aplicar ajustes adicionales
+                for (let i = 0; i < 5; i++) {
+                    ajustarPosicionesNodos();
+                }
+            }
+            
+            // Redibujar conexiones
+            dibujarConexiones();
+            mostrarNotificacion('Mapa reposicionado para evitar colisiones', 'success');
+        }, 100);
+    }
+    
+    // Función para verificar colisiones
+    function verificarColisiones() {
+        const nodos = document.querySelectorAll('.nodo');
+        const colisiones = [];
+        
+        for (let i = 0; i < nodos.length; i++) {
+            for (let j = i + 1; j < nodos.length; j++) {
+                const nodoA = nodos[i];
+                const nodoB = nodos[j];
+                
+                if (!nodoA.style.left || !nodoA.style.top || 
+                    !nodoB.style.left || !nodoB.style.top) continue;
+                
+                const rectA = nodoA.getBoundingClientRect();
+                const rectB = nodoB.getBoundingClientRect();
+                
+                // Verificar superposición
+                if (rectA.left < rectB.right && 
+                    rectA.right > rectB.left && 
+                    rectA.top < rectB.bottom && 
+                    rectA.bottom > rectB.top) {
+                    
+                    colisiones.push({
+                        nodoA: nodoA.id,
+                        nodoB: nodoB.id,
+                        distancia: Math.sqrt(
+                            Math.pow(rectA.left - rectB.left, 2) + 
+                            Math.pow(rectA.top - rectB.top, 2)
+                        )
+                    });
+                }
+            }
+        }
+        
+        return colisiones;
+    }
+    
+    // Función para verificar y corregir colisiones
+    function verificarYCorregirColisiones() {
+        const colisiones = verificarColisiones();
+        
+        if (colisiones.length === 0) {
+            mostrarNotificacion('¡No hay colisiones detectadas!', 'success');
+        } else {
+            mostrarNotificacion(`Se detectaron ${colisiones.length} colisiones. Corrigiendo...`, 'warning');
+            reposicionarTodoElMapa();
+        }
+    }
+    
+    // ================================
+    // FUNCIONES AUXILIARES
+    // ================================
     
     // Función para oscurecer color
     function oscurecerColor(color, percent) {
@@ -1423,6 +1847,10 @@
             (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
             (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
     }
+    
+    // ================================
+    // INICIALIZACIÓN
+    // ================================
     
     // Inicialización
     document.addEventListener('DOMContentLoaded', function() {
@@ -1451,6 +1879,10 @@
         
         actualizarProgresoCarga(50);
     }
+    
+    // ================================
+    // CREACIÓN DE NODOS CON SISTEMA MEJORADO
+    // ================================
     
     function crearNodosEjes() {
         const ejesContainer = document.getElementById('ejesContainer');
@@ -1512,17 +1944,18 @@
         const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
         const centroX = canvasRect.width / 2;
         const centroY = canvasRect.height / 2;
-        const radio = Math.min(canvasRect.width, canvasRect.height) * 0.45;
+        const radio = Math.min(canvasRect.width, canvasRect.height) * 0.32; // Reducido para más espacio
         
         mapa.ejes.forEach((eje, index) => {
             const angulo = (2 * Math.PI / mapa.ejes.length) * index - Math.PI / 2;
+            
+            // Posición base en círculo
             let x = centroX + radio * Math.cos(angulo);
             let y = centroY + radio * Math.sin(angulo);
             
-            // Verificar colisión
-            const posicionAjustada = verificarColision(x, y, 180, 'nodo-eje');
-            x = posicionAjustada.x;
-            y = posicionAjustada.y;
+            // Agregar pequeño desplazamiento aleatorio para evitar alineación perfecta
+            x += (Math.random() - 0.5) * 30;
+            y += (Math.random() - 0.5) * 30;
             
             const nodoDiv = document.createElement('div');
             nodoDiv.className = 'nodo nodo-eje nodo-aparecer';
@@ -1574,6 +2007,291 @@
             });
         });
     }
+    
+    function crearNodosEstrategias() {
+        const estrategiasContainer = document.getElementById('estrategiasContainer');
+        estrategiasContainer.innerHTML = '';
+        
+        // Primero, reposicionar ejes para asegurar espacio
+        setTimeout(() => {
+            distribuirEnCapasConSectores();
+        }, 100);
+        
+        mapa.estrategias.forEach((estrategia, index) => {
+            const eje = mapa.ejes.find(e => e.id === estrategia.eje_id);
+            if (!eje) return;
+            
+            const ejeElement = document.getElementById(`nodo-${eje.id}`);
+            if (!ejeElement) return;
+            
+            const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+            const centroX = canvasRect.width / 2;
+            const centroY = canvasRect.height / 2;
+            
+            // Obtener posición del eje
+            const ejeRect = ejeElement.getBoundingClientRect();
+            const ejeX = ejeRect.left + ejeRect.width / 2 - canvasRect.left;
+            const ejeY = ejeRect.top + ejeRect.height / 2 - canvasRect.top;
+            
+            // Calcular ángulo desde el eje hacia el centro
+            const dx = centroX - ejeX;
+            const dy = centroY - ejeY;
+            const anguloHaciaCentro = Math.atan2(dy, dx);
+            
+            // Obtener estrategias del mismo eje
+            const estrategiasDelEje = mapa.estrategias.filter(e => e.eje_id === estrategia.eje_id);
+            const indice = estrategiasDelEje.findIndex(e => e.id === estrategia.id);
+            const total = estrategiasDelEje.length;
+            
+            // Distribuir en arco de 90 grados hacia el centro
+            const spread = Math.PI / 2; // 90 grados
+            const anguloInicio = anguloHaciaCentro - spread / 2;
+            
+            let angulo = 0;
+            if (total > 1) {
+                angulo = anguloInicio + (spread / (total - 1)) * indice;
+            } else {
+                angulo = anguloHaciaCentro;
+            }
+            
+            const radio = 180; // Radio reducido
+            
+            let x = ejeX + radio * Math.cos(angulo);
+            let y = ejeY + radio * Math.sin(angulo);
+            
+            // Agregar variación aleatoria
+            x += (Math.random() - 0.5) * 40;
+            y += (Math.random() - 0.5) * 40;
+            
+            const nodoDiv = document.createElement('div');
+            nodoDiv.className = 'nodo nodo-estrategia nodo-aparecer';
+            nodoDiv.id = `estrategia-${estrategia.id}`;
+            nodoDiv.dataset.estrategiaId = estrategia.id;
+            nodoDiv.dataset.ejeId = estrategia.eje_id;
+            nodoDiv.dataset.tipo = 'estrategia';
+            nodoDiv.style.left = `${x}px`;
+            nodoDiv.style.top = `${y}px`;
+            nodoDiv.style.transform = 'translate(-50%, -50%)';
+            nodoDiv.style.animationDelay = `${index * 0.05 + 0.5}s`;
+            
+            let tipoTexto = '';
+            switch(estrategia.tipo_cruce) {
+                case 'FO': tipoTexto = 'FORTALEZA + OPORTUNIDAD'; break;
+                case 'DO': tipoTexto = 'DEBILIDAD + OPORTUNIDAD'; break;
+                case 'FA': tipoTexto = 'FORTALEZA + AMENAZA'; break;
+                case 'DA': tipoTexto = 'DEBILIDAD + AMENAZA'; break;
+                default: tipoTexto = estrategia.tipo_cruce;
+            }
+            
+            nodoDiv.innerHTML = `
+                <div class="nodo-content">
+                    <div class="nodo-icon">
+                        <i class="fas fa-chess-board"></i>
+                    </div>
+                    <div class="nodo-title">${tipoTexto}</div>
+                    <div class="nodo-counter">${estrategia.eje_texto || eje.nombre}</div>
+                </div>
+            `;
+            
+            estrategiasContainer.appendChild(nodoDiv);
+            
+            // Agregar eventos
+            nodoDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                seleccionarNodo(this.id);
+                mostrarDetallesEstrategia(estrategia.id);
+            });
+            
+            // Crear conexión con el eje
+            mapa.conexiones.push({
+                id: `conexion-${eje.id}-estrategia-${estrategia.id}`,
+                tipo: 'estrategia',
+                sourceId: `nodo-${eje.id}`,
+                targetId: `estrategia-${estrategia.id}`,
+                color: '#2ecc71'
+            });
+        });
+        
+        actualizarContadoresEjes();
+        
+        // Crear tácticas después de un breve retraso
+        setTimeout(() => {
+            crearNodosTacticas();
+        }, 100);
+    }
+    
+    function crearNodosTacticas() {
+        const tacticasContainer = document.getElementById('tacticasContainer');
+        tacticasContainer.innerHTML = '';
+        
+        mapa.tacticas.forEach((tactica, index) => {
+            const estrategia = mapa.estrategias.find(e => e.id === tactica.estrategia_id);
+            if (!estrategia) return;
+            
+            const estrategiaElement = document.getElementById(`estrategia-${estrategia.id}`);
+            if (!estrategiaElement) return;
+            
+            const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+            const estrategiaRect = estrategiaElement.getBoundingClientRect();
+            
+            const estrategiaX = estrategiaRect.left + estrategiaRect.width / 2 - canvasRect.left;
+            const estrategiaY = estrategiaRect.top + estrategiaRect.height / 2 - canvasRect.top;
+            
+            // Obtener tácticas de la misma estrategia
+            const tacticasDeEstrategia = mapa.tacticas.filter(t => t.estrategia_id === tactica.estrategia_id);
+            const indice = tacticasDeEstrategia.findIndex(t => t.id === tactica.id);
+            const total = tacticasDeEstrategia.length;
+            
+            // Distribuir en círculo completo
+            const angulo = (2 * Math.PI / total) * indice;
+            const radio = 100; // Radio reducido
+            
+            let x = estrategiaX + radio * Math.cos(angulo);
+            let y = estrategiaY + radio * Math.sin(angulo);
+            
+            // Agregar variación aleatoria
+            x += (Math.random() - 0.5) * 30;
+            y += (Math.random() - 0.5) * 30;
+            
+            const nodoDiv = document.createElement('div');
+            nodoDiv.className = 'nodo nodo-tactica nodo-aparecer';
+            nodoDiv.id = `tactica-${tactica.id}`;
+            nodoDiv.dataset.tacticaId = tactica.id;
+            nodoDiv.dataset.estrategiaId = tactica.estrategia_id;
+            nodoDiv.dataset.tipo = 'tactica';
+            nodoDiv.style.left = `${x}px`;
+            nodoDiv.style.top = `${y}px`;
+            nodoDiv.style.transform = 'translate(-50%, -50%)';
+            nodoDiv.style.animationDelay = `${index * 0.05 + 1}s`;
+            
+            nodoDiv.innerHTML = `
+                <div class="nodo-content">
+                    <div class="nodo-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="nodo-title">${tactica.nombre.substring(0, 30)}${tactica.nombre.length > 30 ? '...' : ''}</div>
+                </div>
+            `;
+            
+            tacticasContainer.appendChild(nodoDiv);
+            
+            // Agregar eventos
+            nodoDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                seleccionarNodo(this.id);
+                mostrarDetallesTactica(tactica.id);
+            });
+            
+            // Crear conexión con la estrategia
+            mapa.conexiones.push({
+                id: `conexion-estrategia-${estrategia.id}-tactica-${tactica.id}`,
+                tipo: 'tactica',
+                sourceId: `estrategia-${estrategia.id}`,
+                targetId: `tactica-${tactica.id}`,
+                color: '#e74c3c'
+            });
+        });
+        
+        // Crear actividades después de un breve retraso
+        setTimeout(() => {
+            crearNodosActividades();
+        }, 100);
+    }
+    
+    function crearNodosActividades() {
+        const actividadesContainer = document.getElementById('actividadesContainer');
+        actividadesContainer.innerHTML = '';
+        
+        mapa.actividades.forEach((actividad, index) => {
+            const tactica = mapa.tacticas.find(t => t.id === actividad.tactica_id);
+            if (!tactica) return;
+            
+            const tacticaElement = document.getElementById(`tactica-${tactica.id}`);
+            if (!tacticaElement) return;
+            
+            const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+            const tacticaRect = tacticaElement.getBoundingClientRect();
+            
+            const tacticaX = tacticaRect.left + tacticaRect.width / 2 - canvasRect.left;
+            const tacticaY = tacticaRect.top + tacticaRect.height / 2 - canvasRect.top;
+            
+            // Obtener actividades de la misma táctica
+            const actividadesDeTactica = mapa.actividades.filter(a => a.tactica_id === actividad.tactica_id);
+            const indice = actividadesDeTactica.findIndex(a => a.id === actividad.id);
+            const total = actividadesDeTactica.length;
+            
+            // Distribuir en círculo pequeño
+            const angulo = (2 * Math.PI / total) * indice;
+            const radio = 70; // Radio reducido
+            
+            let x = tacticaX + radio * Math.cos(angulo);
+            let y = tacticaY + radio * Math.sin(angulo);
+            
+            // Agregar variación aleatoria
+            x += (Math.random() - 0.5) * 20;
+            y += (Math.random() - 0.5) * 20;
+            
+            const nodoDiv = document.createElement('div');
+            nodoDiv.className = 'nodo nodo-actividad nodo-aparecer';
+            nodoDiv.id = `actividad-${actividad.id}`;
+            nodoDiv.dataset.actividadId = actividad.id;
+            nodoDiv.dataset.tacticaId = actividad.tactica_id;
+            nodoDiv.dataset.tipo = 'actividad';
+            nodoDiv.style.left = `${x}px`;
+            nodoDiv.style.top = `${y}px`;
+            nodoDiv.style.transform = 'translate(-50%, -50%)';
+            nodoDiv.style.animationDelay = `${index * 0.05 + 1.5}s`;
+            
+            let estadoIcono = 'fa-clock';
+            let estadoColor = '#f39c12';
+            switch(actividad.estado) {
+                case 'completada':
+                    estadoIcono = 'fa-check-circle';
+                    estadoColor = '#2ecc71';
+                    break;
+                case 'en_progreso':
+                    estadoIcono = 'fa-spinner';
+                    estadoColor = '#3498db';
+                    break;
+            }
+            
+            nodoDiv.innerHTML = `
+                <div class="nodo-content">
+                    <div class="nodo-icon" style="background: linear-gradient(135deg, ${estadoColor}, ${oscurecerColor(estadoColor, 20)})">
+                        <i class="fas ${estadoIcono}"></i>
+                    </div>
+                    <div class="nodo-title">${actividad.nombre.substring(0, 20)}${actividad.nombre.length > 20 ? '...' : ''}</div>
+                </div>
+            `;
+            
+            actividadesContainer.appendChild(nodoDiv);
+            
+            // Agregar eventos
+            nodoDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                seleccionarNodo(this.id);
+                mostrarDetallesActividad(actividad.id);
+            });
+            
+            // Crear conexión con la táctica
+            mapa.conexiones.push({
+                id: `conexion-tactica-${tactica.id}-actividad-${actividad.id}`,
+                tipo: 'actividad',
+                sourceId: `tactica-${tactica.id}`,
+                targetId: `actividad-${actividad.id}`,
+                color: estadoColor
+            });
+        });
+        
+        // Aplicar ajuste final de posiciones
+        setTimeout(() => {
+            reposicionarTodoElMapa();
+        }, 200);
+    }
+    
+    // ================================
+    // FUNCIONES DE EVENTOS Y CONTROLES
+    // ================================
     
     function iniciarSistemaConexiones() {
         // Usar requestAnimationFrame para mejor rendimiento
@@ -1884,7 +2602,10 @@
         }
     }
     
-    // Cargar datos desde API
+    // ================================
+    // CARGAR DATOS DESDE API
+    // ================================
+    
     async function cargarDatosDesdeAPI() {
         mostrarCargando('Cargando datos estratégicos...', 60);
         
@@ -2036,224 +2757,6 @@
         animarEntrada();
     }
     
-    function crearNodosEstrategias() {
-        const estrategiasContainer = document.getElementById('estrategiasContainer');
-        estrategiasContainer.innerHTML = '';
-        
-        mapa.estrategias.forEach((estrategia, index) => {
-            const eje = mapa.ejes.find(e => e.id === estrategia.eje_id);
-            if (!eje) return;
-            
-            // Encontrar posición del eje
-            const ejeElement = document.getElementById(`nodo-${eje.id}`);
-            if (!ejeElement) return;
-            
-            const ejeRect = ejeElement.getBoundingClientRect();
-            const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
-            
-            // Posicionar estrategias en círculo alrededor del eje
-            const estrategiasDelEje = mapa.estrategias.filter(e => e.eje_id === estrategia.eje_id);
-            const indice = estrategiasDelEje.findIndex(e => e.id === estrategia.id);
-            const total = estrategiasDelEje.length;
-            
-            const angulo = (2 * Math.PI / total) * indice;
-            const radio = 250;
-            
-            let x = (ejeRect.left + ejeRect.width / 2 - canvasRect.left) + radio * Math.cos(angulo);
-            let y = (ejeRect.top + ejeRect.height / 2 - canvasRect.top) + radio * Math.sin(angulo);
-            
-            // Verificar colisión
-            const posicionAjustada = verificarColision(x, y, 150, 'nodo-estrategia');
-            x = posicionAjustada.x;
-            y = posicionAjustada.y;
-            
-            const nodoDiv = document.createElement('div');
-            nodoDiv.className = 'nodo nodo-estrategia nodo-aparecer';
-            nodoDiv.id = `estrategia-${estrategia.id}`;
-            nodoDiv.dataset.estrategiaId = estrategia.id;
-            nodoDiv.dataset.ejeId = estrategia.eje_id;
-            nodoDiv.dataset.tipo = 'estrategia';
-            nodoDiv.style.left = `${x}px`;
-            nodoDiv.style.top = `${y}px`;
-            nodoDiv.style.transform = 'translate(-50%, -50%)';
-            nodoDiv.style.animationDelay = `${index * 0.05 + 0.5}s`;
-            
-            let tipoTexto = '';
-            switch(estrategia.tipo_cruce) {
-                case 'FO': tipoTexto = 'FORTALEZA + OPORTUNIDAD'; break;
-                case 'DO': tipoTexto = 'DEBILIDAD + OPORTUNIDAD'; break;
-                case 'FA': tipoTexto = 'FORTALEZA + AMENAZA'; break;
-                case 'DA': tipoTexto = 'DEBILIDAD + AMENAZA'; break;
-                default: tipoTexto = estrategia.tipo_cruce;
-            }
-            
-            nodoDiv.innerHTML = `
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-chess-board"></i>
-                    </div>
-                    <div class="nodo-title">${tipoTexto}</div>
-                    <div class="nodo-counter">${estrategia.eje_texto || eje.nombre}</div>
-                </div>
-            `;
-            
-            estrategiasContainer.appendChild(nodoDiv);
-            
-            // Agregar eventos
-            nodoDiv.addEventListener('click', function(e) {
-                e.stopPropagation();
-                seleccionarNodo(this.id);
-                mostrarDetallesEstrategia(estrategia.id);
-            });
-            
-            // Crear conexión con el eje
-            mapa.conexiones.push({
-                id: `conexion-${eje.id}-estrategia-${estrategia.id}`,
-                tipo: 'estrategia',
-                sourceId: `nodo-${eje.id}`,
-                targetId: `estrategia-${estrategia.id}`,
-                color: '#2ecc71'
-            });
-            
-            // Crear nodos de tácticas para esta estrategia
-            crearNodosTacticas(estrategia.id, x, y);
-        });
-        
-        actualizarContadoresEjes();
-    }
-    
-    function crearNodosTacticas(estrategiaId, estrategiaX, estrategiaY) {
-        const tacticasContainer = document.getElementById('tacticasContainer');
-        const tacticas = mapa.tacticas.filter(t => t.estrategia_id === estrategiaId);
-        
-        if (tacticas.length === 0) return;
-        
-        tacticas.forEach((tactica, index) => {
-            const angulo = (2 * Math.PI / tacticas.length) * index;
-            const radio = 130;
-            
-            let x = estrategiaX + radio * Math.cos(angulo);
-            let y = estrategiaY + radio * Math.sin(angulo);
-            
-            // Verificar colisión
-            const posicionAjustada = verificarColision(x, y, 120, 'nodo-tactica');
-            x = posicionAjustada.x;
-            y = posicionAjustada.y;
-            
-            const nodoDiv = document.createElement('div');
-            nodoDiv.className = 'nodo nodo-tactica nodo-aparecer';
-            nodoDiv.id = `tactica-${tactica.id}`;
-            nodoDiv.dataset.tacticaId = tactica.id;
-            nodoDiv.dataset.estrategiaId = estrategiaId;
-            nodoDiv.dataset.tipo = 'tactica';
-            nodoDiv.style.left = `${x}px`;
-            nodoDiv.style.top = `${y}px`;
-            nodoDiv.style.transform = 'translate(-50%, -50%)';
-            nodoDiv.style.animationDelay = `${index * 0.05 + 1}s`;
-            
-            nodoDiv.innerHTML = `
-                <div class="nodo-content">
-                    <div class="nodo-icon">
-                        <i class="fas fa-tasks"></i>
-                    </div>
-                    <div class="nodo-title">${tactica.nombre.substring(0, 30)}${tactica.nombre.length > 30 ? '...' : ''}</div>
-                </div>
-            `;
-            
-            tacticasContainer.appendChild(nodoDiv);
-            
-            // Agregar eventos
-            nodoDiv.addEventListener('click', function(e) {
-                e.stopPropagation();
-                seleccionarNodo(this.id);
-                mostrarDetallesTactica(tactica.id);
-            });
-            
-            // Crear conexión con la estrategia
-            mapa.conexiones.push({
-                id: `conexion-estrategia-${estrategiaId}-tactica-${tactica.id}`,
-                tipo: 'tactica',
-                sourceId: `estrategia-${estrategiaId}`,
-                targetId: `tactica-${tactica.id}`,
-                color: '#e74c3c'
-            });
-            
-            // Crear nodos de actividades para esta táctica
-            crearNodosActividades(tactica.id, x, y);
-        });
-    }
-    
-    function crearNodosActividades(tacticaId, tacticaX, tacticaY) {
-        const actividadesContainer = document.getElementById('actividadesContainer');
-        const actividades = mapa.actividades.filter(a => a.tactica_id === tacticaId);
-        
-        if (actividades.length === 0) return;
-        
-        actividades.forEach((actividad, index) => {
-            const angulo = (2 * Math.PI / actividades.length) * index;
-            const radio = 90;
-            
-            let x = tacticaX + radio * Math.cos(angulo);
-            let y = tacticaY + radio * Math.sin(angulo);
-            
-            // Verificar colisión
-            const posicionAjustada = verificarColision(x, y, 100, 'nodo-actividad');
-            x = posicionAjustada.x;
-            y = posicionAjustada.y;
-            
-            const nodoDiv = document.createElement('div');
-            nodoDiv.className = 'nodo nodo-actividad nodo-aparecer';
-            nodoDiv.id = `actividad-${actividad.id}`;
-            nodoDiv.dataset.actividadId = actividad.id;
-            nodoDiv.dataset.tacticaId = tacticaId;
-            nodoDiv.dataset.tipo = 'actividad';
-            nodoDiv.style.left = `${x}px`;
-            nodoDiv.style.top = `${y}px`;
-            nodoDiv.style.transform = 'translate(-50%, -50%)';
-            nodoDiv.style.animationDelay = `${index * 0.05 + 1.5}s`;
-            
-            let estadoIcono = 'fa-clock';
-            let estadoColor = '#f39c12';
-            switch(actividad.estado) {
-                case 'completada':
-                    estadoIcono = 'fa-check-circle';
-                    estadoColor = '#2ecc71';
-                    break;
-                case 'en_progreso':
-                    estadoIcono = 'fa-spinner';
-                    estadoColor = '#3498db';
-                    break;
-            }
-            
-            nodoDiv.innerHTML = `
-                <div class="nodo-content">
-                    <div class="nodo-icon" style="background: linear-gradient(135deg, ${estadoColor}, ${oscurecerColor(estadoColor, 20)})">
-                        <i class="fas ${estadoIcono}"></i>
-                    </div>
-                    <div class="nodo-title">${actividad.nombre.substring(0, 20)}${actividad.nombre.length > 20 ? '...' : ''}</div>
-                </div>
-            `;
-            
-            actividadesContainer.appendChild(nodoDiv);
-            
-            // Agregar eventos
-            nodoDiv.addEventListener('click', function(e) {
-                e.stopPropagation();
-                seleccionarNodo(this.id);
-                mostrarDetallesActividad(actividad.id);
-            });
-            
-            // Crear conexión con la táctica
-            mapa.conexiones.push({
-                id: `conexion-tactica-${tacticaId}-actividad-${actividad.id}`,
-                tipo: 'actividad',
-                sourceId: `tactica-${tacticaId}`,
-                targetId: `actividad-${actividad.id}`,
-                color: estadoColor
-            });
-        });
-    }
-    
     function crearConexionesJerarquicas() {
         // Las conexiones ya se crearon al crear los nodos
         actualizarEstadisticas();
@@ -2291,7 +2794,10 @@
         document.getElementById('leyenda-conexiones').textContent = totalConexiones;
     }
     
-    // Funciones de animación y visualización
+    // ================================
+    // FUNCIONES DE ANIMACIÓN Y VISUALIZACIÓN
+    // ================================
+    
     function animarEntrada() {
         const todosNodos = document.querySelectorAll('.nodo');
         todosNodos.forEach((nodo, index) => {
@@ -2347,7 +2853,10 @@
         }
     }
     
-    // Funciones de UI
+    // ================================
+    // FUNCIONES DE UI
+    // ================================
+    
     function mostrarDetallesEje(ejeId) {
         const panel = document.getElementById('panelDetalles');
         const titulo = document.getElementById('detalleTitulo');
@@ -3026,7 +3535,10 @@
         }
     }
     
-    // Funciones de filtrado
+    // ================================
+    // FUNCIONES DE FILTRADO
+    // ================================
+    
     function aplicarFiltro() {
         config.filtroNivel = document.getElementById('filtro-nivel').value;
         
@@ -3120,7 +3632,10 @@
         mostrarNotificacion(`Mostrando eje: ${config.filtroEje}`, 'info');
     }
     
-    // Funciones de control
+    // ================================
+    // FUNCIONES DE CONTROL
+    // ================================
+    
     function toggleFullscreen() {
         const container = document.getElementById('mapaFullscreen');
         
@@ -3189,7 +3704,6 @@
     
     function recalcularPosiciones() {
         // Esta función se llama cuando se redimensiona la ventana
-        // En una implementación más avanzada, se recalcularían las posiciones de todos los nodos
         dibujarConexiones();
     }
     
@@ -3209,7 +3723,10 @@
         minimap.style.top = `${viewportY}px`;
     }
     
-    // Funciones de carga
+    // ================================
+    // FUNCIONES DE CARGA
+    // ================================
+    
     function mostrarCargando(mensaje, progreso) {
         const overlay = document.getElementById('cargandoOverlay');
         overlay.style.display = 'flex';
