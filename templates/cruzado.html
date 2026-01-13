@@ -1,7 +1,7 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Barra de Navegación Contextual Mejorada -->
+<!-- Barra de Navegación Contextual -->
 <div class="context-nav-container">
     <!-- Pestaña de Ejes - Lateral Izquierda -->
     <div class="context-tab left-tab" id="ejes-tab">
@@ -17,7 +17,7 @@
                 </button>
             </div>
             <div class="ejes-grid">
-                <div class="eje-card" data-eje="educacion">
+                <div class="eje-card" data-eje="educacion" onclick="seleccionarEjeFormulario('educacion', 'EDUCACIÓN')">
                     <div class="eje-icon">
                         <i class="fas fa-graduation-cap"></i>
                     </div>
@@ -26,7 +26,7 @@
                         <p>Desarrollo educativo y capacitación</p>
                     </div>
                 </div>
-                <div class="eje-card" data-eje="salud">
+                <div class="eje-card" data-eje="salud" onclick="seleccionarEjeFormulario('salud', 'SALUD')">
                     <div class="eje-icon">
                         <i class="fas fa-heartbeat"></i>
                     </div>
@@ -35,7 +35,7 @@
                         <p>Bienestar y servicios de salud</p>
                     </div>
                 </div>
-                <div class="eje-card" data-eje="empleabilidad">
+                <div class="eje-card" data-eje="empleabilidad" onclick="seleccionarEjeFormulario('empleabilidad', 'EMPLEABILIDAD')">
                     <div class="eje-icon">
                         <i class="fas fa-briefcase"></i>
                     </div>
@@ -44,7 +44,7 @@
                         <p>Oportunidades laborales</p>
                     </div>
                 </div>
-                <div class="eje-card" data-eje="desarrollo">
+                <div class="eje-card" data-eje="desarrollo" onclick="seleccionarEjeFormulario('desarrollo_economico', 'DESARROLLO ECONÓMICO')">
                     <div class="eje-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
@@ -53,7 +53,7 @@
                         <p>Crecimiento económico local</p>
                     </div>
                 </div>
-                <div class="eje-card" data-eje="agua">
+                <div class="eje-card" data-eje="agua" onclick="seleccionarEjeFormulario('sostenibilidad_ambiental', 'SOSTENIBILIDAD AMBIENTAL (AGUA)')">
                     <div class="eje-icon">
                         <i class="fas fa-tint"></i>
                     </div>
@@ -62,7 +62,7 @@
                         <p>Gestión del recurso hídrico</p>
                     </div>
                 </div>
-                <div class="eje-card" data-eje="comunicacion">
+                <div class="eje-card" data-eje="comunicacion" onclick="seleccionarEjeFormulario('comunicacion', 'COMUNICACIÓN')">
                     <div class="eje-icon">
                         <i class="fas fa-bullhorn"></i>
                     </div>
@@ -71,7 +71,7 @@
                         <p>Transparencia y diálogo</p>
                     </div>
                 </div>
-                <div class="eje-card" data-eje="institucional">
+                <div class="eje-card" data-eje="institucional" onclick="seleccionarEjeFormulario('institucional', 'INSTITUCIONAL')">
                     <div class="eje-icon">
                         <i class="fas fa-landmark"></i>
                     </div>
@@ -126,7 +126,7 @@
     </div>
 </div>
 
-<!-- Contenido principal existente -->
+<!-- Contenido principal -->
 <div class="foda-cruzado-main-container">
     <h1 class="content-title">
         <i class="fas fa-crosshairs"></i> Análisis FODA Cruzado
@@ -301,6 +301,39 @@
                         <div class="elemento-desc" id="desc-externo"></div>
                     </div>
                     
+                    <!-- Nuevo campo: Selección de Eje Estratégico -->
+                    <div class="form-group">
+                        <label for="eje-estrategico">
+                            <i class="fas fa-bullseye"></i> Eje Estratégico
+                        </label>
+                        <div class="eje-selector-container">
+                            <select id="eje-estrategico" class="form-select" onchange="actualizarEjeSeleccionado()">
+                                <option value="">Seleccione un eje</option>
+                                <option value="educacion">EDUCACIÓN</option>
+                                <option value="salud">SALUD</option>
+                                <option value="empleabilidad">EMPLEABILIDAD</option>
+                                <option value="desarrollo_economico">DESARROLLO ECONÓMICO</option>
+                                <option value="sostenibilidad_ambiental">SOSTENIBILIDAD AMBIENTAL (AGUA)</option>
+                                <option value="comunicacion">COMUNICACIÓN</option>
+                                <option value="institucional">INSTITUCIONAL</option>
+                            </select>
+                            <div class="eje-actions">
+                                <button type="button" class="btn-eje-rapido" onclick="seleccionarEjeActual()" title="Seleccionar eje activo">
+                                    <i class="fas fa-bolt"></i>
+                                </button>
+                                <button type="button" class="btn-eje-limpiar" onclick="limpiarEjeSeleccionado()" title="Limpiar selección">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="eje-seleccionado" id="eje-seleccionado-info">
+                            <div class="eje-badge" id="badge-eje">
+                                <i class="fas fa-layer-group"></i>
+                                <span id="eje-texto">Ningún eje seleccionado</span>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="estrategia">
                             <i class="fas fa-lightbulb"></i> Estrategia Resultante
@@ -329,13 +362,25 @@
                 <h3><i class="fas fa-list-check"></i> Estrategias Generadas</h3>
                 
                 <div class="filtros-estrategias">
-                    <select id="filtro-tipo-estrategia" class="filtro-select" onchange="filtrarEstrategias()">
-                        <option value="all">Todas las estrategias</option>
-                        <option value="FO">FO - Fortaleza + Oportunidad</option>
-                        <option value="DO">DO - Debilidad + Oportunidad</option>
-                        <option value="FA">FA - Fortaleza + Amenaza</option>
-                        <option value="DA">DA - Debilidad + Amenaza</option>
-                    </select>
+                    <div class="filtros-row">
+                        <select id="filtro-tipo-estrategia" class="filtro-select" onchange="filtrarEstrategias()">
+                            <option value="all">Todas las estrategias</option>
+                            <option value="FO">FO - Fortaleza + Oportunidad</option>
+                            <option value="DO">DO - Debilidad + Oportunidad</option>
+                            <option value="FA">FA - Fortaleza + Amenaza</option>
+                            <option value="DA">DA - Debilidad + Amenaza</option>
+                        </select>
+                        <select id="filtro-eje-estrategia" class="filtro-select" onchange="filtrarEstrategias()">
+                            <option value="all">Todos los ejes</option>
+                            <option value="educacion">EDUCACIÓN</option>
+                            <option value="salud">SALUD</option>
+                            <option value="empleabilidad">EMPLEABILIDAD</option>
+                            <option value="desarrollo_economico">DESARROLLO ECONÓMICO</option>
+                            <option value="sostenibilidad_ambiental">SOSTENIBILIDAD AMBIENTAL (AGUA)</option>
+                            <option value="comunicacion">COMUNICACIÓN</option>
+                            <option value="institucional">INSTITUCIONAL</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="lista-estrategias" id="lista-estrategias">
@@ -419,6 +464,16 @@
                 <div class="estadistica-content">
                     <h3>Cruces Posibles</h3>
                     <div class="estadistica-valor" id="contador-cruces">0</div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card eje-actual">
+                <div class="estadistica-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Eje Actual</h3>
+                    <div class="estadistica-valor" id="eje-actual-nombre">-</div>
                 </div>
             </div>
         </div>
@@ -1191,6 +1246,77 @@
         box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
     }
     
+    /* Estilos para el selector de ejes */
+    .eje-selector-container {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .eje-selector-container .form-select {
+        flex: 1;
+    }
+    
+    .eje-actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .btn-eje-rapido, .btn-eje-limpiar {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-eje-rapido:hover {
+        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
+        transform: scale(1.05);
+    }
+    
+    .btn-eje-limpiar {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    }
+    
+    .btn-eje-limpiar:hover {
+        background: linear-gradient(135deg, #495057 0%, #343a40 100%);
+        transform: scale(1.05);
+    }
+    
+    .eje-seleccionado {
+        margin-top: 10px;
+        display: none;
+    }
+    
+    .eje-seleccionado.active {
+        display: block;
+    }
+    
+    .eje-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 15px;
+        background: linear-gradient(135deg, rgba(12, 36, 97, 0.1) 0%, rgba(30, 55, 153, 0.1) 100%);
+        border-radius: 20px;
+        color: #0c2461;
+        font-weight: 600;
+        font-size: 13px;
+        border: 1px solid rgba(12, 36, 97, 0.2);
+    }
+    
+    .eje-badge i {
+        font-size: 14px;
+        color: #0c2461;
+    }
+    
     /* Estrategias Guardadas */
     .estrategias-guardadas {
         background: #f8f9fa;
@@ -1210,6 +1336,19 @@
     
     .filtros-estrategias {
         margin-bottom: 20px;
+    }
+    
+    .filtros-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    @media (max-width: 768px) {
+        .filtros-row {
+            grid-template-columns: 1fr;
+        }
     }
     
     .filtro-select {
@@ -1335,6 +1474,16 @@
         border: 1px solid #4a69bd;
     }
     
+    .badge-eje {
+        background: linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(123, 31, 162, 0.1) 100%);
+        color: #7b1fa2;
+        border: 1px solid #9C27B0;
+    }
+    
+    .badge-eje i {
+        color: #9C27B0;
+    }
+    
     .estrategia-empty {
         text-align: center;
         padding: 40px 20px;
@@ -1429,6 +1578,11 @@
         background: linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(245, 124, 0, 0.05) 100%);
     }
     
+    .estadistica-card.eje-actual {
+        border-color: #9C27B0;
+        background: linear-gradient(135deg, rgba(156, 39, 176, 0.05) 0%, rgba(123, 31, 162, 0.05) 100%);
+    }
+    
     .estadistica-icon {
         width: 60px;
         height: 60px;
@@ -1484,6 +1638,13 @@
         color: white;
     }
     
+    .estadistica-card.eje-actual .estadistica-icon {
+        color: #9C27B0;
+        border: 2px solid #9C27B0;
+        background: linear-gradient(135deg, #9C27B0 0%, #7b1fa2 100%);
+        color: white;
+    }
+    
     .estadistica-content h3 {
         font-size: 14px;
         color: #666;
@@ -1517,6 +1678,15 @@
     
     .estadistica-card.cruces .estadistica-valor {
         color: #FF9800;
+    }
+    
+    .estadistica-card.eje-actual .estadistica-valor {
+        color: #9C27B0;
+        font-size: 18px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 150px;
     }
     
     /* Scrollbar personalizada */
@@ -1639,46 +1809,72 @@
             padding: 10px 15px;
             font-size: 13px;
         }
+        
+        .eje-selector-container {
+            flex-direction: column;
+        }
+        
+        .eje-actions {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .btn-eje-rapido, .btn-eje-limpiar {
+            flex: 1;
+        }
+        
+        .estadistica-card.eje-actual .estadistica-valor {
+            font-size: 16px;
+            max-width: 120px;
+        }
     }
 </style>
 
 <script>
-    // Variables globales del FODA
+    // Variables globales
     let tipoCruceActual = 'fo';
     let elementoInternoId = null;
     let elementoExternoId = null;
     let estrategiasGuardadas = [];
-    
-    // Variables de las pestañas
     let ejesTabAbierta = false;
     let objetivoTabAbierta = false;
+    let ejeSeleccionado = null;
+    let ejeSeleccionadoTexto = '';
+    let ejeActivo = null;
     
     // Inicializar al cargar
     document.addEventListener('DOMContentLoaded', function() {
         cargarEstrategias();
         actualizarContadorCruces();
+        actualizarEjeSeleccionado();
         
-        // Agregar interactividad a los ejes
+        // Agregar interactividad a los ejes en la pestaña
         document.querySelectorAll('.eje-card').forEach(card => {
-            card.addEventListener('click', function() {
-                // Remover activo de todos
-                document.querySelectorAll('.eje-card').forEach(c => {
-                    c.classList.remove('active');
-                });
-                
-                // Agregar activo al seleccionado
-                this.classList.add('active');
-                
-                // Obtener datos del eje
-                const eje = this.getAttribute('data-eje');
-                const nombre = this.querySelector('h4').textContent;
-                const descripcion = this.querySelector('p').textContent;
-                
-                // Mostrar notificación
-                mostrarNotificacion(`Eje seleccionado: ${nombre}`, 'info');
-                
-                // Aquí puedes agregar lógica adicional, como filtrar contenido por eje
-                filtrarPorEje(eje);
+            card.addEventListener('click', function(e) {
+                // Solo si no estamos seleccionando desde el formulario
+                if (!e.target.closest('.eje-card')?.hasAttribute('onclick')) {
+                    // Remover activo de todos
+                    document.querySelectorAll('.eje-card').forEach(c => {
+                        c.classList.remove('active');
+                    });
+                    
+                    // Agregar activo al seleccionado
+                    this.classList.add('active');
+                    
+                    // Establecer eje activo
+                    const eje = this.getAttribute('data-eje');
+                    const nombre = this.querySelector('h4').textContent;
+                    ejeActivo = { id: eje, nombre: nombre };
+                    
+                    // Actualizar estadística
+                    document.getElementById('eje-actual-nombre').textContent = nombre;
+                    
+                    // Guardar en localStorage
+                    localStorage.setItem('ejeActivo', JSON.stringify(ejeActivo));
+                    
+                    // Mostrar notificación
+                    mostrarNotificacion(`✅ Eje activo: ${nombre}`, 'info');
+                }
             });
         });
         
@@ -1716,7 +1912,60 @@
                 toggleObjetivoTab();
             }
         });
+        
+        // Cargar eje activo desde localStorage si existe
+        const ejeGuardado = localStorage.getItem('ejeActivo');
+        if (ejeGuardado) {
+            try {
+                ejeActivo = JSON.parse(ejeGuardado);
+                document.getElementById('eje-actual-nombre').textContent = ejeActivo.nombre;
+            } catch (e) {
+                console.error('Error al cargar eje activo:', e);
+            }
+        }
     });
+    
+    // Funciones para manejar ejes
+    function seleccionarEjeFormulario(ejeId, ejeNombre) {
+        document.getElementById('eje-estrategico').value = ejeId;
+        actualizarEjeSeleccionado();
+        mostrarNotificacion(`✅ Eje seleccionado: ${ejeNombre}`, 'success');
+        cerrarEjesTab();
+    }
+    
+    function actualizarEjeSeleccionado() {
+        const select = document.getElementById('eje-estrategico');
+        const badge = document.getElementById('eje-seleccionado-info');
+        const textoEje = document.getElementById('eje-texto');
+        
+        if (select.value) {
+            ejeSeleccionado = select.value;
+            ejeSeleccionadoTexto = select.options[select.selectedIndex].text;
+            textoEje.textContent = ejeSeleccionadoTexto;
+            badge.classList.add('active');
+        } else {
+            ejeSeleccionado = null;
+            ejeSeleccionadoTexto = '';
+            textoEje.textContent = 'Ningún eje seleccionado';
+            badge.classList.remove('active');
+        }
+    }
+    
+    function seleccionarEjeActual() {
+        if (ejeActivo) {
+            document.getElementById('eje-estrategico').value = ejeActivo.id;
+            actualizarEjeSeleccionado();
+            mostrarNotificacion(`✅ Eje activo seleccionado: ${ejeActivo.nombre}`, 'success');
+        } else {
+            mostrarNotificacion('❌ No hay ningún eje activo seleccionado', 'warning');
+        }
+    }
+    
+    function limpiarEjeSeleccionado() {
+        document.getElementById('eje-estrategico').value = '';
+        actualizarEjeSeleccionado();
+        mostrarNotificacion('✅ Eje limpiado', 'info');
+    }
     
     // Funciones de las pestañas
     function toggleEjesTab() {
@@ -1728,7 +1977,6 @@
         if (ejesTabAbierta) {
             tab.classList.add('active');
             content.classList.add('active');
-            // Cerrar objetivo si está abierto
             cerrarObjetivoTab();
         } else {
             cerrarEjesTab();
@@ -1753,7 +2001,6 @@
         if (objetivoTabAbierta) {
             tab.classList.add('active');
             content.classList.add('active');
-            // Cerrar ejes si está abierto
             cerrarEjesTab();
         } else {
             cerrarObjetivoTab();
@@ -1769,23 +2016,6 @@
         objetivoTabAbierta = false;
     }
     
-    function filtrarPorEje(eje) {
-        console.log(`Filtrando por eje: ${eje}`);
-        // Aquí puedes agregar la lógica para filtrar el contenido FODA por eje
-        
-        const ejesNombres = {
-            'educacion': 'Educación',
-            'salud': 'Salud',
-            'empleabilidad': 'Empleabilidad',
-            'desarrollo': 'Desarrollo Económico',
-            'agua': 'Sostenibilidad Ambiental (Agua)',
-            'comunicacion': 'Comunicación',
-            'institucional': 'Institucional'
-        };
-        
-        mostrarNotificacion(`Filtrando análisis por eje: ${ejesNombres[eje]}`, 'success');
-    }
-    
     function mostrarObjetivoCompleto() {
         const modal = document.getElementById('modal-objetivo');
         modal.classList.add('active');
@@ -1798,20 +2028,284 @@
         document.body.style.overflow = 'auto';
     }
     
-    // Funciones del FODA
+    // Funciones del FODA con eje
+    function guardarEstrategia() {
+        const estrategiaTexto = document.getElementById('estrategia').value.trim();
+        
+        // Validaciones
+        if (!elementoInternoId || !elementoExternoId) {
+            mostrarNotificacion('❌ Debe seleccionar ambos elementos para el cruce', 'error');
+            return;
+        }
+        
+        if (!ejeSeleccionado) {
+            mostrarNotificacion('❌ Debe seleccionar un eje estratégico', 'error');
+            return;
+        }
+        
+        if (!estrategiaTexto) {
+            mostrarNotificacion('❌ Debe escribir una estrategia', 'error');
+            document.getElementById('estrategia').focus();
+            return;
+        }
+        
+        const internoSelect = document.getElementById('elemento-interno');
+        const externoSelect = document.getElementById('elemento-externo');
+        
+        const tipoInterno = internoSelect.options[internoSelect.selectedIndex].getAttribute('data-tipo');
+        const textoInterno = internoSelect.options[internoSelect.selectedIndex].getAttribute('data-desc');
+        
+        const tipoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-tipo');
+        const textoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-desc');
+        
+        const estrategia = {
+            tipo_cruce: tipoCruceActual.toUpperCase(),
+            elemento_interno_id: elementoInternoId,
+            elemento_interno_tipo: tipoInterno,
+            elemento_interno_texto: textoInterno,
+            elemento_externo_id: elementoExternoId,
+            elemento_externo_tipo: tipoExterno,
+            elemento_externo_texto: textoExterno,
+            eje_id: ejeSeleccionado,
+            eje_texto: ejeSeleccionadoTexto,
+            estrategia: estrategiaTexto,
+            fecha: new Date().toISOString()
+        };
+        
+        const btnGuardar = document.querySelector('.btn-guardar');
+        const originalText = btnGuardar.innerHTML;
+        btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        btnGuardar.disabled = true;
+        
+        // Enviar al servidor con el eje incluido
+        fetch('/guardar_estrategia_foda_con_eje', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(estrategia)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarNotificacion('✅ Estrategia guardada correctamente con eje', 'success');
+                
+                estrategiasGuardadas.push(estrategia);
+                
+                agregarEstrategiaALista(estrategia);
+                actualizarContadores();
+                limpiarFormulario();
+            } else {
+                mostrarNotificacion('❌ Error: ' + data.message, 'error');
+            }
+            
+            btnGuardar.innerHTML = originalText;
+            btnGuardar.disabled = false;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarNotificacion('❌ Error de conexión al servidor', 'error');
+            btnGuardar.innerHTML = originalText;
+            btnGuardar.disabled = false;
+        });
+    }
+    
+    function agregarEstrategiaALista(estrategia) {
+        const lista = document.getElementById('lista-estrategias');
+        
+        const emptyMsg = lista.querySelector('.estrategia-empty');
+        if (emptyMsg) {
+            emptyMsg.remove();
+        }
+        
+        const estrategiaDiv = document.createElement('div');
+        estrategiaDiv.className = 'estrategia-item';
+        estrategiaDiv.dataset.eje = estrategia.eje_id;
+        
+        const fecha = new Date(estrategia.fecha);
+        const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        let iconoInterno = estrategia.elemento_interno_tipo === 'fortaleza' ? 
+            '<i class="fas fa-shield-alt"></i>' : 
+            '<i class="fas fa-exclamation-triangle"></i>';
+        
+        let iconoExterno = estrategia.elemento_externo_tipo === 'oportunidad' ?
+            '<i class="fas fa-bullseye"></i>' :
+            '<i class="fas fa-skull-crossbones"></i>';
+        
+        estrategiaDiv.innerHTML = `
+            <div class="estrategia-header">
+                <span class="estrategia-tipo ${estrategia.tipo_cruce.toLowerCase()}">
+                    ${estrategia.tipo_cruce}
+                </span>
+                <span class="estrategia-fecha">${fechaFormateada}</span>
+            </div>
+            <div class="estrategia-content">
+                ${estrategia.estrategia}
+            </div>
+            <div class="estrategia-elementos">
+                <span class="elemento-badge badge-${estrategia.elemento_interno_tipo}">
+                    ${iconoInterno} ${estrategia.elemento_interno_tipo}: ${estrategia.elemento_interno_texto.substring(0, 30)}...
+                </span>
+                <span class="elemento-badge badge-${estrategia.elemento_externo_tipo}">
+                    ${iconoExterno} ${estrategia.elemento_externo_tipo}: ${estrategia.elemento_externo_texto.substring(0, 30)}...
+                </span>
+                <span class="elemento-badge badge-eje">
+                    <i class="fas fa-bullseye"></i> ${estrategia.eje_texto}
+                </span>
+            </div>
+        `;
+        
+        lista.insertBefore(estrategiaDiv, lista.firstChild);
+    }
+    
+    function cargarEstrategias() {
+        // Cambiar la URL para obtener estrategias con eje
+        fetch('/api/estrategias_foda_con_eje')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    estrategiasGuardadas = data.estrategias;
+                    
+                    const lista = document.getElementById('lista-estrategias');
+                    lista.innerHTML = '';
+                    
+                    if (estrategiasGuardadas.length === 0) {
+                        lista.innerHTML = `
+                            <div class="estrategia-empty">
+                                <i class="fas fa-inbox"></i>
+                                <p>No hay estrategias guardadas todavía.</p>
+                                <p>Comience a crear estrategias usando el formulario.</p>
+                            </div>
+                        `;
+                    } else {
+                        estrategiasGuardadas.forEach(estrategia => {
+                            agregarEstrategiaALista(estrategia);
+                        });
+                    }
+                    
+                    actualizarContadores();
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar estrategias:', error);
+                // Si falla, intentamos cargar sin eje para compatibilidad
+                cargarEstrategiasCompatibilidad();
+            });
+    }
+    
+    function cargarEstrategiasCompatibilidad() {
+        // Para compatibilidad con versiones anteriores
+        fetch('/api/estrategias_foda')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    estrategiasGuardadas = data.estrategias.map(e => ({
+                        ...e,
+                        eje_id: 'no_asignado',
+                        eje_texto: 'Sin eje asignado'
+                    }));
+                    
+                    const lista = document.getElementById('lista-estrategias');
+                    lista.innerHTML = '';
+                    
+                    if (estrategiasGuardadas.length === 0) {
+                        lista.innerHTML = `
+                            <div class="estrategia-empty">
+                                <i class="fas fa-inbox"></i>
+                                <p>No hay estrategias guardadas todavía.</p>
+                                <p>Comience a crear estrategias usando el formulario.</p>
+                            </div>
+                        `;
+                    } else {
+                        estrategiasGuardadas.forEach(estrategia => {
+                            agregarEstrategiaALista(estrategia);
+                        });
+                    }
+                    
+                    actualizarContadores();
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar estrategias de compatibilidad:', error);
+            });
+    }
+    
+    function filtrarEstrategias() {
+        const filtroTipo = document.getElementById('filtro-tipo-estrategia').value;
+        const filtroEje = document.getElementById('filtro-eje-estrategia').value;
+        const estrategiasItems = document.querySelectorAll('.estrategia-item');
+        
+        estrategiasItems.forEach(item => {
+            const tipo = item.querySelector('.estrategia-tipo').textContent.trim();
+            const eje = item.dataset.eje;
+            
+            const pasaTipo = filtroTipo === 'all' || tipo === filtroTipo;
+            const pasaEje = filtroEje === 'all' || eje === filtroEje;
+            
+            if (pasaTipo && pasaEje) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    function limpiarFormulario() {
+        document.getElementById('elemento-interno').value = '';
+        document.getElementById('elemento-externo').value = '';
+        document.getElementById('eje-estrategico').value = '';
+        document.getElementById('estrategia').value = '';
+        
+        document.getElementById('desc-interno').style.display = 'none';
+        document.getElementById('desc-externo').style.display = 'none';
+        
+        elementoInternoId = null;
+        elementoExternoId = null;
+        
+        actualizarEjeSeleccionado();
+        
+        mostrarNotificacion('✅ Formulario limpiado', 'success');
+    }
+    
+    function actualizarContadores() {
+        const totalEstrategias = estrategiasGuardadas.length;
+        document.getElementById('contador-estrategias').textContent = totalEstrategias;
+        actualizarContadorCruces();
+    }
+    
+    function actualizarContadorCruces() {
+        const fortalezas = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Positivo')|list|length }};
+        const debilidades = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Negativo')|list|length }};
+        const oportunidades = {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Positivo')|list|length }};
+        const amenazas = {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Negativo')|list|length }};
+        
+        const crucesFO = fortalezas * oportunidades;
+        const crucesDO = debilidades * oportunidades;
+        const crucesFA = fortalezas * amenazas;
+        const crucesDA = debilidades * amenazas;
+        
+        const totalCruces = crucesFO + crucesDO + crucesFA + crucesDA;
+        document.getElementById('contador-cruces').textContent = totalCruces;
+    }
+    
+    // Funciones del FODA existentes
     function seleccionarTipoCruce(tipo) {
         tipoCruceActual = tipo;
         
-        // Actualizar UI
         document.querySelectorAll('.cruce-option').forEach(btn => {
             btn.classList.remove('selected');
         });
         document.querySelector(`.cruce-option[data-tipo="${tipo}"]`).classList.add('selected');
         
-        // Actualizar guía de estrategia
         actualizarGuiaEstrategia();
-        
-        // Limpiar selecciones que no coincidan con el tipo
         validarSelecciones();
     }
     
@@ -1933,212 +2427,6 @@
                 actualizarDescripcionExterno();
             }
         }
-    }
-    
-    function guardarEstrategia() {
-        const estrategiaTexto = document.getElementById('estrategia').value.trim();
-        
-        if (!elementoInternoId || !elementoExternoId) {
-            mostrarNotificacion('❌ Debe seleccionar ambos elementos para el cruce', 'error');
-            return;
-        }
-        
-        if (!estrategiaTexto) {
-            mostrarNotificacion('❌ Debe escribir una estrategia', 'error');
-            document.getElementById('estrategia').focus();
-            return;
-        }
-        
-        const internoSelect = document.getElementById('elemento-interno');
-        const externoSelect = document.getElementById('elemento-externo');
-        
-        const tipoInterno = internoSelect.options[internoSelect.selectedIndex].getAttribute('data-tipo');
-        const textoInterno = internoSelect.options[internoSelect.selectedIndex].getAttribute('data-desc');
-        
-        const tipoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-tipo');
-        const textoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-desc');
-        
-        const estrategia = {
-            tipo_cruce: tipoCruceActual.toUpperCase(),
-            elemento_interno_id: elementoInternoId,
-            elemento_interno_tipo: tipoInterno,
-            elemento_interno_texto: textoInterno,
-            elemento_externo_id: elementoExternoId,
-            elemento_externo_tipo: tipoExterno,
-            elemento_externo_texto: textoExterno,
-            estrategia: estrategiaTexto,
-            fecha: new Date().toISOString()
-        };
-        
-        const btnGuardar = document.querySelector('.btn-guardar');
-        const originalText = btnGuardar.innerHTML;
-        btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-        btnGuardar.disabled = true;
-        
-        fetch('/guardar_estrategia_foda', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(estrategia)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                mostrarNotificacion('✅ Estrategia guardada correctamente', 'success');
-                
-                estrategiasGuardadas.push(estrategia);
-                
-                agregarEstrategiaALista(estrategia);
-                actualizarContadores();
-                limpiarFormulario();
-            } else {
-                mostrarNotificacion('❌ Error: ' + data.message, 'error');
-            }
-            
-            btnGuardar.innerHTML = originalText;
-            btnGuardar.disabled = false;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            mostrarNotificacion('❌ Error de conexión al servidor', 'error');
-            btnGuardar.innerHTML = originalText;
-            btnGuardar.disabled = false;
-        });
-    }
-    
-    function agregarEstrategiaALista(estrategia) {
-        const lista = document.getElementById('lista-estrategias');
-        
-        const emptyMsg = lista.querySelector('.estrategia-empty');
-        if (emptyMsg) {
-            emptyMsg.remove();
-        }
-        
-        const estrategiaDiv = document.createElement('div');
-        estrategiaDiv.className = 'estrategia-item';
-        
-        const fecha = new Date(estrategia.fecha);
-        const fechaFormateada = fecha.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-        
-        let iconoInterno = estrategia.elemento_interno_tipo === 'fortaleza' ? 
-            '<i class="fas fa-shield-alt"></i>' : 
-            '<i class="fas fa-exclamation-triangle"></i>';
-        
-        let iconoExterno = estrategia.elemento_externo_tipo === 'oportunidad' ?
-            '<i class="fas fa-bullseye"></i>' :
-            '<i class="fas fa-skull-crossbones"></i>';
-        
-        estrategiaDiv.innerHTML = `
-            <div class="estrategia-header">
-                <span class="estrategia-tipo ${estrategia.tipo_cruce.toLowerCase()}">
-                    ${estrategia.tipo_cruce}
-                </span>
-                <span class="estrategia-fecha">${fechaFormateada}</span>
-            </div>
-            <div class="estrategia-content">
-                ${estrategia.estrategia}
-            </div>
-            <div class="estrategia-elementos">
-                <span class="elemento-badge badge-${estrategia.elemento_interno_tipo}">
-                    ${iconoInterno} ${estrategia.elemento_interno_tipo}: ${estrategia.elemento_interno_texto.substring(0, 30)}...
-                </span>
-                <span class="elemento-badge badge-${estrategia.elemento_externo_tipo}">
-                    ${iconoExterno} ${estrategia.elemento_externo_tipo}: ${estrategia.elemento_externo_texto.substring(0, 30)}...
-                </span>
-            </div>
-        `;
-        
-        lista.insertBefore(estrategiaDiv, lista.firstChild);
-    }
-    
-    function cargarEstrategias() {
-        fetch('/api/estrategias_foda')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    estrategiasGuardadas = data.estrategias;
-                    
-                    const lista = document.getElementById('lista-estrategias');
-                    lista.innerHTML = '';
-                    
-                    if (estrategiasGuardadas.length === 0) {
-                        lista.innerHTML = `
-                            <div class="estrategia-empty">
-                                <i class="fas fa-inbox"></i>
-                                <p>No hay estrategias guardadas todavía.</p>
-                                <p>Comience a crear estrategias usando el formulario.</p>
-                            </div>
-                        `;
-                    } else {
-                        estrategiasGuardadas.forEach(estrategia => {
-                            agregarEstrategiaALista(estrategia);
-                        });
-                    }
-                    
-                    actualizarContadores();
-                }
-            })
-            .catch(error => {
-                console.error('Error al cargar estrategias:', error);
-            });
-    }
-    
-    function filtrarEstrategias() {
-        const filtro = document.getElementById('filtro-tipo-estrategia').value;
-        const estrategiasItems = document.querySelectorAll('.estrategia-item');
-        
-        estrategiasItems.forEach(item => {
-            const tipo = item.querySelector('.estrategia-tipo').textContent.trim();
-            
-            if (filtro === 'all' || tipo === filtro) {
-                item.style.display = 'block';
-            } else {
-                item.style.display = 'none';
-            }
-        });
-    }
-    
-    function limpiarFormulario() {
-        document.getElementById('elemento-interno').value = '';
-        document.getElementById('elemento-externo').value = '';
-        document.getElementById('estrategia').value = '';
-        
-        document.getElementById('desc-interno').style.display = 'none';
-        document.getElementById('desc-externo').style.display = 'none';
-        
-        elementoInternoId = null;
-        elementoExternoId = null;
-        
-        mostrarNotificacion('✅ Formulario limpiado', 'success');
-    }
-    
-    function actualizarContadores() {
-        const totalEstrategias = estrategiasGuardadas.length;
-        document.getElementById('contador-estrategias').textContent = totalEstrategias;
-        actualizarContadorCruces();
-    }
-    
-    function actualizarContadorCruces() {
-        const fortalezas = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Positivo')|list|length }};
-        const debilidades = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Negativo')|list|length }};
-        const oportunidades = {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Positivo')|list|length }};
-        const amenazas = {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Negativo')|list|length }};
-        
-        const crucesFO = fortalezas * oportunidades;
-        const crucesDO = debilidades * oportunidades;
-        const crucesFA = fortalezas * amenazas;
-        const crucesDA = debilidades * amenazas;
-        
-        const totalCruces = crucesFO + crucesDO + crucesFA + crucesDA;
-        document.getElementById('contador-cruces').textContent = totalCruces;
     }
     
     function mostrarNotificacion(mensaje, tipo) {
