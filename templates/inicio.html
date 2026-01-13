@@ -137,32 +137,27 @@
             margin-top: 5px;
         }
         
-        /* BARRA DE NAVEGACIÓN MEJORADA */
         .tabs-container {
             display: flex;
             background-color: var(--color2);
             overflow-x: auto;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            justify-content: center;
-            flex-wrap: wrap;
         }
         
         .tab {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 16px 20px;
+            padding: 18px 24px;
             color: white;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
-            min-width: 140px;
+            min-width: 200px;
             text-align: center;
             text-decoration: none;
             border-bottom: 4px solid transparent;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
         
         .tab:hover {
@@ -174,10 +169,12 @@
         .tab.active {
             background-color: var(--color3);
             border-bottom-color: var(--color5);
-            font-weight: 700;
         }
         
-        /* Eliminamos los estilos de iconos ya que no los usaremos */
+        .tab i {
+            margin-right: 12px;
+            font-size: 20px;
+        }
         
         .content-container {
             padding: 40px;
@@ -249,15 +246,37 @@
             border-left: 4px solid var(--color2);
         }
         
-        /* Estilos para pantallas pequeñas */
-        .mobile-menu-toggle {
-            display: none;
-            background: none;
-            border: none;
+        /* Estilos para el botón de WhatsApp */
+        .whatsapp-button {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #25D366;
             color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 10px;
+            border-radius: 50px;
+            padding: 15px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            transition: all 0.3s;
+        }
+        
+        .whatsapp-button:hover {
+            background-color: #128C7E;
+            color: white;
+            text-decoration: none;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        .whatsapp-button i {
+            margin-right: 8px;
+            font-size: 20px;
         }
         
         @keyframes fadeIn {
@@ -266,52 +285,16 @@
         }
         
         /* Responsive */
-        @media (max-width: 1024px) {
-            .tabs-container {
-                justify-content: flex-start;
-                flex-wrap: nowrap;
-                overflow-x: auto;
-            }
-            
-            .tab {
-                min-width: 120px;
-                padding: 14px 16px;
-                font-size: 14px;
-            }
-        }
-        
         @media (max-width: 768px) {
             .tabs-container {
-                flex-direction: column;
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                z-index: 1000;
-                background-color: var(--color2);
-                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            }
-            
-            .tabs-container.active {
-                display: flex;
+                flex-wrap: wrap;
             }
             
             .tab {
-                width: 100%;
-                min-width: 100%;
-                padding: 16px 20px;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-                justify-content: flex-start;
-                text-align: left;
+                min-width: 150px;
+                flex: 1;
+                padding: 15px 10px;
                 font-size: 16px;
-            }
-            
-            .mobile-menu-toggle {
-                display: block;
-                position: absolute;
-                left: 20px;
-                top: 30px;
             }
             
             .content-container {
@@ -320,8 +303,6 @@
             
             .header-title {
                 font-size: 24px;
-                margin-left: 50px;
-                margin-right: 50px;
             }
             
             .content-title {
@@ -334,25 +315,43 @@
                 right: 0;
                 margin-top: 20px;
                 width: 100%;
-                margin-left: 0;
             }
             
-            .header {
-                padding-bottom: 15px;
+            .whatsapp-button {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 18px;
+                font-size: 14px;
             }
         }
         
+        /* Estilos para pantallas muy pequeñas */
         @media (max-width: 480px) {
-            .login-box {
-                padding: 30px 20px;
+            .tabs-container {
+                flex-direction: column;
             }
             
-            .header-title {
-                font-size: 22px;
+            .tab {
+                width: 100%;
+                min-width: 100%;
+                justify-content: flex-start;
+                padding: 12px 20px;
             }
             
-            .content {
-                padding: 20px;
+            .content-container {
+                padding: 15px;
+            }
+            
+            .whatsapp-button {
+                bottom: 15px;
+                right: 15px;
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+            
+            .whatsapp-button i {
+                margin-right: 5px;
+                font-size: 18px;
             }
         }
     </style>
@@ -362,9 +361,6 @@
     <!-- Página Principal (ya autenticado) -->
     <div class="main-container">
         <div class="header">
-            <button class="mobile-menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
-            </button>
             <h1 class="header-title">Curso de Minería - CURIMINING</h1>
             <p class="header-subtitle">Sistema de Gestión de Análisis Estratégico</p>
             <a href="{{ url_for('logout') }}" class="logout-button">
@@ -372,27 +368,28 @@
             </a>
         </div>
         
-        <div class="tabs-container" id="tabsContainer">
+        <div class="tabs-container">
             <a href="{{ url_for('inicio') }}" class="tab {% if request.endpoint == 'inicio' %}active{% endif %}">
-                INICIO
+                <i class="fas fa-home"></i> INICIO
             </a>
             <a href="{{ url_for('canvas') }}" class="tab {% if request.endpoint == 'canvas' %}active{% endif %}">
-                CANVA
+                <i class="fas fa-project-diagram"></i> CANVA
             </a>
             <a href="{{ url_for('fodaext') }}" class="tab {% if request.endpoint == 'fodaext' %}active{% endif %}">
-                FODA EXTERNO
+                <i class="fas fa-external-link-alt"></i> FODA Externo
             </a>
             <a href="{{ url_for('fodaint') }}" class="tab {% if request.endpoint == 'fodaint' %}active{% endif %}">
-                FODA INTERNO
+                <i class="fas fa-cogs"></i> FODA Interno
             </a>
             <a href="{{ url_for('cruzado') }}" class="tab {% if request.endpoint == 'cruzado' %}active{% endif %}">
-                FODA CRUZADO
+                <i class="fas fa-th"></i> FODA Cruzado
             </a>
+            <!-- NUEVAS PESTAÑAS -->
             <a href="{{ url_for('estrategias') }}" class="tab {% if request.endpoint == 'estrategias' %}active{% endif %}">
-                ESTRATEGIAS
+                <i class="fas fa-chess-board"></i> ESTRATEGIAS
             </a>
             <a href="{{ url_for('red') }}" class="tab {% if request.endpoint == 'red' %}active{% endif %}">
-                MAPA
+                <i class="fas fa-map"></i> MAPA
             </a>
         </div>
         
@@ -410,49 +407,18 @@
                         <li><strong>FODA Externo:</strong> Análisis de oportunidades y amenazas del entorno.</li>
                         <li><strong>FODA Interno:</strong> Evaluación de fortalezas y debilidades internas.</li>
                         <li><strong>FODA Cruzado:</strong> Matriz cruzada para estrategias derivadas del FODA.</li>
+                        <li><strong>ESTRATEGIAS:</strong> Visualización y gestión de estrategias organizadas por ejes.</li>
+                        <li><strong>MAPA:</strong> Visualización gráfica de relaciones entre estrategias y ejes.</li>
                     </ul>
                     
                     <div class="login-info">
                         <p><strong>Usuario actual:</strong> {{ session.username }} ({{ session.rol }})</p>
+                        <p><strong>Versión del sistema:</strong> 3.0 - FODA con Ejes Estratégicos</p>
                     </div>
                 {% endblock %}
             </div>
         </div>
     </div>
-    
-    <script>
-        // Menú móvil toggle
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.getElementById('menuToggle');
-            const tabsContainer = document.getElementById('tabsContainer');
-            
-            if (menuToggle && tabsContainer) {
-                menuToggle.addEventListener('click', function() {
-                    tabsContainer.classList.toggle('active');
-                });
-                
-                // Cerrar menú al hacer clic en un enlace (en móviles)
-                const tabs = tabsContainer.querySelectorAll('.tab');
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', function() {
-                        if (window.innerWidth <= 768) {
-                            tabsContainer.classList.remove('active');
-                        }
-                    });
-                });
-                
-                // Cerrar menú al hacer clic fuera de él
-                document.addEventListener('click', function(event) {
-                    if (window.innerWidth <= 768) {
-                        if (!tabsContainer.contains(event.target) && !menuToggle.contains(event.target)) {
-                            tabsContainer.classList.remove('active');
-                        }
-                    }
-                });
-            }
-        });
-    </script>
-    
     {% else %}
     <!-- Pantalla de Login (no autenticado) -->
     <div class="login-container">
@@ -484,5 +450,10 @@
         </div>
     </div>
     {% endif %}
+    
+    <!-- Botón de WhatsApp flotante -->
+    <a href="https://chat.whatsapp.com/HJ2ls0RiWQKGDpMyRqW1Bz" class="whatsapp-button" target="_blank">
+        <i class="fab fa-whatsapp"></i> Grupo de WhatsApp
+    </a>
 </body>
 </html>
