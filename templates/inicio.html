@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Curso de Minería - CURIMINING</title>
+    <title>Mapa de Red - CURIMINING</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -28,90 +29,6 @@
             --color5: #CBDF90; /* Verde amarillento */
         }
         
-        /* Estilos para la pantalla de login */
-        .login-container {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, var(--color1) 0%, var(--color2) 100%);
-            padding: 20px;
-        }
-        
-        .login-box {
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-        
-        .login-title {
-            color: var(--color1);
-            margin-bottom: 10px;
-            font-size: 24px;
-        }
-        
-        .login-subtitle {
-            color: var(--color2);
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
-        
-        .input-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        
-        .input-group label {
-            display: block;
-            margin-bottom: 5px;
-            color: var(--color1);
-            font-weight: 600;
-        }
-        
-        .input-group input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e1e5eb;
-            border-radius: 6px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        .input-group input:focus {
-            border-color: var(--color2);
-            outline: none;
-        }
-        
-        .login-button {
-            background-color: var(--color1);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            width: 100%;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-        
-        .login-button:hover {
-            background-color: var(--color2);
-        }
-        
-        .error-message {
-            color: #d32f2f;
-            margin-top: 15px;
-            font-size: 14px;
-        }
-        
-        /* Estilos para la página principal */
         .main-container {
             min-height: 100vh;
         }
@@ -198,22 +115,6 @@
             border-bottom: 2px solid var(--color4);
         }
         
-        .content-text {
-            line-height: 1.6;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-        
-        .content-list {
-            margin-left: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .content-list li {
-            margin-bottom: 10px;
-            line-height: 1.5;
-        }
-        
         .logout-button {
             position: absolute;
             top: 30px;
@@ -235,20 +136,173 @@
             text-decoration: none;
         }
         
-        .login-info {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #666;
-            text-align: center;
-            background-color: #f0f7ff;
-            padding: 15px;
-            border-radius: 6px;
-            border-left: 4px solid var(--color2);
-        }
-        
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Estilos específicos para la página de mapa de red */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-left: 5px solid var(--color1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .stat-card-title {
+            display: flex;
+            align-items: center;
+            color: var(--color1);
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card-title i {
+            margin-right: 10px;
+            font-size: 24px;
+        }
+        
+        .stat-card-count {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--color2);
+            margin-bottom: 5px;
+        }
+        
+        .stat-card-label {
+            color: #666;
+            font-size: 14px;
+        }
+        
+        #network-container {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #e1e5eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+            position: relative;
+            background-color: #fff;
+        }
+        
+        #network {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .legend-text {
+            font-size: 14px;
+        }
+        
+        .network-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 8px 15px;
+            background-color: var(--color1);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .control-btn:hover {
+            background-color: var(--color2);
+        }
+        
+        .node-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            max-width: 300px;
+            display: none;
+            z-index: 100;
+        }
+        
+        .node-info-title {
+            font-weight: bold;
+            color: var(--color1);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .node-info-content {
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        /* Colores para los nodos de ejes */
+        .color-educacion { background-color: #4CAF50; }
+        .color-salud { background-color: #FF6B6B; }
+        .color-empleabilidad { background-color: #2196F3; }
+        .color-desarrollo_economico { background-color: #FF9800; }
+        .color-sostenibilidad_ambiental { background-color: #00BCD4; }
+        .color-comunicacion { background-color: #9C27B0; }
+        .color-institucional { background-color: #795548; }
+        
+        /* Colores para tipos de cruce */
+        .color-fo { background-color: #4CAF50; }
+        .color-do { background-color: #2196F3; }
+        .color-fa { background-color: #FF9800; }
+        .color-da { background-color: #9C27B0; }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            color: #ccc;
+            margin-bottom: 20px;
         }
         
         /* Responsive */
@@ -283,9 +337,16 @@
                 margin-top: 20px;
                 width: 100%;
             }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            #network-container {
+                height: 400px;
+            }
         }
         
-        /* Estilos para pantallas muy pequeñas */
         @media (max-width: 480px) {
             .tabs-container {
                 flex-direction: column;
@@ -301,12 +362,14 @@
             .content-container {
                 padding: 15px;
             }
+            
+            #network-container {
+                height: 300px;
+            }
         }
     </style>
 </head>
 <body>
-    {% if session.user_id %}
-    <!-- Página Principal (ya autenticado) -->
     <div class="main-container">
         <div class="header">
             <h1 class="header-title">Curso de Minería - CURIMINING</h1>
@@ -320,83 +383,365 @@
             <a href="{{ url_for('inicio') }}" class="tab {% if request.endpoint == 'inicio' %}active{% endif %}">
                 <i class="fas fa-home"></i> INICIO
             </a>
-            <a href="{{ url_for('canvas') }}" class="tab {% if request.endpoint == 'canvas' %}active{% endif %}">
+            <a href="{{ url_for('canvas') }}" class="tab">
                 <i class="fas fa-project-diagram"></i> CANVA
             </a>
-            <a href="{{ url_for('fodaext') }}" class="tab {% if request.endpoint == 'fodaext' %}active{% endif %}">
+            <a href="{{ url_for('fodaext') }}" class="tab">
                 <i class="fas fa-external-link-alt"></i> FODA Externo
             </a>
-            <a href="{{ url_for('fodaint') }}" class="tab {% if request.endpoint == 'fodaint' %}active{% endif %}">
+            <a href="{{ url_for('fodaint') }}" class="tab">
                 <i class="fas fa-cogs"></i> FODA Interno
             </a>
-            <a href="{{ url_for('cruzado') }}" class="tab {% if request.endpoint == 'cruzado' %}active{% endif %}">
+            <a href="{{ url_for('cruzado') }}" class="tab">
                 <i class="fas fa-th"></i> FODA Cruzado
             </a>
             <!-- NUEVAS PESTAÑAS -->
-            <a href="{{ url_for('estrategias') }}" class="tab {% if request.endpoint == 'estrategias' %}active{% endif %}">
+            <a href="{{ url_for('estrategias') }}" class="tab">
                 <i class="fas fa-chess-board"></i> ESTRATEGIAS
             </a>
-            <a href="{{ url_for('red') }}" class="tab {% if request.endpoint == 'red' %}active{% endif %}">
+            <a href="{{ url_for('red') }}" class="tab active">
                 <i class="fas fa-map"></i> MAPA
             </a>
         </div>
         
         <div class="content-container">
             <div class="content">
-                <!-- Contenido específico de cada página -->
-                {% block content %}
-                    <!-- Esto se reemplazará en cada plantilla específica -->
-                    <h1 class="content-title">Bienvenido al Sistema CURIMINING</h1>
-                    <p class="content-text">Seleccione una de las pestañas para acceder a las herramientas de análisis estratégico para el curso de minería.</p>
-                    
-                    <h3>Herramientas disponibles:</h3>
-                    <ul class="content-list">
-                        <li><strong>CANVA:</strong> Modelo de negocio Canvas para proyectos mineros.</li>
-                        <li><strong>FODA Externo:</strong> Análisis de oportunidades y amenazas del entorno.</li>
-                        <li><strong>FODA Interno:</strong> Evaluación de fortalezas y debilidades internas.</li>
-                        <li><strong>FODA Cruzado:</strong> Matriz cruzada para estrategias derivadas del FODA.</li>
-                        <li><strong>ESTRATEGIAS:</strong> Visualización y gestión de estrategias organizadas por ejes.</li>
-                        <li><strong>MAPA:</strong> Visualización gráfica de relaciones entre estrategias y ejes.</li>
-                    </ul>
-                    
-                    <div class="login-info">
-                        <p><strong>Usuario actual:</strong> {{ session.username }} ({{ session.rol }})</p>
-                        <p><strong>Versión del sistema:</strong> 3.0 - FODA con Ejes Estratégicos</p>
+                <h1 class="content-title">Mapa de Red de Estrategias</h1>
+                
+                <!-- Estadísticas -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-title">
+                            <i class="fas fa-project-diagram"></i> Nodos
+                        </div>
+                        <div class="stat-card-count">{{ total_nodos }}</div>
+                        <div class="stat-card-label">Elementos en la red</div>
                     </div>
-                {% endblock %}
+                    
+                    <div class="stat-card">
+                        <div class="stat-card-title">
+                            <i class="fas fa-link"></i> Conexiones
+                        </div>
+                        <div class="stat-card-count">{{ total_enlaces }}</div>
+                        <div class="stat-card-label">Relaciones en la red</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-card-title">
+                            <i class="fas fa-chess-board"></i> Estrategias
+                        </div>
+                        <div class="stat-card-count">{{ total_estrategias }}</div>
+                        <div class="stat-card-label">Estrategias FODA</div>
+                    </div>
+                </div>
+                
+                <!-- Controles del mapa -->
+                <div class="network-controls">
+                    <button class="control-btn" onclick="resetView()">
+                        <i class="fas fa-sync-alt"></i> Restablecer Vista
+                    </button>
+                    <button class="control-btn" onclick="zoomIn()">
+                        <i class="fas fa-search-plus"></i> Acercar
+                    </button>
+                    <button class="control-btn" onclick="zoomOut()">
+                        <i class="fas fa-search-minus"></i> Alejar
+                    </button>
+                    <button class="control-btn" onclick="togglePhysics()">
+                        <i class="fas fa-play"></i> Activar Física
+                    </button>
+                </div>
+                
+                <!-- Contenedor del mapa de red -->
+                <div id="network-container">
+                    <div id="network"></div>
+                    <div id="node-info" class="node-info">
+                        <div class="node-info-title" id="node-title">Información del Nodo</div>
+                        <div class="node-info-content" id="node-content">
+                            Haz clic en un nodo para ver más información.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Leyenda -->
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color color-educacion"></div>
+                        <div class="legend-text">EDUCACIÓN</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-salud"></div>
+                        <div class="legend-text">SALUD</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-empleabilidad"></div>
+                        <div class="legend-text">EMPLEABILIDAD</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-desarrollo_economico"></div>
+                        <div class="legend-text">DESARROLLO ECONÓMICO</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-sostenibilidad_ambiental"></div>
+                        <div class="legend-text">SOSTENIBILIDAD AMBIENTAL</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-comunicacion"></div>
+                        <div class="legend-text">COMUNICACIÓN</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-institucional"></div>
+                        <div class="legend-text">INSTITUCIONAL</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-fo"></div>
+                        <div class="legend-text">Estrategia FO</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-do"></div>
+                        <div class="legend-text">Estrategia DO</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-fa"></div>
+                        <div class="legend-text">Estrategia FA</div>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color color-da"></div>
+                        <div class="legend-text">Estrategia DA</div>
+                    </div>
+                </div>
+                
+                {% if total_estrategias == 0 %}
+                <div class="empty-state">
+                    <i class="fas fa-project-diagram"></i>
+                    <h3>No hay estrategias para mostrar</h3>
+                    <p>Dirígete a la pestaña "FODA Cruzado" para crear estrategias y luego regresa aquí para visualizar la red.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
-    {% else %}
-    <!-- Pantalla de Login (no autenticado) -->
-    <div class="login-container">
-        <div class="login-box">
-            <h1 class="login-title">CURIMINING</h1>
-            <p class="login-subtitle">Curso de Minería - Sistema de Gestión</p>
+    
+    <script>
+        // Datos pasados desde Flask
+        const nodos = JSON.parse('{{ nodos_json|safe }}');
+        const enlaces = JSON.parse('{{ enlaces_json|safe }}');
+        
+        let network = null;
+        let physicsEnabled = true;
+        
+        // Función para inicializar la red
+        function initNetwork() {
+            // Crear contenedor
+            const container = document.getElementById('network');
             
-            <form method="POST" action="{{ url_for('login') }}">
-                <div class="input-group">
-                    <label for="username">Usuario</label>
-                    <input type="text" id="username" name="username" placeholder="Ingrese su usuario" required>
-                </div>
-                
-                <div class="input-group">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="password" name="password" placeholder="Ingrese su contraseña" required>
-                </div>
-                
-                <button type="submit" class="login-button">
-                    <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
-                </button>
-                
-                {% if error %}
-                <div class="error-message">
-                    <i class="fas fa-exclamation-circle"></i> {{ error }}
-                </div>
-                {% endif %}
-            </form>
-        </div>
-    </div>
-    {% endif %}
+            // Crear nodos para vis.js
+            const nodes = new vis.DataSet(nodos.map((node, index) => ({
+                id: node.id,
+                label: node.name.length > 20 ? node.name.substring(0, 20) + '...' : node.name,
+                color: node.color,
+                shape: node.group === 'eje' ? 'diamond' : 'dot',
+                size: node.size,
+                title: node.name,
+                group: node.group,
+                font: {
+                    size: node.group === 'eje' ? 16 : 12,
+                    color: node.group === 'eje' ? '#ffffff' : '#333333',
+                    bold: node.group === 'eje'
+                }
+            })));
+            
+            // Crear enlaces para vis.js
+            const edges = new vis.DataSet(enlaces.map(link => ({
+                from: link.source,
+                to: link.target,
+                width: link.value * 0.5,
+                color: '#888888'
+            })));
+            
+            // Configuración de la red
+            const options = {
+                nodes: {
+                    borderWidth: 2,
+                    shadow: true,
+                    font: {
+                        size: 12,
+                        face: 'Segoe UI'
+                    }
+                },
+                edges: {
+                    smooth: {
+                        type: 'continuous',
+                        roundness: 0.5
+                    },
+                    arrows: {
+                        to: {
+                            enabled: false
+                        }
+                    },
+                    color: {
+                        color: '#4D7C8A',
+                        opacity: 0.6
+                    }
+                },
+                physics: {
+                    enabled: physicsEnabled,
+                    stabilization: {
+                        iterations: 100
+                    },
+                    barnesHut: {
+                        gravitationalConstant: -2000,
+                        centralGravity: 0.3,
+                        springLength: 150,
+                        springConstant: 0.04,
+                        damping: 0.09,
+                        avoidOverlap: 0.5
+                    }
+                },
+                interaction: {
+                    hover: true,
+                    tooltipDelay: 100,
+                    zoomView: true,
+                    dragView: true
+                },
+                layout: {
+                    improvedLayout: true,
+                    hierarchical: {
+                        enabled: false
+                    }
+                },
+                groups: {
+                    eje: {
+                        shape: 'diamond',
+                        size: 30,
+                        color: {
+                            background: '#1B4079',
+                            border: '#0A2A5A',
+                            highlight: {
+                                background: '#2B5099',
+                                border: '#1A4089'
+                            }
+                        },
+                        font: {
+                            color: '#ffffff',
+                            size: 16,
+                            bold: true
+                        }
+                    },
+                    estrategia: {
+                        shape: 'dot',
+                        size: 15,
+                        color: {
+                            background: '#4D7C8A',
+                            border: '#3D6C7A',
+                            highlight: {
+                                background: '#5D8C9A',
+                                border: '#4D7C8A'
+                            }
+                        }
+                    }
+                }
+            };
+            
+            // Crear la red
+            const data = { nodes: nodes, edges: edges };
+            network = new vis.Network(container, data, options);
+            
+            // Evento al hacer clic en un nodo
+            network.on('click', function(params) {
+                if (params.nodes.length > 0) {
+                    const nodeId = params.nodes[0];
+                    const node = nodos.find(n => n.id === nodeId);
+                    
+                    if (node) {
+                        document.getElementById('node-title').textContent = node.name;
+                        document.getElementById('node-content').innerHTML = `
+                            <strong>Tipo:</strong> ${node.group === 'eje' ? 'Eje Estratégico' : 'Estrategia FODA'}<br>
+                            <strong>ID:</strong> ${node.id}<br>
+                            ${node.group === 'estrategia' ? '<strong>Tipo de Cruce:</strong> ' + node.name.split(' - ')[0] + '<br>' : ''}
+                            ${node.group === 'estrategia' ? '<strong>Estrategia:</strong> ' + node.name.split(' - ')[1] + '...' : ''}
+                        `;
+                        document.getElementById('node-info').style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('node-info').style.display = 'none';
+                }
+            });
+            
+            // Evento al hacer doble clic en un nodo (zoom)
+            network.on('doubleClick', function(params) {
+                if (params.nodes.length > 0) {
+                    network.focus(params.nodes[0], {
+                        scale: 1.5,
+                        animation: {
+                            duration: 1000,
+                            easingFunction: 'easeInOutQuad'
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Funciones de control
+        function resetView() {
+            if (network) {
+                network.fit({
+                    animation: {
+                        duration: 1000,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+            }
+        }
+        
+        function zoomIn() {
+            if (network) {
+                const scale = network.getScale();
+                network.moveTo({
+                    scale: scale * 1.2,
+                    animation: {
+                        duration: 500,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+            }
+        }
+        
+        function zoomOut() {
+            if (network) {
+                const scale = network.getScale();
+                network.moveTo({
+                    scale: scale * 0.8,
+                    animation: {
+                        duration: 500,
+                        easingFunction: 'easeInOutQuad'
+                    }
+                });
+            }
+        }
+        
+        function togglePhysics() {
+            if (network) {
+                physicsEnabled = !physicsEnabled;
+                network.setOptions({ physics: { enabled: physicsEnabled } });
+                const btn = document.querySelector('button[onclick="togglePhysics()"]');
+                if (physicsEnabled) {
+                    btn.innerHTML = '<i class="fas fa-pause"></i> Pausar Física';
+                } else {
+                    btn.innerHTML = '<i class="fas fa-play"></i> Activar Física';
+                }
+            }
+        }
+        
+        // Inicializar la red cuando se carga la página
+        document.addEventListener('DOMContentLoaded', function() {
+            if (nodos.length > 0) {
+                // Cargar vis.js dinámicamente
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/vis-network/standalone/umd/vis-network.min.js';
+                script.onload = initNetwork;
+                document.head.appendChild(script);
+            }
+        });
+    </script>
 </body>
 </html>
