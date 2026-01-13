@@ -4,10 +4,6 @@
 <!-- Barra de Navegación Contextual -->
 <!-- Contenido principal -->
 <div class="foda-cruzado-main-container">
-    <!-- Token CSRF para Flask -->
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    
     <div class="header-container">
         <div class="header-content">
             <h1 class="content-title">
@@ -70,14 +66,14 @@
                         <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="fortaleza">
                             <div class="elemento-check">
                                 <input type="checkbox" id="fortaleza-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('fortaleza', {{ aspecto.id }}, `{{ aspecto.actividad|replace('"', '\\"')|replace("'", "\\'") }}`)">
+                                       onchange="toggleElementoSeleccionado('fortaleza', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
                                 <label for="fortaleza-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('fortaleza-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('fortaleza', {{ aspecto.id }}, `{{ aspecto.actividad|replace('"', '\\"')|replace("'", "\\'") }}`)">
+                                <button class="btn-add" onclick="seleccionarParaCruce('fortaleza', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -110,14 +106,14 @@
                         <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="oportunidad">
                             <div class="elemento-check">
                                 <input type="checkbox" id="oportunidad-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('oportunidad', {{ aspecto.id }}, `{{ aspecto.actividad|replace('"', '\\"')|replace("'", "\\'") }}`)">
+                                       onchange="toggleElementoSeleccionado('oportunidad', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
                                 <label for="oportunidad-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('oportunidad-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('oportunidad', {{ aspecto.id }}, `{{ aspecto.actividad|replace('"', '\\"')|replace("'", "\\'") }}`)">
+                                <button class="btn-add" onclick="seleccionarParaCruce('oportunidad', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -150,14 +146,14 @@
                         <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="debilidad">
                             <div class="elemento-check">
                                 <input type="checkbox" id="debilidad-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('debilidad', {{ aspecto.id }}, `{{ aspecto.actividad|replace('"', '\\"')|replace("'", "\\'") }}`)">
+                                       onchange="toggleElementoSeleccionado('debilidad', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
                                 <label for="debilidad-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('debilidad-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('debilidad', {{ aspecto.id }}, `{{ aspecto.actividad|replace('"', '\\"')|replace("'", "\\'") }}`)">
+                                <button class="btn-add" onclick="seleccionarParaCruce('debilidad', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -190,14 +186,14 @@
                         <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="amenaza">
                             <div class="elemento-check">
                                 <input type="checkbox" id="amenaza-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('amenaza', {{ aspecto.id }}, `{{ aspecto.actividad|replace('"', '\\"')|replace("'", "\\'") }}`)">
+                                       onchange="toggleElementoSeleccionado('amenaza', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
                                 <label for="amenaza-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('amenaza-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('amenaza', {{ aspecto.id }}, `{{ aspecto.actividad|replace('"', '\\"')|replace("'", "\\'") }}`)">
+                                <button class="btn-add" onclick="seleccionarParaCruce('amenaza', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -2243,7 +2239,7 @@
     // Inicializar al cargar
     document.addEventListener('DOMContentLoaded', function() {
         inicializarUI();
-        cargarEstrategias();  // Cargar estrategias desde la base de datos
+        cargarEstrategias();
         actualizarEstadisticas();
         actualizarEjeSeleccionado();
         
@@ -2252,6 +2248,7 @@
         if (ejeGuardado) {
             try {
                 ejeActivo = JSON.parse(ejeGuardado);
+                document.getElementById('eje-actual-nombre').textContent = ejeActivo.nombre;
             } catch (e) {
                 console.error('Error al cargar eje activo:', e);
             }
@@ -2681,179 +2678,6 @@
         actualizarPanelesSeleccion();
     }
     
-    // Función para cargar estrategias desde el backend
-    function cargarEstrategias() {
-        fetch('/api/estrategias_foda_con_eje')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success && data.estrategias) {
-                    estrategiasGuardadas = data.estrategias;
-                    actualizarListaEstrategias();
-                    actualizarDashboard();
-                    
-                    if (data.estrategias.length > 0) {
-                        mostrarNotificacion('success', 'Estrategias cargadas', 
-                            `Se cargaron ${data.estrategias.length} estrategias de la base de datos`);
-                    }
-                } else {
-                    throw new Error(data.message || 'Error en los datos recibidos');
-                }
-            })
-            .catch(error => {
-                console.error('Error al cargar estrategias:', error);
-                // No mostrar notificación de error para no molestar al usuario
-            });
-    }
-    
-    function actualizarListaEstrategias() {
-        const lista = document.getElementById('lista-estrategias');
-        
-        // Limpiar lista
-        lista.innerHTML = '';
-        
-        if (!estrategiasGuardadas || estrategiasGuardadas.length === 0) {
-            lista.innerHTML = `
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <i class="fas fa-inbox"></i>
-                    </div>
-                    <div class="empty-content">
-                        <h3>No hay estrategias guardadas</h3>
-                        <p>Comience a crear estrategias utilizando el panel de combinación</p>
-                        <button class="btn-empty-action" onclick="scrollToCombinacion()">
-                            <i class="fas fa-plus-circle"></i> Crear primera estrategia
-                        </button>
-                    </div>
-                </div>
-            `;
-            return;
-        }
-        
-        // Ordenar por fecha (más reciente primero)
-        estrategiasGuardadas.sort((a, b) => {
-            const fechaA = a.fecha_creacion ? new Date(a.fecha_creacion) : new Date(0);
-            const fechaB = b.fecha_creacion ? new Date(b.fecha_creacion) : new Date(0);
-            return fechaB - fechaA;
-        });
-        
-        // Agregar cada estrategia
-        estrategiasGuardadas.forEach(estrategia => {
-            agregarEstrategiaRealALista(estrategia);
-        });
-    }
-    
-    function agregarEstrategiaRealALista(estrategia) {
-        const lista = document.getElementById('lista-estrategias');
-        
-        // Remover estado vacío si existe
-        const emptyState = lista.querySelector('.empty-state');
-        if (emptyState) {
-            emptyState.remove();
-        }
-        
-        const estrategiaCard = document.createElement('div');
-        estrategiaCard.className = 'estrategia-card';
-        estrategiaCard.dataset.id = estrategia.id;
-        
-        // Formatear fecha
-        let fechaFormateada = 'Fecha no disponible';
-        if (estrategia.fecha_creacion) {
-            const fecha = new Date(estrategia.fecha_creacion);
-            fechaFormateada = fecha.toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-        }
-        
-        estrategiaCard.innerHTML = `
-            <div class="estrategia-header">
-                <div class="estrategia-meta">
-                    <span class="estrategia-tipo ${estrategia.tipo_cruce ? estrategia.tipo_cruce.toLowerCase() : 'fo'}">
-                        ${estrategia.tipo_cruce || 'FO'}
-                    </span>
-                    <span class="estrategia-fecha">${fechaFormateada}</span>
-                </div>
-                <div class="estrategia-badges">
-                    ${estrategia.eje_texto ? `
-                        <span class="badge-eje">
-                            <i class="fas fa-bullseye"></i> ${estrategia.eje_texto}
-                        </span>
-                    ` : ''}
-                    ${estrategia.creador ? `
-                        <span class="badge-creador">
-                            <i class="fas fa-user"></i> ${estrategia.creador}
-                        </span>
-                    ` : ''}
-                </div>
-            </div>
-            <div class="estrategia-body">
-                <div class="estrategia-texto">${estrategia.estrategia || 'Sin descripción'}</div>
-                <div class="estrategia-elementos">
-                    <div class="elementos-grupo">
-                        <div class="grupo-titulo">
-                            <i class="fas fa-home"></i>
-                            Elemento Interno
-                        </div>
-                        <div class="grupo-items">
-                            <span class="elemento-badge badge-${estrategia.elemento_interno_tipo || 'fortaleza'}">
-                                <i class="fas fa-${estrategia.elemento_interno_tipo === 'fortaleza' ? 'shield-alt' : 
-                                              estrategia.elemento_interno_tipo === 'debilidad' ? 'exclamation-triangle' : 
-                                              'question-circle'}"></i>
-                                ${estrategia.elemento_interno_texto ? 
-                                    (estrategia.elemento_interno_texto.substring(0, 60) + 
-                                    (estrategia.elemento_interno_texto.length > 60 ? '...' : '')) : 
-                                    'Sin texto'}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="elementos-grupo">
-                        <div class="grupo-titulo">
-                            <i class="fas fa-external-link-alt"></i>
-                            Elemento Externo
-                        </div>
-                        <div class="grupo-items">
-                            <span class="elemento-badge badge-${estrategia.elemento_externo_tipo || 'oportunidad'}">
-                                <i class="fas fa-${estrategia.elemento_externo_tipo === 'oportunidad' ? 'bullseye' : 
-                                              estrategia.elemento_externo_tipo === 'amenaza' ? 'skull-crossbones' : 
-                                              'question-circle'}"></i>
-                                ${estrategia.elemento_externo_texto ? 
-                                    (estrategia.elemento_externo_texto.substring(0, 60) + 
-                                    (estrategia.elemento_externo_texto.length > 60 ? '...' : '')) : 
-                                    'Sin texto'}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="estrategia-footer">
-                <div class="estrategia-stats">
-                    <div class="stat-combinacion">
-                        <i class="fas fa-info-circle"></i>
-                        Combinación simple
-                    </div>
-                </div>
-                <div class="estrategia-actions">
-                    <button class="btn-accion edit" onclick="editarEstrategia(this)">
-                        <i class="fas fa-edit"></i> Editar
-                    </button>
-                    <button class="btn-accion delete" onclick="eliminarEstrategiaReal(this, ${estrategia.id})">
-                        <i class="fas fa-trash"></i> Eliminar
-                    </button>
-                </div>
-            </div>
-        `;
-        
-        lista.appendChild(estrategiaCard);
-    }
-    
     function guardarEstrategiaMultiple() {
         const estrategiaTexto = document.getElementById('estrategia').value.trim();
         const generarTodas = document.getElementById('generar-todas-combinaciones').checked;
@@ -2881,156 +2705,136 @@
         btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
         btnGuardar.disabled = true;
         
-        // Preparar datos - para múltiples elementos, guardamos una estrategia por combinación
-        const promises = [];
+        // Preparar datos
+        const estrategia = {
+            tipo_cruce: tipoCruceActual.toUpperCase(),
+            elementos_internos: elementosInternos,
+            elementos_externos: elementosExternos,
+            eje_id: ejeSeleccionado,
+            eje_texto: ejeSeleccionadoTexto,
+            estrategia: estrategiaTexto,
+            es_multiple: true,
+            generar_todas: generarTodas,
+            estrategia_global: estrategiaGlobal,
+            fecha: new Date().toISOString()
+        };
         
-        if (generarTodas) {
-            // Crear una estrategia para cada combinación
-            elementosInternos.forEach(interno => {
-                elementosExternos.forEach(externo => {
-                    const estrategiaData = {
-                        tipo_cruce: tipoCruceActual.toUpperCase(),
-                        elemento_interno_id: interno.id,
-                        elemento_interno_tipo: interno.tipo,
-                        elemento_interno_texto: interno.texto,
-                        elemento_externo_id: externo.id,
-                        elemento_externo_tipo: externo.tipo,
-                        elemento_externo_texto: externo.texto,
-                        estrategia: estrategiaTexto,
-                        eje_id: ejeSeleccionado,
-                        eje_texto: ejeSeleccionadoTexto
-                    };
-                    
-                    promises.push(guardarEstrategiaIndividual(estrategiaData));
-                });
-            });
-        } else {
-            // Guardar solo una estrategia (tomar el primer elemento de cada array)
-            const estrategiaData = {
-                tipo_cruce: tipoCruceActual.toUpperCase(),
-                elemento_interno_id: elementosInternos[0].id,
-                elemento_interno_tipo: elementosInternos[0].tipo,
-                elemento_interno_texto: estrategiaGlobal ? 
-                    `Múltiples: ${elementosInternos.map(e => e.texto.substring(0, 30)).join(', ')}...` : 
-                    elementosInternos[0].texto,
-                elemento_externo_id: elementosExternos[0].id,
-                elemento_externo_tipo: elementosExternos[0].tipo,
-                elemento_externo_texto: estrategiaGlobal ? 
-                    `Múltiples: ${elementosExternos.map(e => e.texto.substring(0, 30)).join(', ')}...` : 
-                    elementosExternos[0].texto,
-                estrategia: estrategiaTexto,
-                eje_id: ejeSeleccionado,
-                eje_texto: ejeSeleccionadoTexto
-            };
+        // Simular envío al servidor
+        setTimeout(() => {
+            // En un entorno real, aquí iría la llamada fetch
+            estrategiasGuardadas.push(estrategia);
+            agregarEstrategiaALista(estrategia);
+            actualizarDashboard();
             
-            promises.push(guardarEstrategiaIndividual(estrategiaData));
-        }
-        
-        // Ejecutar todas las promesas
-        Promise.all(promises)
-            .then(results => {
-                const exitosas = results.filter(r => r.success).length;
-                const fallidas = results.filter(r => !r.success).length;
-                
-                if (exitosas > 0) {
-                    // Recargar estrategias después de guardar
-                    cargarEstrategias();
-                    
-                    mostrarNotificacion('success', 'Estrategias guardadas', 
-                        `Se guardaron ${exitosas} estrategias exitosamente${fallidas > 0 ? `, ${fallidas} fallaron` : ''}`);
-                    limpiarSelecciones();
-                } else {
-                    mostrarNotificacion('error', 'Error al guardar', 
-                        'No se pudo guardar ninguna estrategia. Por favor, intente nuevamente.');
-                }
-            })
-            .catch(error => {
-                console.error('Error al guardar estrategias:', error);
-                mostrarNotificacion('error', 'Error de conexión', 
-                    'No se pudo conectar con el servidor. Por favor, verifique su conexión.');
-            })
-            .finally(() => {
-                btnGuardar.innerHTML = originalHTML;
-                btnGuardar.disabled = false;
-            });
+            btnGuardar.innerHTML = originalHTML;
+            btnGuardar.disabled = false;
+            
+            mostrarNotificacion('success', 'Estrategia guardada', 'La estrategia se ha guardado correctamente');
+            limpiarSelecciones();
+        }, 1500);
     }
     
-    function guardarEstrategiaIndividual(data) {
-        return fetch('/guardar_estrategia_foda_con_eje', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .catch(error => {
-            console.error('Error en fetch:', error);
-            return { success: false, message: 'Error de red' };
-        });
-    }
-    
-    function eliminarEstrategiaReal(button, id) {
-        if (!confirm('¿Está seguro de que desea eliminar esta estrategia?')) {
-            return;
+    function agregarEstrategiaALista(estrategia) {
+        const lista = document.getElementById('lista-estrategias');
+        
+        // Remover estado vacío si existe
+        const emptyState = lista.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.remove();
         }
         
-        fetch(`/eliminar_estrategia_foda/${id}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const card = button.closest('.estrategia-card');
-                card.style.opacity = '0.5';
-                
-                setTimeout(() => {
-                    card.remove();
-                    mostrarNotificacion('success', 'Estrategia eliminada', 
-                        'La estrategia ha sido eliminada correctamente');
-                    
-                    // Actualizar dashboard
-                    estrategiasGuardadas = estrategiasGuardadas.filter(e => e.id !== id);
-                    actualizarDashboard();
-                    
-                    // Si no quedan estrategias, mostrar estado vacío
-                    const lista = document.getElementById('lista-estrategias');
-                    if (lista.children.length === 0) {
-                        lista.innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-icon">
-                                    <i class="fas fa-inbox"></i>
-                                </div>
-                                <div class="empty-content">
-                                    <h3>No hay estrategias guardadas</h3>
-                                    <p>Comience a crear estrategias utilizando el panel de combinación</p>
-                                    <button class="btn-empty-action" onclick="scrollToCombinacion()">
-                                        <i class="fas fa-plus-circle"></i> Crear primera estrategia
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }, 300);
-            } else {
-                mostrarNotificacion('error', 'Error al eliminar', data.message || 'No se pudo eliminar la estrategia');
-            }
-        })
-        .catch(error => {
-            console.error('Error al eliminar estrategia:', error);
-            mostrarNotificacion('error', 'Error de conexión', 'No se pudo conectar con el servidor');
+        const estrategiaCard = document.createElement('div');
+        estrategiaCard.className = `estrategia-card ${estrategia.es_multiple ? 'multiple' : ''}`;
+        
+        const fecha = new Date(estrategia.fecha);
+        const fechaFormateada = fecha.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
+        
+        estrategiaCard.innerHTML = `
+            <div class="estrategia-header">
+                <div class="estrategia-meta">
+                    <span class="estrategia-tipo ${estrategia.tipo_cruce.toLowerCase()}">
+                        ${estrategia.tipo_cruce}
+                    </span>
+                    <span class="estrategia-fecha">${fechaFormateada}</span>
+                </div>
+                <div class="estrategia-badges">
+                    ${estrategia.es_multiple ? '<span class="badge-multiple">Combinación Múltiple</span>' : ''}
+                    <span class="badge-eje">
+                        <i class="fas fa-bullseye"></i> ${estrategia.eje_texto}
+                    </span>
+                </div>
+            </div>
+            <div class="estrategia-body">
+                <div class="estrategia-texto">${estrategia.estrategia}</div>
+                <div class="estrategia-elementos">
+                    <div class="elementos-grupo">
+                        <div class="grupo-titulo">
+                            <i class="fas fa-home"></i>
+                            Elementos Internos (${estrategia.elementos_internos.length})
+                        </div>
+                        <div class="grupo-items">
+                            ${estrategia.elementos_internos.map(e => 
+                                `<span class="elemento-badge badge-${e.tipo}">
+                                    <i class="fas fa-${e.tipo === 'fortaleza' ? 'shield-alt' : 'exclamation-triangle'}"></i>
+                                    ${e.texto.substring(0, 40)}${e.texto.length > 40 ? '...' : ''}
+                                </span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                    <div class="elementos-grupo">
+                        <div class="grupo-titulo">
+                            <i class="fas fa-external-link-alt"></i>
+                            Elementos Externos (${estrategia.elementos_externos.length})
+                        </div>
+                        <div class="grupo-items">
+                            ${estrategia.elementos_externos.map(e => 
+                                `<span class="elemento-badge badge-${e.tipo}">
+                                    <i class="fas fa-${e.tipo === 'oportunidad' ? 'bullseye' : 'skull-crossbones'}"></i>
+                                    ${e.texto.substring(0, 40)}${e.texto.length > 40 ? '...' : ''}
+                                </span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="estrategia-footer">
+                <div class="estrategia-stats">
+                    <div class="stat-combinacion">
+                        <i class="fas fa-project-diagram"></i>
+                        ${estrategia.elementos_internos.length}x${estrategia.elementos_externos.length} combinaciones
+                    </div>
+                </div>
+                <div class="estrategia-actions">
+                    <button class="btn-accion edit" onclick="editarEstrategia(this)">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button class="btn-accion delete" onclick="eliminarEstrategia(this)">
+                        <i class="fas fa-trash"></i> Eliminar
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        lista.insertBefore(estrategiaCard, lista.firstChild);
+    }
+    
+    function cargarEstrategias() {
+        // Simular carga de estrategias
+        setTimeout(() => {
+            actualizarDashboard();
+        }, 500);
     }
     
     function actualizarDashboard() {
         const totalEstrategias = estrategiasGuardadas.length;
-        const estrategiasMultiples = 0; // Tu base de datos actual no soporta múltiples
-        const estrategiasSimples = totalEstrategias;
+        const estrategiasMultiples = estrategiasGuardadas.filter(e => e.es_multiple).length;
+        const estrategiasSimples = totalEstrategias - estrategiasMultiples;
         
         document.getElementById('total-estrategias').textContent = totalEstrategias;
         document.getElementById('metric-estrategias').textContent = totalEstrategias;
@@ -3039,68 +2843,7 @@
     }
     
     function filtrarEstrategias() {
-        const tipoSeleccionado = document.getElementById('filtro-tipo-estrategia').value;
-        const ejeSeleccionado = document.getElementById('filtro-eje-estrategia').value;
-        const combinacionSeleccionada = document.getElementById('filtro-combinacion').value;
-        
-        const estrategias = document.querySelectorAll('.estrategia-card');
-        let visibles = 0;
-        
-        estrategias.forEach(card => {
-            const tipo = card.querySelector('.estrategia-tipo').textContent.trim();
-            const eje = card.querySelector('.badge-eje') ? card.querySelector('.badge-eje').textContent.trim() : '';
-            
-            let mostrar = true;
-            
-            // Filtrar por tipo
-            if (tipoSeleccionado !== 'all' && tipo !== tipoSeleccionado) {
-                mostrar = false;
-            }
-            
-            // Filtrar por eje
-            if (ejeSeleccionado !== 'all') {
-                const ejeId = getEjeIdFromText(eje);
-                if (ejeId !== ejeSeleccionado) {
-                    mostrar = false;
-                }
-            }
-            
-            // Filtrar por combinación (simple/múltiple)
-            if (combinacionSeleccionada !== 'all') {
-                const esMultiple = card.querySelector('.stat-combinacion').textContent.includes('múltiple');
-                if (combinacionSeleccionada === 'multiple' && !esMultiple) {
-                    mostrar = false;
-                }
-                if (combinacionSeleccionada === 'simple' && esMultiple) {
-                    mostrar = false;
-                }
-            }
-            
-            if (mostrar) {
-                card.style.display = 'block';
-                visibles++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        
-        // Actualizar contador
-        document.getElementById('total-estrategias').textContent = visibles;
-    }
-    
-    function getEjeIdFromText(ejeTexto) {
-        // Mapear texto del eje a su ID
-        const ejes = {
-            'EDUCACIÓN': 'educacion',
-            'SALUD': 'salud',
-            'EMPLEABILIDAD': 'empleabilidad',
-            'DESARROLLO ECONÓMICO': 'desarrollo_economico',
-            'SOSTENIBILIDAD AMBIENTAL (AGUA)': 'sostenibilidad_ambiental',
-            'COMUNICACIÓN': 'comunicacion',
-            'INSTITUCIONAL': 'institucional'
-        };
-        
-        return ejes[ejeTexto] || '';
+        // Implementar filtrado
     }
     
     function limpiarSelecciones() {
@@ -3183,6 +2926,38 @@
         mostrarNotificacion('info', 'Función en desarrollo', 'La edición de estrategias estará disponible pronto');
     }
     
+    function eliminarEstrategia(button) {
+        if (confirm('¿Está seguro de que desea eliminar esta estrategia?')) {
+            const card = button.closest('.estrategia-card');
+            card.style.opacity = '0.5';
+            
+            setTimeout(() => {
+                card.remove();
+                
+                // Si no quedan estrategias, mostrar estado vacío
+                const lista = document.getElementById('lista-estrategias');
+                if (lista.children.length === 0) {
+                    lista.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-inbox"></i>
+                            </div>
+                            <div class="empty-content">
+                                <h3>No hay estrategias guardadas</h3>
+                                <p>Comience a crear estrategias utilizando el panel de combinación</p>
+                                <button class="btn-empty-action" onclick="scrollToCombinacion()">
+                                    <i class="fas fa-plus-circle"></i> Crear primera estrategia
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                mostrarNotificacion('success', 'Estrategia eliminada', 'La estrategia ha sido eliminada correctamente');
+            }, 300);
+        }
+    }
+    
     function scrollToCombinacion() {
         document.querySelector('.combinacion-panel').scrollIntoView({ 
             behavior: 'smooth',
@@ -3252,28 +3027,31 @@
         }, 5000);
     }
     
-    // Función auxiliar para obtener el token CSRF
-    function getCSRFToken() {
-        // Buscar token en meta tag
-        const metaTag = document.querySelector('meta[name="csrf-token"]');
-        if (metaTag) {
-            return metaTag.getAttribute('content');
-        }
-        
-        // Buscar token en cookie
-        const cookieMatch = document.cookie.match(/(?:^|;)\s*csrf_token\s*=\s*([^;]+)/);
-        if (cookieMatch) {
-            return cookieMatch[1];
-        }
-        
-        // Buscar token en formularios
-        const formToken = document.querySelector('input[name="csrf_token"]');
-        if (formToken) {
-            return formToken.value;
-        }
-        
-        console.warn('Token CSRF no encontrado');
-        return '';
+    // Funciones de las pestañas laterales (mantener compatibilidad)
+    function toggleEjesTab() {
+        const tab = document.getElementById('ejes-tab');
+        const content = document.getElementById('ejes-content');
+        tab.classList.toggle('active');
+        content.classList.toggle('active');
+    }
+    
+    function toggleObjetivoTab() {
+        const tab = document.getElementById('objetivo-tab');
+        const content = document.getElementById('objetivo-content');
+        tab.classList.toggle('active');
+        content.classList.toggle('active');
+    }
+    
+    function mostrarObjetivoCompleto() {
+        const modal = document.getElementById('modal-objetivo');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function cerrarModalObjetivo() {
+        const modal = document.getElementById('modal-objetivo');
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
     }
 </script>
 {% endblock %}
