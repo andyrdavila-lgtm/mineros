@@ -314,6 +314,12 @@
             <a href="{{ url_for('cruzado') }}" class="tab {% if request.endpoint == 'cruzado' %}active{% endif %}">
                 <i class="fas fa-th"></i> FODA Cruzado
             </a>
+            <a href="{{ url_for('estrategias') }}" class="tab {% if request.endpoint == 'estrategias' %}active{% endif %}">
+                <i class="fas fa-th"></i> ESTRATEGIAS
+            </a>
+            <a href="{{ url_for('red') }}" class="tab {% if request.endpoint == 'red' %}active{% endif %}">
+                <i class="fas fa-th"></i> MAPA
+            </a>
         </div>
         
         <div class="content-container">
@@ -372,4 +378,5 @@
     {% endif %}
 </body>
 </html>
+
 
