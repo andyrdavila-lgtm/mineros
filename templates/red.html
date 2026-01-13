@@ -18,7 +18,7 @@
                 </div>
                 <div class="stat-badge">
                     <i class="fas fa-globe"></i>
-                    <span id="total-ejes">7 Ejes</span>
+                    <span id="total-ejes">0 Ejes</span>
                 </div>
                 <div class="stat-badge">
                     <i class="fas fa-moon"></i>
@@ -26,11 +26,11 @@
                 </div>
                 <div class="stat-badge">
                     <i class="fas fa-satellite"></i>
-                    <span id="total-tacticas">0 Satélites</span>
+                    <span id="total-actividades">0 Satélites</span>
                 </div>
                 <div class="stat-badge">
                     <i class="fas fa-meteor"></i>
-                    <span id="total-actividades">0 Asteroides</span>
+                    <span id="total-tareas">0 Asteroides</span>
                 </div>
             </div>
         </div>
@@ -62,12 +62,12 @@
         <!-- Fondo estrellado -->
         <div class="estrellas-container" id="estrellasContainer"></div>
         
-        <!-- Anillos orbitales (círculos concéntricos) -->
+        <!-- Anillos orbitales concéntricos -->
         <div class="anillos-orbitales" id="anillosOrbitales"></div>
         
         <!-- Contenedor del sistema solar -->
         <div class="sistema-solar" id="sistemaSolar">
-            <!-- Sol Central -->
+            <!-- Sol Central Fijo -->
             <div class="orbita-sol" id="orbitaSol">
                 <div class="nodo-sol" id="nodo-objetivo">
                     <div class="nodo-glow-sol"></div>
@@ -83,17 +83,17 @@
                 </div>
             </div>
             
-            <!-- Planetas (ejes) orbitando alrededor del sol -->
+            <!-- Planetas (ejes) con órbitas concéntricas -->
             <div class="ejes-orbitales" id="ejesOrbitales"></div>
             
-            <!-- Estrategias (lunas) orbitando alrededor de los planetas -->
+            <!-- Estrategias (lunas) -->
             <div class="estrategias-orbitales" id="estrategiasOrbitales"></div>
             
-            <!-- Tácticas (satélites) orbitando alrededor de las lunas -->
-            <div class="tacticas-orbitales" id="tacticasOrbitales"></div>
-            
-            <!-- Actividades (asteroides) orbitando alrededor de los satélites -->
+            <!-- Actividades (satélites) -->
             <div class="actividades-orbitales" id="actividadesOrbitales"></div>
+            
+            <!-- Tareas (asteroides) -->
+            <div class="tareas-orbitales" id="tareasOrbitales"></div>
         </div>
     </div>
     
@@ -111,7 +111,7 @@
 
 <style>
     /* ================================
-       ESTILOS PRINCIPALES
+       ESTILOS PRINCIPALES CORREGIDOS
     ================================ */
     
     * {
@@ -318,6 +318,7 @@
         transform: translate(-50%, -50%);
         border: 1px solid rgba(255, 255, 255, 0.05);
         border-radius: 50%;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
     }
     
     /* Sistema solar */
@@ -331,7 +332,7 @@
         z-index: 10;
     }
     
-    /* Sol */
+    /* Sol Fijo */
     .orbita-sol {
         position: absolute;
         top: 50%;
@@ -423,7 +424,7 @@
         box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
     }
     
-    /* Contenedor de planetas (ejes) */
+    /* Planetas (ejes) con órbitas concéntricas */
     .ejes-orbitales {
         position: absolute;
         top: 50%;
@@ -434,8 +435,7 @@
         z-index: 90;
     }
     
-    /* Planetas individuales */
-    .planeta-orbita {
+    .planeta-contenedor {
         position: absolute;
         top: 50%;
         left: 50%;
@@ -449,6 +449,7 @@
         cursor: pointer;
         transition: all 0.3s ease;
         z-index: 90;
+        transform: translate(-50%, -50%);
     }
     
     .nodo-eje .nodo-content {
@@ -494,9 +495,11 @@
         color: white;
         text-align: center;
         line-height: 1.2;
+        word-break: break-word;
+        max-width: 100px;
     }
     
-    /* Órbitas de estrategias (lunas) */
+    /* Estrategias (lunas) */
     .estrategias-orbitales {
         position: absolute;
         top: 50%;
@@ -507,7 +510,7 @@
         z-index: 80;
     }
     
-    .orbita-estrategia {
+    .luna-contenedor {
         position: absolute;
         transform-origin: center center;
         z-index: 80;
@@ -518,6 +521,7 @@
         border-radius: 50%;
         cursor: pointer;
         z-index: 80;
+        transform: translate(-50%, -50%);
     }
     
     .nodo-estrategia .nodo-content {
@@ -531,46 +535,25 @@
         height: 30px;
         background: rgba(255, 255, 255, 0.9);
         color: #27ae60;
-    }
-    
-    /* Órbitas de tácticas (satélites) */
-    .tacticas-orbitales {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 2000px;
-        height: 2000px;
-        z-index: 70;
-    }
-    
-    .orbita-tactica {
-        position: absolute;
-        transform-origin: center center;
-        z-index: 70;
-    }
-    
-    .nodo-tactica {
-        position: absolute;
         border-radius: 50%;
-        cursor: pointer;
-        z-index: 70;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 5px;
+        font-size: 14px;
     }
     
-    .nodo-tactica .nodo-content {
-        background: radial-gradient(circle, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.8));
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        padding: 10px;
+    .nodo-estrategia .nodo-title {
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+        text-align: center;
+        line-height: 1.1;
+        word-break: break-word;
+        max-width: 70px;
     }
     
-    .nodo-tactica .nodo-icon {
-        width: 25px;
-        height: 25px;
-        background: rgba(255, 255, 255, 0.9);
-        color: #c0392b;
-    }
-    
-    /* Órbitas de actividades (asteroides) */
+    /* Actividades (satélites) */
     .actividades-orbitales {
         position: absolute;
         top: 50%;
@@ -578,34 +561,104 @@
         transform: translate(-50%, -50%);
         width: 2000px;
         height: 2000px;
-        z-index: 60;
+        z-index: 70;
     }
     
-    .orbita-actividad {
+    .satelite-contenedor {
         position: absolute;
         transform-origin: center center;
-        z-index: 60;
+        z-index: 70;
     }
     
     .nodo-actividad {
         position: absolute;
         border-radius: 50%;
         cursor: pointer;
-        z-index: 60;
+        z-index: 70;
+        transform: translate(-50%, -50%);
     }
     
     .nodo-actividad .nodo-content {
+        background: radial-gradient(circle, rgba(231, 76, 60, 0.9), rgba(192, 57, 43, 0.8));
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        padding: 10px;
+    }
+    
+    .nodo-actividad .nodo-icon {
+        width: 25px;
+        height: 25px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #c0392b;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 5px;
+        font-size: 12px;
+    }
+    
+    .nodo-actividad .nodo-title {
+        font-size: 9px;
+        font-weight: 600;
+        color: white;
+        text-align: center;
+        line-height: 1.1;
+        word-break: break-word;
+        max-width: 60px;
+    }
+    
+    /* Tareas (asteroides) */
+    .tareas-orbitales {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 2000px;
+        height: 2000px;
+        z-index: 60;
+    }
+    
+    .asteroide-contenedor {
+        position: absolute;
+        transform-origin: center center;
+        z-index: 60;
+    }
+    
+    .nodo-tarea {
+        position: absolute;
+        border-radius: 50%;
+        cursor: pointer;
+        z-index: 60;
+        transform: translate(-50%, -50%);
+    }
+    
+    .nodo-tarea .nodo-content {
         background: radial-gradient(circle, rgba(243, 156, 18, 0.9), rgba(211, 84, 0, 0.8));
         border: 1px solid rgba(255, 255, 255, 0.3);
         padding: 8px;
     }
     
-    .nodo-actividad .nodo-icon {
+    .nodo-tarea .nodo-icon {
         width: 20px;
         height: 20px;
         background: rgba(255, 255, 255, 0.9);
         color: #d35400;
         border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+    }
+    
+    .nodo-tarea .nodo-title {
+        font-size: 8px;
+        font-weight: 600;
+        color: white;
+        text-align: center;
+        line-height: 1;
+        word-break: break-word;
+        max-width: 50px;
+        margin-top: 2px;
     }
     
     /* Panel de detalles */
@@ -705,32 +758,35 @@
 
 <script>
 // ================================
-// SISTEMA SOLAR CON ÓRBITAS CONCÉNTRICAS
+// SISTEMA SOLAR CON DATOS DEL BACKEND
 // ================================
 
 const SISTEMA_SOLAR = {
     ejes: [],
     estrategias: [],
-    tacticas: [],
     actividades: [],
+    tareas: [],
     animacionesActivas: true
 };
 
-// Configuración orbital - radios concéntricos
+// Configuración orbital
 const CONFIG_ORBITAS = {
-    // Radios orbitales para cada planeta (distancias desde el sol)
-    radiosPlanetas: [400, 500, 600, 700, 800, 900, 1000],
+    // Distancias desde el sol para cada eje (órbitas concéntricas)
+    distanciasEjes: [400, 500, 600, 700, 800, 900, 1000],
     
-    // Velocidades orbitales (más lento para planetas más lejanos)
-    velocidadesPlanetas: [0.8, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25],
+    // Velocidades de rotación (más lento cuanto más lejos)
+    velocidadesEjes: [0.8, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25],
     
-    // Tamaños de planetas (más pequeños los más lejanos)
-    tamanosPlanetas: [120, 110, 100, 90, 85, 80, 75],
+    // Tamaños de los nodos
+    tamanoEjes: [120, 115, 110, 105, 100, 95, 90],
+    tamanoEstrategias: 80,
+    tamanoActividades: 60,
+    tamanoTareas: 40,
     
-    // Radios para órbitas secundarias
-    radioLuna: 80,
-    radioSatelite: 50,
-    radioAsteroide: 30
+    // Radios orbitales para lunas, satélites y asteroides
+    radioLuna: 100,
+    radioSatelite: 70,
+    radioAsteroide: 40
 };
 
 // ================================
@@ -742,7 +798,7 @@ document.addEventListener('DOMContentLoaded', function() {
     crearEstrellas();
     crearAnillosOrbitales();
     crearEjes();
-    cargarDatosEjemplo();
+    cargarDatosBackend();
 });
 
 function inicializarSistema() {
@@ -788,18 +844,18 @@ function crearAnillosOrbitales() {
     const centroX = sistemaRect.width / 2;
     const centroY = sistemaRect.height / 2;
     
-    // Crear anillos concéntricos para cada órbita de planeta
-    CONFIG_ORBITAS.radiosPlanetas.forEach((radio, index) => {
+    // Crear anillos concéntricos para cada eje
+    CONFIG_ORBITAS.distanciasEjes.forEach((distancia, index) => {
         const anillo = document.createElement('div');
         anillo.className = 'anillo-orbital';
         
         anillo.style.cssText = `
-            width: ${radio * 2}px;
-            height: ${radio * 2}px;
+            width: ${distancia * 2}px;
+            height: ${distancia * 2}px;
             top: ${centroY}px;
             left: ${centroX}px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
             z-index: 2;
         `;
         
@@ -816,7 +872,7 @@ function crearEjes() {
     const centroX = sistemaRect.width / 2;
     const centroY = sistemaRect.height / 2;
     
-    // Definir ejes estratégicos (planetas)
+    // Definir ejes estratégicos
     SISTEMA_SOLAR.ejes = [
         {
             id: 'educacion',
@@ -824,9 +880,9 @@ function crearEjes() {
             icono: 'graduation-cap',
             color: '#3498db',
             descripcion: 'Mejora de infraestructura educativa y capacitación docente',
-            distancia: CONFIG_ORBITAS.radiosPlanetas[0],
-            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[0],
-            tamano: CONFIG_ORBITAS.tamanosPlanetas[0],
+            distancia: CONFIG_ORBITAS.distanciasEjes[0],
+            velocidad: CONFIG_ORBITAS.velocidadesEjes[0],
+            tamano: CONFIG_ORBITAS.tamanoEjes[0],
             anguloInicial: 0
         },
         {
@@ -835,9 +891,9 @@ function crearEjes() {
             icono: 'heartbeat',
             color: '#e74c3c',
             descripcion: 'Equipamiento médico y mejoras en servicios de salud',
-            distancia: CONFIG_ORBITAS.radiosPlanetas[1],
-            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[1],
-            tamano: CONFIG_ORBITAS.tamanosPlanetas[1],
+            distancia: CONFIG_ORBITAS.distanciasEjes[1],
+            velocidad: CONFIG_ORBITAS.velocidadesEjes[1],
+            tamano: CONFIG_ORBITAS.tamanoEjes[1],
             anguloInicial: 51.4
         },
         {
@@ -846,9 +902,9 @@ function crearEjes() {
             icono: 'briefcase',
             color: '#2ecc71',
             descripcion: 'Formación técnica y oportunidades de empleo local',
-            distancia: CONFIG_ORBITAS.radiosPlanetas[2],
-            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[2],
-            tamano: CONFIG_ORBITAS.tamanosPlanetas[2],
+            distancia: CONFIG_ORBITAS.distanciasEjes[2],
+            velocidad: CONFIG_ORBITAS.velocidadesEjes[2],
+            tamano: CONFIG_ORBITAS.tamanoEjes[2],
             anguloInicial: 102.8
         },
         {
@@ -857,9 +913,9 @@ function crearEjes() {
             icono: 'chart-line',
             color: '#9b59b6',
             descripcion: 'Impulso al desarrollo económico comunitario',
-            distancia: CONFIG_ORBITAS.radiosPlanetas[3],
-            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[3],
-            tamano: CONFIG_ORBITAS.tamanosPlanetas[3],
+            distancia: CONFIG_ORBITAS.distanciasEjes[3],
+            velocidad: CONFIG_ORBITAS.velocidadesEjes[3],
+            tamano: CONFIG_ORBITAS.tamanoEjes[3],
             anguloInicial: 154.2
         },
         {
@@ -868,9 +924,9 @@ function crearEjes() {
             icono: 'tint',
             color: '#1abc9c',
             descripcion: 'Gestión sostenible del recurso hídrico y monitoreo ambiental',
-            distancia: CONFIG_ORBITAS.radiosPlanetas[4],
-            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[4],
-            tamano: CONFIG_ORBITAS.tamanosPlanetas[4],
+            distancia: CONFIG_ORBITAS.distanciasEjes[4],
+            velocidad: CONFIG_ORBITAS.velocidadesEjes[4],
+            tamano: CONFIG_ORBITAS.tamanoEjes[4],
             anguloInicial: 205.6
         },
         {
@@ -879,9 +935,9 @@ function crearEjes() {
             icono: 'bullhorn',
             color: '#f1c40f',
             descripcion: 'Sistema de comunicación comunitaria y transparencia',
-            distancia: CONFIG_ORBITAS.radiosPlanetas[5],
-            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[5],
-            tamano: CONFIG_ORBITAS.tamanosPlanetas[5],
+            distancia: CONFIG_ORBITAS.distanciasEjes[5],
+            velocidad: CONFIG_ORBITAS.velocidadesEjes[5],
+            tamano: CONFIG_ORBITAS.tamanoEjes[5],
             anguloInicial: 257
         },
         {
@@ -890,24 +946,23 @@ function crearEjes() {
             icono: 'landmark',
             color: '#e67e22',
             descripcion: 'Cooperación técnica con GADs y niveles distritales',
-            distancia: CONFIG_ORBITAS.radiosPlanetas[6],
-            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[6],
-            tamano: CONFIG_ORBITAS.tamanosPlanetas[6],
+            distancia: CONFIG_ORBITAS.distanciasEjes[6],
+            velocidad: CONFIG_ORBITAS.velocidadesEjes[6],
+            tamano: CONFIG_ORBITAS.tamanoEjes[6],
             anguloInicial: 308.4
         }
     ];
     
-    // Crear cada planeta en su órbita concéntrica
+    // Crear cada planeta (eje) en su órbita
     SISTEMA_SOLAR.ejes.forEach((eje, index) => {
-        // Crear contenedor de órbita para el planeta
-        const orbitaDiv = document.createElement('div');
-        orbitaDiv.className = 'planeta-orbita';
-        orbitaDiv.id = `orbita-${eje.id}`;
-        orbitaDiv.dataset.ejeId = eje.id;
-        orbitaDiv.dataset.distancia = eje.distancia;
+        // Contenedor para el planeta y su órbita
+        const planetaContenedor = document.createElement('div');
+        planetaContenedor.className = 'planeta-contenedor';
+        planetaContenedor.id = `contenedor-${eje.id}`;
+        planetaContenedor.dataset.ejeId = eje.id;
         
-        // Posicionar la órbita
-        orbitaDiv.style.cssText = `
+        // Posicionar el contenedor en el centro
+        planetaContenedor.style.cssText = `
             top: ${centroY}px;
             left: ${centroX}px;
             width: ${eje.distancia * 2}px;
@@ -916,24 +971,21 @@ function crearEjes() {
             z-index: ${90 + index};
         `;
         
-        // Crear el planeta
+        // Crear el planeta (nodo eje)
         const planetaDiv = document.createElement('div');
-        planetaDiv.className = `nodo nodo-eje eje-${eje.id} planeta-${eje.id}`;
+        planetaDiv.className = `nodo nodo-eje eje-${eje.id}`;
         planetaDiv.id = `eje-${eje.id}`;
         planetaDiv.dataset.ejeId = eje.id;
         planetaDiv.dataset.tipo = 'eje';
         planetaDiv.dataset.velocidad = eje.velocidad;
         planetaDiv.dataset.angulo = eje.anguloInicial;
         
-        // Tamaño y posición del planeta
+        // Posicionar el planeta en su órbita
         planetaDiv.style.cssText = `
-            position: absolute;
-            top: 0;
+            top: 50%;
             left: ${eje.distancia}px;
             width: ${eje.tamano}px;
             height: ${eje.tamano}px;
-            transform: translate(-50%, -50%);
-            z-index: ${91 + index};
         `;
         
         planetaDiv.innerHTML = `
@@ -951,13 +1003,13 @@ function crearEjes() {
             mostrarDetallesEje(eje.id);
         });
         
-        // Añadir planeta a la órbita
-        orbitaDiv.appendChild(planetaDiv);
-        container.appendChild(orbitaDiv);
+        // Añadir planeta al contenedor
+        planetaContenedor.appendChild(planetaDiv);
+        container.appendChild(planetaContenedor);
         
-        // Iniciar animación de órbita
+        // Iniciar animación si está activa
         if (SISTEMA_SOLAR.animacionesActivas) {
-            animarPlaneta(planetaDiv, orbitaDiv, eje);
+            animarPlaneta(planetaDiv, planetaContenedor, eje);
         }
     });
     
@@ -965,172 +1017,49 @@ function crearEjes() {
     document.getElementById('total-ejes').textContent = `${SISTEMA_SOLAR.ejes.length} Ejes`;
 }
 
-function animarPlaneta(planetaDiv, orbitaDiv, eje) {
-    let angulo = parseFloat(planetaDiv.dataset.angulo) || 0;
-    const velocidad = parseFloat(planetaDiv.dataset.velocidad) || 0.5;
-    const distancia = eje.distancia;
-    
-    function actualizarPosicion() {
-        if (!SISTEMA_SOLAR.animacionesActivas) return;
-        
-        // Incrementar ángulo
-        angulo += velocidad * 0.1;
-        if (angulo >= 360) angulo = 0;
-        
-        // Actualizar rotación de la órbita
-        orbitaDiv.style.transform = `rotate(${angulo}deg)`;
-        
-        // Guardar ángulo actual
-        planetaDiv.dataset.angulo = angulo;
-        
-        // Continuar animación
-        requestAnimationFrame(actualizarPosicion);
-    }
-    
-    // Iniciar animación
-    requestAnimationFrame(actualizarPosicion);
-}
+// ================================
+// CARGAR DATOS DEL BACKEND
+// ================================
 
-function iniciarOrbitasPlanetas() {
-    SISTEMA_SOLAR.animacionesActivas = true;
-    
-    // Iniciar animación para cada planeta
-    document.querySelectorAll('.nodo-eje').forEach(planeta => {
-        const ejeId = planeta.dataset.ejeId;
-        const eje = SISTEMA_SOLAR.ejes.find(e => e.id === ejeId);
-        const orbitaDiv = document.getElementById(`orbita-${ejeId}`);
-        
-        if (eje && orbitaDiv) {
-            animarPlaneta(planeta, orbitaDiv, eje);
-        }
-    });
-    
-    // Iniciar órbitas secundarias
-    iniciarOrbitasSecundarias();
-}
-
-function iniciarOrbitasSecundarias() {
-    // Iniciar animación para lunas
-    document.querySelectorAll('.nodo-estrategia').forEach(luna => {
-        const estrategiaId = luna.dataset.estrategiaId;
-        const estrategia = SISTEMA_SOLAR.estrategias.find(e => e.id == estrategiaId);
-        if (estrategia) {
-            animarLuna(luna, estrategia);
-        }
-    });
-    
-    // Iniciar animación para satélites
-    document.querySelectorAll('.nodo-tactica').forEach(satelite => {
-        const tacticaId = satelite.dataset.tacticaId;
-        const tactica = SISTEMA_SOLAR.tacticas.find(t => t.id == tacticaId);
-        if (tactica) {
-            animarSatelite(satelite, tactica);
-        }
-    });
-    
-    // Iniciar animación para asteroides
-    document.querySelectorAll('.nodo-actividad').forEach(asteroide => {
-        const actividadId = asteroide.dataset.actividadId;
-        const actividad = SISTEMA_SOLAR.actividades.find(a => a.id == actividadId);
-        if (actividad) {
-            animarAsteroide(asteroide, actividad);
-        }
-    });
-}
-
-function animarLuna(lunaDiv, estrategia) {
-    let angulo = 0;
-    const velocidad = 1.2;
-    
-    function actualizarPosicion() {
-        if (!SISTEMA_SOLAR.animacionesActivas) return;
-        
-        angulo += velocidad * 0.1;
-        if (angulo >= 360) angulo = 0;
-        
-        // Calcular posición en órbita circular
-        const x = CONFIG_ORBITAS.radioLuna * Math.cos(angulo * Math.PI / 180);
-        const y = CONFIG_ORBITAS.radioLuna * Math.sin(angulo * Math.PI / 180);
-        
-        lunaDiv.style.transform = `translate(${x}px, ${y}px)`;
-        
-        requestAnimationFrame(actualizarPosicion);
-    }
-    
-    requestAnimationFrame(actualizarPosicion);
-}
-
-function animarSatelite(sateliteDiv, tactica) {
-    let angulo = 0;
-    const velocidad = 1.8;
-    
-    function actualizarPosicion() {
-        if (!SISTEMA_SOLAR.animacionesActivas) return;
-        
-        angulo += velocidad * 0.1;
-        if (angulo >= 360) angulo = 0;
-        
-        const x = CONFIG_ORBITAS.radioSatelite * Math.cos(angulo * Math.PI / 180);
-        const y = CONFIG_ORBITAS.radioSatelite * Math.sin(angulo * Math.PI / 180);
-        
-        sateliteDiv.style.transform = `translate(${x}px, ${y}px)`;
-        
-        requestAnimationFrame(actualizarPosicion);
-    }
-    
-    requestAnimationFrame(actualizarPosicion);
-}
-
-function animarAsteroide(asteroideDiv, actividad) {
-    let angulo = 0;
-    const velocidad = 2.5;
-    
-    function actualizarPosicion() {
-        if (!SISTEMA_SOLAR.animacionesActivas) return;
-        
-        angulo += velocidad * 0.1;
-        if (angulo >= 360) angulo = 0;
-        
-        const x = CONFIG_ORBITAS.radioAsteroide * Math.cos(angulo * Math.PI / 180);
-        const y = CONFIG_ORBITAS.radioAsteroide * Math.sin(angulo * Math.PI / 180);
-        
-        asteroideDiv.style.transform = `translate(${x}px, ${y}px)`;
-        
-        requestAnimationFrame(actualizarPosicion);
-    }
-    
-    requestAnimationFrame(actualizarPosicion);
-}
-
-function cargarDatosEjemplo() {
-    // Estrategias de ejemplo
-    SISTEMA_SOLAR.estrategias = [
-        { id: 1, eje_id: 'educacion', nombre: 'Capacitación docente', tipo: 'FO' },
-        { id: 2, eje_id: 'educacion', nombre: 'Infraestructura educativa', tipo: 'DO' },
-        { id: 3, eje_id: 'salud', nombre: 'Equipamiento médico', tipo: 'FO' },
-        { id: 4, eje_id: 'empleabilidad', nombre: 'Formación técnica', tipo: 'FA' },
-        { id: 5, eje_id: 'sostenibilidad_ambiental', nombre: 'Monitoreo ambiental', tipo: 'DO' }
-    ];
-    
-    // Tácticas de ejemplo
-    SISTEMA_SOLAR.tacticas = [
-        { id: 1, estrategia_id: 1, nombre: 'Talleres de capacitación' },
-        { id: 2, estrategia_id: 1, nombre: 'Actualización curricular' },
-        { id: 3, estrategia_id: 2, nombre: 'Construcción de aulas' },
-        { id: 4, estrategia_id: 3, nombre: 'Adquisición de equipos' },
-        { id: 5, estrategia_id: 4, nombre: 'Cursos técnicos' }
-    ];
-    
-    // Actividades de ejemplo
-    SISTEMA_SOLAR.actividades = [
-        { id: 1, tactica_id: 1, nombre: 'Organizar taller', estado: 'completada' },
-        { id: 2, tactica_id: 1, nombre: 'Evaluar participantes', estado: 'en_progreso' },
-        { id: 3, tactica_id: 2, nombre: 'Revisar currículo', estado: 'pendiente' },
-        { id: 4, tactica_id: 3, nombre: 'Elaborar planos', estado: 'completada' },
-        { id: 5, tactica_id: 4, nombre: 'Cotizar equipos', estado: 'en_progreso' }
-    ];
-    
-    crearEstrategias();
+function cargarDatosBackend() {
+    // Cargar estrategias con eje
+    fetch('/api/estrategias_foda_con_eje')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                SISTEMA_SOLAR.estrategias = data.estrategias;
+                crearEstrategias();
+                document.getElementById('total-estrategias').textContent = `${SISTEMA_SOLAR.estrategias.length} Lunas`;
+                
+                // Cargar actividades
+                return fetch('/api/actividades');
+            }
+            throw new Error('Error al cargar estrategias');
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                SISTEMA_SOLAR.actividades = data.actividades;
+                document.getElementById('total-actividades').textContent = `${SISTEMA_SOLAR.actividades.length} Satélites`;
+                
+                // Cargar tareas
+                return fetch('/api/tareas');
+            }
+            throw new Error('Error al cargar actividades');
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                SISTEMA_SOLAR.tareas = data.tareas;
+                document.getElementById('total-tareas').textContent = `${SISTEMA_SOLAR.tareas.length} Asteroides`;
+                
+                // Crear todas las lunas, satélites y asteroides
+                crearEstrategias();
+            }
+        })
+        .catch(error => {
+            console.error('Error al cargar datos del backend:', error);
+        });
 }
 
 function crearEstrategias() {
@@ -1151,14 +1080,14 @@ function crearEstrategias() {
         const centroX = planetaRect.left + planetaRect.width / 2 - sistemaRect.left;
         const centroY = planetaRect.top + planetaRect.height / 2 - sistemaRect.top;
         
-        // Crear contenedor de órbita para la luna
-        const orbitaDiv = document.createElement('div');
-        orbitaDiv.className = 'orbita-estrategia';
-        orbitaDiv.id = `orbita-estrategia-${estrategia.id}`;
-        orbitaDiv.dataset.estrategiaId = estrategia.id;
+        // Contenedor para la luna (estrategia)
+        const lunaContenedor = document.createElement('div');
+        lunaContenedor.className = 'luna-contenedor';
+        lunaContenedor.id = `contenedor-estrategia-${estrategia.id}`;
+        lunaContenedor.dataset.estrategiaId = estrategia.id;
         
-        // Posicionar la órbita de la luna
-        orbitaDiv.style.cssText = `
+        // Posicionar el contenedor
+        lunaContenedor.style.cssText = `
             top: ${centroY}px;
             left: ${centroX}px;
             width: ${CONFIG_ORBITAS.radioLuna * 2}px;
@@ -1174,13 +1103,12 @@ function crearEstrategias() {
         lunaDiv.dataset.estrategiaId = estrategia.id;
         lunaDiv.dataset.tipo = 'estrategia';
         
-        // Posicionar la luna en la órbita
+        // Posicionar la luna
         lunaDiv.style.cssText = `
-            top: 0;
+            top: 50%;
             left: ${CONFIG_ORBITAS.radioLuna}px;
-            width: 80px;
-            height: 80px;
-            transform: translate(-50%, -50%);
+            width: ${CONFIG_ORBITAS.tamanoEstrategias}px;
+            height: ${CONFIG_ORBITAS.tamanoEstrategias}px;
         `;
         
         lunaDiv.innerHTML = `
@@ -1188,7 +1116,7 @@ function crearEstrategias() {
                 <div class="nodo-icon">
                     <i class="fas fa-moon"></i>
                 </div>
-                <div class="nodo-title">${estrategia.nombre.substring(0, 15)}</div>
+                <div class="nodo-title">${estrategia.estrategia.substring(0, 20)}</div>
             </div>
         `;
         
@@ -1198,31 +1126,26 @@ function crearEstrategias() {
             mostrarDetallesEstrategia(estrategia.id);
         });
         
-        // Añadir a la órbita
-        orbitaDiv.appendChild(lunaDiv);
-        container.appendChild(orbitaDiv);
+        // Añadir luna al contenedor
+        lunaContenedor.appendChild(lunaDiv);
+        container.appendChild(lunaContenedor);
         
-        // Iniciar animación de la luna
+        // Iniciar animación
         if (SISTEMA_SOLAR.animacionesActivas) {
-            animarLuna(lunaDiv, estrategia);
+            animarLuna(lunaDiv, lunaContenedor);
         }
+        
+        // Crear actividades para esta estrategia
+        crearActividadesParaEstrategia(estrategia.id);
     });
-    
-    // Actualizar contador
-    document.getElementById('total-estrategias').textContent = `${SISTEMA_SOLAR.estrategias.length} Lunas`;
-    
-    crearTacticas();
 }
 
-function crearTacticas() {
-    const container = document.getElementById('tacticasOrbitales');
-    container.innerHTML = '';
+function crearActividadesParaEstrategia(estrategiaId) {
+    const actividades = SISTEMA_SOLAR.actividades.filter(a => a.estrategia_id == estrategiaId);
+    const container = document.getElementById('actividadesOrbitales');
     
-    SISTEMA_SOLAR.tacticas.forEach((tactica, index) => {
-        const estrategia = SISTEMA_SOLAR.estrategias.find(e => e.id === tactica.estrategia_id);
-        if (!estrategia) return;
-        
-        const estrategiaElement = document.getElementById(`estrategia-${estrategia.id}`);
+    actividades.forEach((actividad, index) => {
+        const estrategiaElement = document.getElementById(`estrategia-${estrategiaId}`);
         if (!estrategiaElement) return;
         
         // Obtener posición de la luna
@@ -1232,14 +1155,14 @@ function crearTacticas() {
         const centroX = lunaRect.left + lunaRect.width / 2 - sistemaRect.left;
         const centroY = lunaRect.top + lunaRect.height / 2 - sistemaRect.top;
         
-        // Crear contenedor de órbita para el satélite
-        const orbitaDiv = document.createElement('div');
-        orbitaDiv.className = 'orbita-tactica';
-        orbitaDiv.id = `orbita-tactica-${tactica.id}`;
-        orbitaDiv.dataset.tacticaId = tactica.id;
+        // Contenedor para el satélite (actividad)
+        const sateliteContenedor = document.createElement('div');
+        sateliteContenedor.className = 'satelite-contenedor';
+        sateliteContenedor.id = `contenedor-actividad-${actividad.id}`;
+        sateliteContenedor.dataset.actividadId = actividad.id;
         
-        // Posicionar la órbita del satélite
-        orbitaDiv.style.cssText = `
+        // Posicionar el contenedor
+        sateliteContenedor.style.cssText = `
             top: ${centroY}px;
             left: ${centroX}px;
             width: ${CONFIG_ORBITAS.radioSatelite * 2}px;
@@ -1248,20 +1171,19 @@ function crearTacticas() {
             z-index: 70;
         `;
         
-        // Crear el satélite (táctica)
+        // Crear el satélite (actividad)
         const sateliteDiv = document.createElement('div');
-        sateliteDiv.className = 'nodo nodo-tactica';
-        sateliteDiv.id = `tactica-${tactica.id}`;
-        sateliteDiv.dataset.tacticaId = tactica.id;
-        sateliteDiv.dataset.tipo = 'tactica';
+        sateliteDiv.className = 'nodo nodo-actividad';
+        sateliteDiv.id = `actividad-${actividad.id}`;
+        sateliteDiv.dataset.actividadId = actividad.id;
+        sateliteDiv.dataset.tipo = 'actividad';
         
-        // Posicionar el satélite en la órbita
+        // Posicionar el satélite
         sateliteDiv.style.cssText = `
-            top: 0;
+            top: 50%;
             left: ${CONFIG_ORBITAS.radioSatelite}px;
-            width: 60px;
-            height: 60px;
-            transform: translate(-50%, -50%);
+            width: ${CONFIG_ORBITAS.tamanoActividades}px;
+            height: ${CONFIG_ORBITAS.tamanoActividades}px;
         `;
         
         sateliteDiv.innerHTML = `
@@ -1269,58 +1191,53 @@ function crearTacticas() {
                 <div class="nodo-icon">
                     <i class="fas fa-satellite"></i>
                 </div>
-                <div class="nodo-title">${tactica.nombre.substring(0, 10)}</div>
+                <div class="nodo-title">${actividad.nombre.substring(0, 15)}</div>
             </div>
         `;
         
         // Eventos
         sateliteDiv.addEventListener('click', function(e) {
             e.stopPropagation();
-            mostrarDetallesTactica(tactica.id);
+            mostrarDetallesActividad(actividad.id);
         });
         
-        // Añadir a la órbita
-        orbitaDiv.appendChild(sateliteDiv);
-        container.appendChild(orbitaDiv);
+        // Añadir satélite al contenedor
+        sateliteContenedor.appendChild(sateliteDiv);
+        container.appendChild(sateliteContenedor);
         
-        // Iniciar animación del satélite
+        // Iniciar animación
         if (SISTEMA_SOLAR.animacionesActivas) {
-            animarSatelite(sateliteDiv, tactica);
+            animarSatelite(sateliteDiv, sateliteContenedor);
         }
+        
+        // Crear tareas para esta actividad
+        crearTareasParaActividad(actividad.id);
     });
-    
-    // Actualizar contador
-    document.getElementById('total-tacticas').textContent = `${SISTEMA_SOLAR.tacticas.length} Satélites`;
-    
-    crearActividades();
 }
 
-function crearActividades() {
-    const container = document.getElementById('actividadesOrbitales');
-    container.innerHTML = '';
+function crearTareasParaActividad(actividadId) {
+    const tareas = SISTEMA_SOLAR.tareas.filter(t => t.actividad_id == actividadId);
+    const container = document.getElementById('tareasOrbitales');
     
-    SISTEMA_SOLAR.actividades.forEach((actividad, index) => {
-        const tactica = SISTEMA_SOLAR.tacticas.find(t => t.id === actividad.tactica_id);
-        if (!tactica) return;
-        
-        const tacticaElement = document.getElementById(`tactica-${tactica.id}`);
-        if (!tacticaElement) return;
+    tareas.forEach((tarea, index) => {
+        const actividadElement = document.getElementById(`actividad-${actividadId}`);
+        if (!actividadElement) return;
         
         // Obtener posición del satélite
-        const sateliteRect = tacticaElement.getBoundingClientRect();
+        const sateliteRect = actividadElement.getBoundingClientRect();
         const sistemaRect = document.getElementById('sistemaSolar').getBoundingClientRect();
         
         const centroX = sateliteRect.left + sateliteRect.width / 2 - sistemaRect.left;
         const centroY = sateliteRect.top + sateliteRect.height / 2 - sistemaRect.top;
         
-        // Crear contenedor de órbita para el asteroide
-        const orbitaDiv = document.createElement('div');
-        orbitaDiv.className = 'orbita-actividad';
-        orbitaDiv.id = `orbita-actividad-${actividad.id}`;
-        orbitaDiv.dataset.actividadId = actividad.id;
+        // Contenedor para el asteroide (tarea)
+        const asteroideContenedor = document.createElement('div');
+        asteroideContenedor.className = 'asteroide-contenedor';
+        asteroideContenedor.id = `contenedor-tarea-${tarea.id}`;
+        asteroideContenedor.dataset.tareaId = tarea.id;
         
-        // Posicionar la órbita del asteroide
-        orbitaDiv.style.cssText = `
+        // Posicionar el contenedor
+        asteroideContenedor.style.cssText = `
             top: ${centroY}px;
             left: ${centroX}px;
             width: ${CONFIG_ORBITAS.radioAsteroide * 2}px;
@@ -1329,17 +1246,17 @@ function crearActividades() {
             z-index: 60;
         `;
         
-        // Crear el asteroide (actividad)
+        // Crear el asteroide (tarea)
         const asteroideDiv = document.createElement('div');
-        asteroideDiv.className = 'nodo nodo-actividad';
-        asteroideDiv.id = `actividad-${actividad.id}`;
-        asteroideDiv.dataset.actividadId = actividad.id;
-        asteroideDiv.dataset.tipo = 'actividad';
+        asteroideDiv.className = 'nodo nodo-tarea';
+        asteroideDiv.id = `tarea-${tarea.id}`;
+        asteroideDiv.dataset.tareaId = tarea.id;
+        asteroideDiv.dataset.tipo = 'tarea';
         
         // Determinar color según estado
         let colorEstado = '#f39c12';
         let iconoEstado = 'fa-clock';
-        switch(actividad.estado) {
+        switch(tarea.estado) {
             case 'completada':
                 colorEstado = '#2ecc71';
                 iconoEstado = 'fa-check-circle';
@@ -1350,13 +1267,12 @@ function crearActividades() {
                 break;
         }
         
-        // Posicionar el asteroide en la órbita
+        // Posicionar el asteroide
         asteroideDiv.style.cssText = `
-            top: 0;
+            top: 50%;
             left: ${CONFIG_ORBITAS.radioAsteroide}px;
-            width: 40px;
-            height: 40px;
-            transform: translate(-50%, -50%);
+            width: ${CONFIG_ORBITAS.tamanoTareas}px;
+            height: ${CONFIG_ORBITAS.tamanoTareas}px;
         `;
         
         asteroideDiv.innerHTML = `
@@ -1364,28 +1280,145 @@ function crearActividades() {
                 <div class="nodo-icon" style="background: rgba(255,255,255,0.9); color: ${colorEstado}">
                     <i class="fas ${iconoEstado}"></i>
                 </div>
-                <div class="nodo-title">${actividad.nombre.substring(0, 8)}</div>
+                <div class="nodo-title">${tarea.nombre.substring(0, 10)}</div>
             </div>
         `;
         
         // Eventos
         asteroideDiv.addEventListener('click', function(e) {
             e.stopPropagation();
-            mostrarDetallesActividad(actividad.id);
+            mostrarDetallesTarea(tarea.id);
         });
         
-        // Añadir a la órbita
-        orbitaDiv.appendChild(asteroideDiv);
-        container.appendChild(orbitaDiv);
+        // Añadir asteroide al contenedor
+        asteroideContenedor.appendChild(asteroideDiv);
+        container.appendChild(asteroideContenedor);
         
-        // Iniciar animación del asteroide
+        // Iniciar animación
         if (SISTEMA_SOLAR.animacionesActivas) {
-            animarAsteroide(asteroideDiv, actividad);
+            animarAsteroide(asteroideDiv, asteroideContenedor);
+        }
+    });
+}
+
+// ================================
+// ANIMACIONES
+// ================================
+
+function animarPlaneta(planetaDiv, contenedor, eje) {
+    let angulo = parseFloat(planetaDiv.dataset.angulo) || 0;
+    const velocidad = parseFloat(planetaDiv.dataset.velocidad) || 0.5;
+    
+    function actualizarPosicion() {
+        if (!SISTEMA_SOLAR.animacionesActivas) return;
+        
+        angulo += velocidad * 0.1;
+        if (angulo >= 360) angulo = 0;
+        
+        contenedor.style.transform = `rotate(${angulo}deg)`;
+        planetaDiv.dataset.angulo = angulo;
+        
+        requestAnimationFrame(actualizarPosicion);
+    }
+    
+    requestAnimationFrame(actualizarPosicion);
+}
+
+function animarLuna(lunaDiv, contenedor) {
+    let angulo = 0;
+    const velocidad = 1.2;
+    
+    function actualizarPosicion() {
+        if (!SISTEMA_SOLAR.animacionesActivas) return;
+        
+        angulo += velocidad * 0.1;
+        if (angulo >= 360) angulo = 0;
+        
+        contenedor.style.transform = `rotate(${angulo}deg)`;
+        
+        requestAnimationFrame(actualizarPosicion);
+    }
+    
+    requestAnimationFrame(actualizarPosicion);
+}
+
+function animarSatelite(sateliteDiv, contenedor) {
+    let angulo = 0;
+    const velocidad = 1.8;
+    
+    function actualizarPosicion() {
+        if (!SISTEMA_SOLAR.animacionesActivas) return;
+        
+        angulo += velocidad * 0.1;
+        if (angulo >= 360) angulo = 0;
+        
+        contenedor.style.transform = `rotate(${angulo}deg)`;
+        
+        requestAnimationFrame(actualizarPosicion);
+    }
+    
+    requestAnimationFrame(actualizarPosicion);
+}
+
+function animarAsteroide(asteroideDiv, contenedor) {
+    let angulo = 0;
+    const velocidad = 2.5;
+    
+    function actualizarPosicion() {
+        if (!SISTEMA_SOLAR.animacionesActivas) return;
+        
+        angulo += velocidad * 0.1;
+        if (angulo >= 360) angulo = 0;
+        
+        contenedor.style.transform = `rotate(${angulo}deg)`;
+        
+        // Rotación sobre su propio eje
+        const rotacion = (parseFloat(asteroideDiv.dataset.rotacion) || 0) + 2;
+        asteroideDiv.dataset.rotacion = rotacion;
+        asteroideDiv.querySelector('.nodo-content').style.transform = `rotate(${rotacion}deg)`;
+        
+        requestAnimationFrame(actualizarPosicion);
+    }
+    
+    requestAnimationFrame(actualizarPosicion);
+}
+
+function iniciarOrbitasPlanetas() {
+    SISTEMA_SOLAR.animacionesActivas = true;
+    
+    // Iniciar animación para cada planeta
+    SISTEMA_SOLAR.ejes.forEach(eje => {
+        const planetaDiv = document.getElementById(`eje-${eje.id}`);
+        const contenedor = document.getElementById(`contenedor-${eje.id}`);
+        
+        if (planetaDiv && contenedor) {
+            animarPlaneta(planetaDiv, contenedor, eje);
         }
     });
     
-    // Actualizar contador
-    document.getElementById('total-actividades').textContent = `${SISTEMA_SOLAR.actividades.length} Asteroides`;
+    // Iniciar animación para lunas
+    document.querySelectorAll('.nodo-estrategia').forEach(luna => {
+        const contenedor = document.getElementById(`contenedor-estrategia-${luna.dataset.estrategiaId}`);
+        if (contenedor) {
+            animarLuna(luna, contenedor);
+        }
+    });
+    
+    // Iniciar animación para satélites
+    document.querySelectorAll('.nodo-actividad').forEach(satelite => {
+        const contenedor = document.getElementById(`contenedor-actividad-${satelite.dataset.actividadId}`);
+        if (contenedor) {
+            animarSatelite(satelite, contenedor);
+        }
+    });
+    
+    // Iniciar animación para asteroides
+    document.querySelectorAll('.nodo-tarea').forEach(asteroide => {
+        const contenedor = document.getElementById(`contenedor-tarea-${asteroide.dataset.tareaId}`);
+        if (contenedor) {
+            animarAsteroide(asteroide, contenedor);
+        }
+    });
 }
 
 // ================================
@@ -1405,18 +1438,14 @@ function toggleFullscreen() {
 }
 
 function resetView() {
-    // Centrar la vista
-    const sistemaSolar = document.getElementById('sistemaSolar');
-    sistemaSolar.style.transform = 'translate(-50%, -50%) scale(1)';
-    
     // Resetear ángulos de planetas
     SISTEMA_SOLAR.ejes.forEach((eje, index) => {
         const planeta = document.getElementById(`eje-${eje.id}`);
-        const orbita = document.getElementById(`orbita-${eje.id}`);
+        const contenedor = document.getElementById(`contenedor-${eje.id}`);
         
-        if (planeta && orbita) {
+        if (planeta && contenedor) {
             planeta.dataset.angulo = eje.anguloInicial;
-            orbita.style.transform = `rotate(${eje.anguloInicial}deg)`;
+            contenedor.style.transform = `rotate(${eje.anguloInicial}deg)`;
         }
     });
 }
@@ -1473,12 +1502,12 @@ function mostrarDetalleObjetivo() {
                         <div class="estadistica-label">Estrategias</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.tacticas.length}</div>
-                        <div class="estadistica-label">Tácticas</div>
-                    </div>
-                    <div class="estadistica-item">
                         <div class="estadistica-valor">${SISTEMA_SOLAR.actividades.length}</div>
                         <div class="estadistica-label">Actividades</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${SISTEMA_SOLAR.tareas.length}</div>
+                        <div class="estadistica-label">Tareas</div>
                     </div>
                 </div>
             </div>
@@ -1610,12 +1639,12 @@ function mostrarDetallesEje(ejeId) {
                         <div class="estadistica-label">Estrategias</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.tacticas.filter(t => estrategiasDelEje.find(e => e.id === t.estrategia_id)).length}</div>
-                        <div class="estadistica-label">Tácticas</div>
+                        <div class="estadistica-valor">${SISTEMA_SOLAR.actividades.filter(a => estrategiasDelEje.find(e => e.id == a.estrategia_id)).length}</div>
+                        <div class="estadistica-label">Actividades</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.actividades.filter(a => SISTEMA_SOLAR.tacticas.find(t => t.id === a.tactica_id && estrategiasDelEje.find(e => e.id === t.estrategia_id))).length}</div>
-                        <div class="estadistica-label">Actividades</div>
+                        <div class="estadistica-valor">${SISTEMA_SOLAR.tareas.filter(t => SISTEMA_SOLAR.actividades.find(a => a.id == t.actividad_id && estrategiasDelEje.find(e => e.id == a.estrategia_id))).length}</div>
+                        <div class="estadistica-label">Tareas</div>
                     </div>
                 </div>
                 
@@ -1628,8 +1657,8 @@ function mostrarDetallesEje(ejeId) {
                                     <i class="fas fa-moon"></i>
                                 </div>
                                 <div class="item-info">
-                                    <div class="item-titulo">${estrategia.nombre}</div>
-                                    <div class="item-subtitulo">Tipo: ${estrategia.tipo}</div>
+                                    <div class="item-titulo">${estrategia.estrategia.substring(0, 30)}</div>
+                                    <div class="item-subtitulo">Tipo: ${estrategia.tipo_cruce}</div>
                                 </div>
                             </div>
                         `).join('')}
@@ -1746,13 +1775,13 @@ function mostrarDetallesEstrategia(estrategiaId) {
     if (!estrategia) return;
     
     const eje = SISTEMA_SOLAR.ejes.find(e => e.id === estrategia.eje_id);
-    const tacticasDeEstrategia = SISTEMA_SOLAR.tacticas.filter(t => t.estrategia_id == estrategiaId);
+    const actividadesDeEstrategia = SISTEMA_SOLAR.actividades.filter(a => a.estrategia_id == estrategiaId);
     
     const panel = document.getElementById('panelDetalles');
     const titulo = document.getElementById('detalleTitulo');
     const contenido = document.getElementById('detalleContenido');
     
-    titulo.innerHTML = `<i class="fas fa-moon"></i> ${estrategia.nombre}`;
+    titulo.innerHTML = `<i class="fas fa-moon"></i> Estrategia #${estrategia.id}`;
     
     contenido.innerHTML = `
         <div class="detalle-estrategia">
@@ -1760,35 +1789,40 @@ function mostrarDetallesEstrategia(estrategiaId) {
                 <div class="icono-grande">
                     <i class="fas fa-moon"></i>
                 </div>
-                <h3>${estrategia.nombre}</h3>
-                <p>Estrategia - ${eje ? eje.nombre : 'Sin eje'}</p>
+                <h3>Estrategia FODA</h3>
+                <p>Tipo: ${estrategia.tipo_cruce}</p>
             </div>
             
             <div class="info-estrategia">
-                <p><strong>Tipo:</strong> ${estrategia.tipo}</p>
-                <p><strong>Eje:</strong> ${eje ? eje.nombre : 'No asignado'}</p>
+                <p><strong>Eje:</strong> ${eje ? eje.nombre : 'Sin eje asignado'}</p>
+                <p><strong>Elemento Interno:</strong> ${estrategia.elemento_interno_texto}</p>
+                <p><strong>Elemento Externo:</strong> ${estrategia.elemento_externo_texto}</p>
+                <p><strong>Estrategia:</strong> ${estrategia.estrategia}</p>
+                
+                ${estrategia.eje_texto ? `<p><strong>Eje Texto:</strong> ${estrategia.eje_texto}</p>` : ''}
                 
                 <div class="estadisticas-detalle">
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${tacticasDeEstrategia.length}</div>
-                        <div class="estadistica-label">Tácticas</div>
+                        <div class="estadistica-valor">${actividadesDeEstrategia.length}</div>
+                        <div class="estadistica-label">Actividades</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.actividades.filter(a => tacticasDeEstrategia.find(t => t.id === a.tactica_id)).length}</div>
-                        <div class="estadistica-label">Actividades</div>
+                        <div class="estadistica-valor">${SISTEMA_SOLAR.tareas.filter(t => actividadesDeEstrategia.find(a => a.id === t.actividad_id)).length}</div>
+                        <div class="estadistica-label">Tareas</div>
                     </div>
                 </div>
                 
-                ${tacticasDeEstrategia.length > 0 ? `
-                    <h4><i class="fas fa-satellite"></i> Tácticas</h4>
+                ${actividadesDeEstrategia.length > 0 ? `
+                    <h4><i class="fas fa-satellite"></i> Actividades</h4>
                     <div class="lista-elementos">
-                        ${tacticasDeEstrategia.map(tactica => `
-                            <div class="item-elemento" onclick="mostrarDetallesTactica(${tactica.id})">
+                        ${actividadesDeEstrategia.map(actividad => `
+                            <div class="item-elemento" onclick="mostrarDetallesActividad(${actividad.id})">
                                 <div class="item-icono" style="background: #e74c3c">
                                     <i class="fas fa-satellite"></i>
                                 </div>
                                 <div class="item-info">
-                                    <div class="item-titulo">${tactica.nombre}</div>
+                                    <div class="item-titulo">${actividad.nombre}</div>
+                                    <div class="item-subtitulo">Responsable: ${actividad.responsable || 'No asignado'}</div>
                                 </div>
                             </div>
                         `).join('')}
@@ -1812,52 +1846,56 @@ function mostrarDetallesEstrategia(estrategiaId) {
     panel.classList.add('open');
 }
 
-function mostrarDetallesTactica(tacticaId) {
-    const tactica = SISTEMA_SOLAR.tacticas.find(t => t.id == tacticaId);
-    if (!tactica) return;
+function mostrarDetallesActividad(actividadId) {
+    const actividad = SISTEMA_SOLAR.actividades.find(a => a.id == actividadId);
+    if (!actividad) return;
     
-    const estrategia = SISTEMA_SOLAR.estrategias.find(e => e.id == tactica.estrategia_id);
-    const actividadesDeTactica = SISTEMA_SOLAR.actividades.filter(a => a.tactica_id == tacticaId);
+    const estrategia = SISTEMA_SOLAR.estrategias.find(e => e.id == actividad.estrategia_id);
+    const tareasDeActividad = SISTEMA_SOLAR.tareas.filter(t => t.actividad_id == actividadId);
     
     const panel = document.getElementById('panelDetalles');
     const titulo = document.getElementById('detalleTitulo');
     const contenido = document.getElementById('detalleContenido');
     
-    titulo.innerHTML = `<i class="fas fa-satellite"></i> ${tactica.nombre}`;
+    titulo.innerHTML = `<i class="fas fa-satellite"></i> ${actividad.nombre}`;
     
     contenido.innerHTML = `
-        <div class="detalle-tactica">
+        <div class="detalle-actividad">
             <div class="encabezado-detalle" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
                 <div class="icono-grande">
                     <i class="fas fa-satellite"></i>
                 </div>
-                <h3>${tactica.nombre}</h3>
-                <p>Táctica</p>
+                <h3>${actividad.nombre}</h3>
+                <p>Actividad</p>
             </div>
             
-            <div class="info-tactica">
-                <p><strong>Estrategia:</strong> ${estrategia ? estrategia.nombre : 'No asignada'}</p>
+            <div class="info-actividad">
+                <p><strong>Descripción:</strong> ${actividad.descripcion || 'Sin descripción'}</p>
+                <p><strong>Responsable:</strong> ${actividad.responsable || 'No asignado'}</p>
+                <p><strong>Estrategia:</strong> ${estrategia ? estrategia.estrategia.substring(0, 50) + '...' : 'No asignada'}</p>
+                ${actividad.fecha_inicio ? `<p><strong>Fecha Inicio:</strong> ${new Date(actividad.fecha_inicio).toLocaleDateString()}</p>` : ''}
+                ${actividad.fecha_fin ? `<p><strong>Fecha Fin:</strong> ${new Date(actividad.fecha_fin).toLocaleDateString()}</p>` : ''}
                 
                 <div class="estadisticas-detalle">
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${actividadesDeTactica.length}</div>
-                        <div class="estadistica-label">Actividades</div>
+                        <div class="estadistica-valor">${tareasDeActividad.length}</div>
+                        <div class="estadistica-label">Tareas</div>
                     </div>
                     <div class="estadistica-item">
-                        <div class="estadistica-valor">${actividadesDeTactica.filter(a => a.estado === 'completada').length}</div>
+                        <div class="estadistica-valor">${tareasDeActividad.filter(t => t.estado === 'completada').length}</div>
                         <div class="estadistica-label">Completadas</div>
                     </div>
                 </div>
                 
-                ${actividadesDeTactica.length > 0 ? `
-                    <h4><i class="fas fa-meteor"></i> Actividades</h4>
+                ${tareasDeActividad.length > 0 ? `
+                    <h4><i class="fas fa-meteor"></i> Tareas</h4>
                     <div class="lista-elementos">
-                        ${actividadesDeTactica.map(actividad => {
+                        ${tareasDeActividad.map(tarea => {
                             let colorEstado = '#f39c12';
                             let iconoEstado = 'fa-clock';
                             let textoEstado = 'Pendiente';
                             
-                            switch(actividad.estado) {
+                            switch(tarea.estado) {
                                 case 'completada':
                                     colorEstado = '#2ecc71';
                                     iconoEstado = 'fa-check-circle';
@@ -1871,12 +1909,12 @@ function mostrarDetallesTactica(tacticaId) {
                             }
                             
                             return `
-                                <div class="item-elemento" onclick="mostrarDetallesActividad(${actividad.id})">
+                                <div class="item-elemento" onclick="mostrarDetallesTarea(${tarea.id})">
                                     <div class="item-icono" style="background: ${colorEstado}">
                                         <i class="fas ${iconoEstado}"></i>
                                     </div>
                                     <div class="item-info">
-                                        <div class="item-titulo">${actividad.nombre}</div>
+                                        <div class="item-titulo">${tarea.nombre}</div>
                                         <div class="item-subtitulo">Estado: ${textoEstado}</div>
                                     </div>
                                 </div>
@@ -1888,12 +1926,12 @@ function mostrarDetallesTactica(tacticaId) {
         </div>
         
         <style>
-            .info-tactica {
+            .info-actividad {
                 line-height: 1.6;
                 color: rgba(255,255,255,0.9);
             }
             
-            .info-tactica p {
+            .info-actividad p {
                 margin-bottom: 15px;
             }
         </style>
@@ -1902,25 +1940,25 @@ function mostrarDetallesTactica(tacticaId) {
     panel.classList.add('open');
 }
 
-function mostrarDetallesActividad(actividadId) {
-    const actividad = SISTEMA_SOLAR.actividades.find(a => a.id == actividadId);
-    if (!actividad) return;
+function mostrarDetallesTarea(tareaId) {
+    const tarea = SISTEMA_SOLAR.tareas.find(t => t.id == tareaId);
+    if (!tarea) return;
     
-    const tactica = SISTEMA_SOLAR.tacticas.find(t => t.id == actividad.tactica_id);
-    const estrategia = tactica ? SISTEMA_SOLAR.estrategias.find(e => e.id == tactica.estrategia_id) : null;
+    const actividad = SISTEMA_SOLAR.actividades.find(a => a.id == tarea.actividad_id);
+    const estrategia = actividad ? SISTEMA_SOLAR.estrategias.find(e => e.id == actividad.estrategia_id) : null;
     const eje = estrategia ? SISTEMA_SOLAR.ejes.find(e => e.id == estrategia.eje_id) : null;
     
     const panel = document.getElementById('panelDetalles');
     const titulo = document.getElementById('detalleTitulo');
     const contenido = document.getElementById('detalleContenido');
     
-    titulo.innerHTML = `<i class="fas fa-meteor"></i> ${actividad.nombre}`;
+    titulo.innerHTML = `<i class="fas fa-meteor"></i> ${tarea.nombre}`;
     
     let colorEstado = '#f39c12';
     let iconoEstado = 'fa-clock';
     let textoEstado = 'Pendiente';
     
-    switch(actividad.estado) {
+    switch(tarea.estado) {
         case 'completada':
             colorEstado = '#2ecc71';
             iconoEstado = 'fa-check-circle';
@@ -1934,22 +1972,26 @@ function mostrarDetallesActividad(actividadId) {
     }
     
     contenido.innerHTML = `
-        <div class="detalle-actividad">
+        <div class="detalle-tarea">
             <div class="encabezado-detalle" style="background: linear-gradient(135deg, ${colorEstado}, ${oscurecerColor(colorEstado, 20)});">
                 <div class="icono-grande">
                     <i class="fas ${iconoEstado}"></i>
                 </div>
-                <h3>${actividad.nombre}</h3>
-                <p>Actividad</p>
+                <h3>${tarea.nombre}</h3>
+                <p>Tarea - ${textoEstado}</p>
             </div>
             
-            <div class="info-actividad">
+            <div class="info-tarea">
                 <p><strong>Estado:</strong> ${textoEstado}</p>
-                ${tactica ? `<p><strong>Táctica:</strong> ${tactica.nombre}</p>` : ''}
-                ${estrategia ? `<p><strong>Estrategia:</strong> ${estrategia.nombre}</p>` : ''}
+                <p><strong>Descripción:</strong> ${tarea.descripcion || 'Sin descripción'}</p>
+                <p><strong>Responsable:</strong> ${tarea.responsable || 'No asignado'}</p>
+                ${actividad ? `<p><strong>Actividad:</strong> ${actividad.nombre}</p>` : ''}
+                ${estrategia ? `<p><strong>Estrategia:</strong> ${estrategia.estrategia.substring(0, 50)}...</p>` : ''}
                 ${eje ? `<p><strong>Eje:</strong> ${eje.nombre}</p>` : ''}
+                ${tarea.fecha_inicio ? `<p><strong>Fecha Inicio:</strong> ${new Date(tarea.fecha_inicio).toLocaleDateString()}</p>` : ''}
+                ${tarea.fecha_fin ? `<p><strong>Fecha Fin:</strong> ${new Date(tarea.fecha_fin).toLocaleDateString()}</p>` : ''}
                 
-                <div class="jerarquia-actividad">
+                <div class="jerarquia-tarea">
                     <h4><i class="fas fa-sitemap"></i> Jerarquía</h4>
                     <div class="jerarquia-steps">
                         ${eje ? `<div class="jerarquia-step">
@@ -1967,18 +2009,18 @@ function mostrarDetallesActividad(actividadId) {
                                 <i class="fas fa-moon"></i>
                             </div>
                             <div class="step-info">
-                                <div class="step-titulo">${estrategia.nombre}</div>
-                                <div class="step-subtitulo">Estrategia</div>
+                                <div class="step-titulo">${estrategia.estrategia.substring(0, 30)}...</div>
+                                <div class="step-subtitulo">Estrategia ${estrategia.tipo_cruce}</div>
                             </div>
                         </div>` : ''}
                         
-                        ${tactica ? `<div class="jerarquia-step">
+                        ${actividad ? `<div class="jerarquia-step">
                             <div class="step-icon" style="background: #e74c3c">
                                 <i class="fas fa-satellite"></i>
                             </div>
                             <div class="step-info">
-                                <div class="step-titulo">${tactica.nombre}</div>
-                                <div class="step-subtitulo">Táctica</div>
+                                <div class="step-titulo">${actividad.nombre}</div>
+                                <div class="step-subtitulo">Actividad</div>
                             </div>
                         </div>` : ''}
                         
@@ -1987,8 +2029,8 @@ function mostrarDetallesActividad(actividadId) {
                                 <i class="fas ${iconoEstado}"></i>
                             </div>
                             <div class="step-info">
-                                <div class="step-titulo">${actividad.nombre}</div>
-                                <div class="step-subtitulo">Actividad - ${textoEstado}</div>
+                                <div class="step-titulo">${tarea.nombre}</div>
+                                <div class="step-subtitulo">Tarea - ${textoEstado}</div>
                             </div>
                         </div>
                     </div>
@@ -1997,16 +2039,16 @@ function mostrarDetallesActividad(actividadId) {
         </div>
         
         <style>
-            .info-actividad {
+            .info-tarea {
                 line-height: 1.6;
                 color: rgba(255,255,255,0.9);
             }
             
-            .info-actividad p {
+            .info-tarea p {
                 margin-bottom: 15px;
             }
             
-            .jerarquia-actividad {
+            .jerarquia-tarea {
                 background: rgba(255,255,255,0.05);
                 border-radius: 10px;
                 padding: 15px;
