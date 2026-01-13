@@ -129,7 +129,7 @@
 <!-- Contenido principal -->
 <div class="foda-cruzado-main-container">
     <h1 class="content-title">
-        <i class="fas fa-crosshairs"></i> Análisis FODA Cruzado
+        <i class="fas fa-crosshairs"></i> Análisis FODA Cruzado - Modo Combinación Múltiple
     </h1>
     
     <!-- Matriz FODA -->
@@ -157,13 +157,27 @@
                         </td>
                         <td class="fortalezas-cell">
                             <div class="celda-titulo">FORTALEZAS</div>
+                            <div class="seleccion-multiple">
+                                <button class="btn-seleccionar-todos" onclick="seleccionarTodos('fortalezas')">
+                                    <i class="fas fa-check-double"></i> Seleccionar todos
+                                </button>
+                                <button class="btn-deseleccionar-todos" onclick="deseleccionarTodos('fortalezas')">
+                                    <i class="fas fa-times-circle"></i> Limpiar
+                                </button>
+                            </div>
                             <div class="celda-lista" id="lista-fortalezas">
                                 {% for aspecto in aspectos_foda_int if aspecto.tipo == 'Positivo' %}
                                 <div class="actividad-item" data-id="{{ aspecto.id }}" data-tipo="fortaleza">
-                                    <div class="actividad-texto">• {{ aspecto.actividad }}</div>
+                                    <div class="actividad-checkbox">
+                                        <input type="checkbox" id="fortaleza-{{ aspecto.id }}" 
+                                               onchange="toggleElementoSeleccionado('fortaleza', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
+                                    </div>
+                                    <div class="actividad-texto" onclick="toggleCheckbox('fortaleza-{{ aspecto.id }}')">
+                                        • {{ aspecto.actividad }}
+                                    </div>
                                     <div class="actividad-acciones">
                                         <button class="btn-usar" onclick="seleccionarParaCruce('fortaleza', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
-                                            <i class="fas fa-plus"></i> Usar
+                                            <i class="fas fa-plus"></i> Agregar
                                         </button>
                                     </div>
                                 </div>
@@ -172,13 +186,27 @@
                         </td>
                         <td class="oportunidades-cell">
                             <div class="celda-titulo">OPORTUNIDADES</div>
+                            <div class="seleccion-multiple">
+                                <button class="btn-seleccionar-todos" onclick="seleccionarTodos('oportunidades')">
+                                    <i class="fas fa-check-double"></i> Seleccionar todos
+                                </button>
+                                <button class="btn-deseleccionar-todos" onclick="deseleccionarTodos('oportunidades')">
+                                    <i class="fas fa-times-circle"></i> Limpiar
+                                </button>
+                            </div>
                             <div class="celda-lista" id="lista-oportunidades">
                                 {% for aspecto in aspectos_foda_ext if aspecto.tipo == 'Positivo' %}
                                 <div class="actividad-item" data-id="{{ aspecto.id }}" data-tipo="oportunidad">
-                                    <div class="actividad-texto">• {{ aspecto.actividad }}</div>
+                                    <div class="actividad-checkbox">
+                                        <input type="checkbox" id="oportunidad-{{ aspecto.id }}" 
+                                               onchange="toggleElementoSeleccionado('oportunidad', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
+                                    </div>
+                                    <div class="actividad-texto" onclick="toggleCheckbox('oportunidad-{{ aspecto.id }}')">
+                                        • {{ aspecto.actividad }}
+                                    </div>
                                     <div class="actividad-acciones">
                                         <button class="btn-usar" onclick="seleccionarParaCruce('oportunidad', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
-                                            <i class="fas fa-plus"></i> Usar
+                                            <i class="fas fa-plus"></i> Agregar
                                         </button>
                                     </div>
                                 </div>
@@ -194,13 +222,27 @@
                         </td>
                         <td class="debilidades-cell">
                             <div class="celda-titulo">DEBILIDADES</div>
+                            <div class="seleccion-multiple">
+                                <button class="btn-seleccionar-todos" onclick="seleccionarTodos('debilidades')">
+                                    <i class="fas fa-check-double"></i> Seleccionar todos
+                                </button>
+                                <button class="btn-deseleccionar-todos" onclick="deseleccionarTodos('debilidades')">
+                                    <i class="fas fa-times-circle"></i> Limpiar
+                                </button>
+                            </div>
                             <div class="celda-lista" id="lista-debilidades">
                                 {% for aspecto in aspectos_foda_int if aspecto.tipo == 'Negativo' %}
                                 <div class="actividad-item" data-id="{{ aspecto.id }}" data-tipo="debilidad">
-                                    <div class="actividad-texto">• {{ aspecto.actividad }}</div>
+                                    <div class="actividad-checkbox">
+                                        <input type="checkbox" id="debilidad-{{ aspecto.id }}" 
+                                               onchange="toggleElementoSeleccionado('debilidad', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
+                                    </div>
+                                    <div class="actividad-texto" onclick="toggleCheckbox('debilidad-{{ aspecto.id }}')">
+                                        • {{ aspecto.actividad }}
+                                    </div>
                                     <div class="actividad-acciones">
                                         <button class="btn-usar" onclick="seleccionarParaCruce('debilidad', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
-                                            <i class="fas fa-plus"></i> Usar
+                                            <i class="fas fa-plus"></i> Agregar
                                         </button>
                                     </div>
                                 </div>
@@ -209,13 +251,27 @@
                         </td>
                         <td class="amenazas-cell">
                             <div class="celda-titulo">AMENAZAS</div>
+                            <div class="seleccion-multiple">
+                                <button class="btn-seleccionar-todos" onclick="seleccionarTodos('amenazas')">
+                                    <i class="fas fa-check-double"></i> Seleccionar todos
+                                </button>
+                                <button class="btn-deseleccionar-todos" onclick="deseleccionarTodos('amenazas')">
+                                    <i class="fas fa-times-circle"></i> Limpiar
+                                </button>
+                            </div>
                             <div class="celda-lista" id="lista-amenazas">
                                 {% for aspecto in aspectos_foda_ext if aspecto.tipo == 'Negativo' %}
                                 <div class="actividad-item" data-id="{{ aspecto.id }}" data-tipo="amenaza">
-                                    <div class="actividad-texto">• {{ aspecto.actividad }}</div>
+                                    <div class="actividad-checkbox">
+                                        <input type="checkbox" id="amenaza-{{ aspecto.id }}" 
+                                               onchange="toggleElementoSeleccionado('amenaza', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
+                                    </div>
+                                    <div class="actividad-texto" onclick="toggleCheckbox('amenaza-{{ aspecto.id }}')">
+                                        • {{ aspecto.actividad }}
+                                    </div>
                                     <div class="actividad-acciones">
                                         <button class="btn-usar" onclick="seleccionarParaCruce('amenaza', {{ aspecto.id }}, `{{ aspecto.actividad }}`)">
-                                            <i class="fas fa-plus"></i> Usar
+                                            <i class="fas fa-plus"></i> Agregar
                                         </button>
                                     </div>
                                 </div>
@@ -230,7 +286,7 @@
     
     <!-- Formulario de Cruce FODA -->
     <div class="cruce-foda-section">
-        <h2><i class="fas fa-cogs"></i> Generar Estrategias FODA Cruzado</h2>
+        <h2><i class="fas fa-cogs"></i> Generar Estrategias FODA Cruzado - Combinación Múltiple</h2>
         
         <div class="cruce-container">
             <div class="cruce-opciones">
@@ -259,46 +315,53 @@
                 
                 <!-- Formulario de Cruce -->
                 <div class="cruce-form">
-                    <h3><i class="fas fa-exchange-alt"></i> Combinar Elementos</h3>
+                    <h3><i class="fas fa-exchange-alt"></i> Combinar Elementos Múltiples</h3>
                     
-                    <div class="form-group">
-                        <label for="elemento-interno">
-                            <i class="fas fa-home"></i> Elemento Interno
-                        </label>
-                        <select id="elemento-interno" class="form-select" onchange="actualizarDescripcionInterno()">
-                            <option value="">Seleccione una opción</option>
-                            {% for aspecto in aspectos_foda_int if aspecto.tipo == 'Positivo' %}
-                            <option value="{{ aspecto.id }}" data-tipo="fortaleza" data-desc="{{ aspecto.actividad }}">
-                                F{{ loop.index }}: {{ aspecto.actividad[:50] }}...
-                            </option>
-                            {% endfor %}
-                            {% for aspecto in aspectos_foda_int if aspecto.tipo == 'Negativo' %}
-                            <option value="{{ aspecto.id }}" data-tipo="debilidad" data-desc="{{ aspecto.actividad }}">
-                                D{{ loop.index }}: {{ aspecto.actividad[:50] }}...
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <div class="elemento-desc" id="desc-interno"></div>
+                    <!-- Panel de Elementos Seleccionados -->
+                    <div class="panel-elementos">
+                        <div class="elementos-columna">
+                            <h4><i class="fas fa-home"></i> Elementos Internos Seleccionados</h4>
+                            <div class="elementos-lista" id="panel-internos">
+                                <div class="elemento-vacio">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p>No hay elementos internos seleccionados</p>
+                                </div>
+                            </div>
+                            <div class="elementos-estadistica">
+                                <span id="contador-internos">0</span> elementos seleccionados
+                            </div>
+                        </div>
+                        
+                        <div class="elementos-columna">
+                            <h4><i class="fas fa-external-link-alt"></i> Elementos Externos Seleccionados</h4>
+                            <div class="elementos-lista" id="panel-externos">
+                                <div class="elemento-vacio">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p>No hay elementos externos seleccionados</p>
+                                </div>
+                            </div>
+                            <div class="elementos-estadistica">
+                                <span id="contador-externos">0</span> elementos seleccionados
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="form-group">
-                        <label for="elemento-externo">
-                            <i class="fas fa-external-link-alt"></i> Elemento Externo
-                        </label>
-                        <select id="elemento-externo" class="form-select" onchange="actualizarDescripcionExterno()">
-                            <option value="">Seleccione una opción</option>
-                            {% for aspecto in aspectos_foda_ext if aspecto.tipo == 'Positivo' %}
-                            <option value="{{ aspecto.id }}" data-tipo="oportunidad" data-desc="{{ aspecto.actividad }}">
-                                O{{ loop.index }}: {{ aspecto.actividad[:50] }}...
-                            </option>
-                            {% endfor %}
-                            {% for aspecto in aspectos_foda_ext if aspecto.tipo == 'Negativo' %}
-                            <option value="{{ aspecto.id }}" data-tipo="amenaza" data-desc="{{ aspecto.actividad }}">
-                                A{{ loop.index }}: {{ aspecto.actividad[:50] }}...
-                            </option>
-                            {% endfor %}
-                        </select>
-                        <div class="elemento-desc" id="desc-externo"></div>
+                    <!-- Estadísticas de combinación -->
+                    <div class="combinacion-estadisticas">
+                        <div class="estadistica-combinacion">
+                            <i class="fas fa-project-diagram"></i>
+                            <div class="estadistica-info">
+                                <span class="estadistica-valor" id="combinaciones-posibles">0</span>
+                                <span class="estadistica-label">Combinaciones posibles</span>
+                            </div>
+                        </div>
+                        <div class="estadistica-combinacion">
+                            <i class="fas fa-sitemap"></i>
+                            <div class="estadistica-info">
+                                <span class="estadistica-valor" id="tipo-cruce-actual">FO</span>
+                                <span class="estadistica-label">Tipo de cruce</span>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- Nuevo campo: Selección de Eje Estratégico -->
@@ -334,24 +397,46 @@
                         </div>
                     </div>
                     
+                    <!-- Opciones de combinación múltiple -->
+                    <div class="combinacion-opciones">
+                        <h4><i class="fas fa-sliders-h"></i> Opciones de Combinación</h4>
+                        <div class="opciones-grid">
+                            <div class="opcion-checkbox">
+                                <input type="checkbox" id="generar-todas-combinaciones" checked>
+                                <label for="generar-todas-combinaciones">
+                                    Generar todas las combinaciones posibles
+                                </label>
+                            </div>
+                            <div class="opcion-checkbox">
+                                <input type="checkbox" id="estrategia-global" checked>
+                                <label for="estrategia-global">
+                                    Crear estrategia global única
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="estrategia">
                             <i class="fas fa-lightbulb"></i> Estrategia Resultante
                         </label>
                         <textarea id="estrategia" class="form-textarea" 
-                                  placeholder="Describa la estrategia resultante del cruce..." 
-                                  rows="4"></textarea>
+                                  placeholder="Describa la estrategia resultante de la combinación múltiple..." 
+                                  rows="6"></textarea>
                         <div class="estrategia-guia" id="guia-estrategia">
-                            <strong>Guía:</strong> <span id="texto-guia">¿Cómo usar las fortalezas para aprovechar las oportunidades?</span>
+                            <strong>Guía:</strong> <span id="texto-guia">¿Cómo usar las fortalezas para aprovechar las oportunidades? (Combinación múltiple)</span>
                         </div>
                     </div>
                     
                     <div class="form-actions">
-                        <button class="btn-guardar" onclick="guardarEstrategia()">
-                            <i class="fas fa-save"></i> Guardar Estrategia
+                        <button class="btn-guardar" onclick="guardarEstrategiaMultiple()">
+                            <i class="fas fa-save"></i> Guardar Estrategia Múltiple
                         </button>
-                        <button class="btn-limpiar" onclick="limpiarFormulario()">
-                            <i class="fas fa-eraser"></i> Limpiar
+                        <button class="btn-limpiar" onclick="limpiarSelecciones()">
+                            <i class="fas fa-eraser"></i> Limpiar Selecciones
+                        </button>
+                        <button class="btn-generar" onclick="generarEstrategiaAutomatica()">
+                            <i class="fas fa-robot"></i> Generar Automáticamente
                         </button>
                     </div>
                 </div>
@@ -380,11 +465,15 @@
                             <option value="comunicacion">COMUNICACIÓN</option>
                             <option value="institucional">INSTITUCIONAL</option>
                         </select>
+                        <select id="filtro-combinacion" class="filtro-select" onchange="filtrarEstrategias()">
+                            <option value="all">Todas las combinaciones</option>
+                            <option value="simple">Combinaciones simples</option>
+                            <option value="multiple">Combinaciones múltiples</option>
+                        </select>
                     </div>
                 </div>
                 
                 <div class="lista-estrategias" id="lista-estrategias">
-                    <!-- Las estrategias se cargarán dinámicamente -->
                     <div class="estrategia-empty">
                         <i class="fas fa-inbox"></i>
                         <p>No hay estrategias guardadas todavía.</p>
@@ -397,7 +486,7 @@
     
     <!-- Estadísticas -->
     <div class="estadisticas-section">
-        <h2><i class="fas fa-chart-pie"></i> Estadísticas FODA</h2>
+        <h2><i class="fas fa-chart-pie"></i> Estadísticas FODA - Modo Combinación Múltiple</h2>
         <div class="estadisticas-grid">
             <div class="estadistica-card fortalezas">
                 <div class="estadistica-icon">
@@ -407,6 +496,9 @@
                     <h3>Fortalezas</h3>
                     <div class="estadistica-valor" id="contador-fortalezas">
                         {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Positivo')|list|length }}
+                    </div>
+                    <div class="estadistica-seleccionadas">
+                        <span id="fortalezas-seleccionadas">0</span> seleccionadas
                     </div>
                 </div>
             </div>
@@ -420,6 +512,9 @@
                     <div class="estadistica-valor" id="contador-debilidades">
                         {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Negativo')|list|length }}
                     </div>
+                    <div class="estadistica-seleccionadas">
+                        <span id="debilidades-seleccionadas">0</span> seleccionadas
+                    </div>
                 </div>
             </div>
             
@@ -431,6 +526,9 @@
                     <h3>Oportunidades</h3>
                     <div class="estadistica-valor" id="contador-oportunidades">
                         {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Positivo')|list|length }}
+                    </div>
+                    <div class="estadistica-seleccionadas">
+                        <span id="oportunidades-seleccionadas">0</span> seleccionadas
                     </div>
                 </div>
             </div>
@@ -444,6 +542,9 @@
                     <div class="estadistica-valor" id="contador-amenazas">
                         {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Negativo')|list|length }}
                     </div>
+                    <div class="estadistica-seleccionadas">
+                        <span id="amenazas-seleccionadas">0</span> seleccionadas
+                    </div>
                 </div>
             </div>
             
@@ -454,6 +555,9 @@
                 <div class="estadistica-content">
                     <h3>Estrategias</h3>
                     <div class="estadistica-valor" id="contador-estrategias">0</div>
+                    <div class="estadistica-subinfo">
+                        <span id="estrategias-multiples">0</span> múltiples
+                    </div>
                 </div>
             </div>
             
@@ -462,8 +566,9 @@
                     <i class="fas fa-project-diagram"></i>
                 </div>
                 <div class="estadistica-content">
-                    <h3>Cruces Posibles</h3>
-                    <div class="estadistica-valor" id="contador-cruces">0</div>
+                    <h3>Combinaciones Activas</h3>
+                    <div class="estadistica-valor" id="combinaciones-activas">0</div>
+                    <div class="estadistica-subinfo" id="relacion-activa">0x0</div>
                 </div>
             </div>
             
@@ -474,6 +579,22 @@
                 <div class="estadistica-content">
                     <h3>Eje Actual</h3>
                     <div class="estadistica-valor" id="eje-actual-nombre">-</div>
+                    <div class="estadistica-subinfo">
+                        <span id="estrategias-eje">0</span> estrategias
+                    </div>
+                </div>
+            </div>
+            
+            <div class="estadistica-card productividad">
+                <div class="estadistica-icon">
+                    <i class="fas fa-rocket"></i>
+                </div>
+                <div class="estadistica-content">
+                    <h3>Productividad</h3>
+                    <div class="estadistica-valor" id="eficiencia-cruce">0%</div>
+                    <div class="estadistica-subinfo">
+                        <span id="ratio-cruce">0.0x</span> más eficiente
+                    </div>
                 </div>
             </div>
         </div>
@@ -481,476 +602,114 @@
 </div>
 
 <style>
-    /* Contenedor de navegación contextual */
-    .context-nav-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-        pointer-events: none;
+    /* Estilos para la selección múltiple */
+    .seleccion-multiple {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
     }
     
-    /* Pestañas laterales */
-    .context-tab {
-        position: fixed;
-        top: 50%;
-        transform: translateY(-50%);
-        z-index: 1001;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        pointer-events: auto;
-    }
-    
-    .left-tab {
-        left: 0;
-    }
-    
-    .right-tab {
-        right: 0;
-    }
-    
-    /* Manejador de pestaña */
-    .tab-handle {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-        padding: 15px 10px;
-        border-radius: 0 8px 8px 0;
+    .btn-seleccionar-todos, .btn-deseleccionar-todos {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
         cursor: pointer;
         display: flex;
-        flex-direction: column;
         align-items: center;
         gap: 5px;
-        box-shadow: 0 4px 20px rgba(12, 36, 97, 0.3);
-        transition: all 0.3s ease;
-        width: 60px;
-    }
-    
-    .right-tab .tab-handle {
-        border-radius: 8px 0 0 8px;
-    }
-    
-    .tab-handle:hover {
-        width: 70px;
-        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
-        box-shadow: 0 6px 25px rgba(12, 36, 97, 0.4);
-    }
-    
-    .tab-handle i {
-        font-size: 20px;
-    }
-    
-    .tab-label {
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        height: 80px;
-        display: flex;
-        align-items: center;
+        transition: all 0.3s;
+        flex: 1;
         justify-content: center;
     }
     
-    /* Contenido de pestaña */
-    .tab-content {
-        position: absolute;
-        top: 0;
-        width: 320px;
-        background: white;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-        border-radius: 0 12px 12px 0;
-        transform: translateX(-100%);
-        opacity: 0;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        pointer-events: none;
-        max-height: 80vh;
-        overflow-y: auto;
-    }
-    
-    .right-tab .tab-content {
-        left: auto;
-        right: 0;
-        transform: translateX(100%);
-        border-radius: 12px 0 0 12px;
-    }
-    
-    .tab-content.active {
-        transform: translateX(0);
-        opacity: 1;
-        pointer-events: auto;
-    }
-    
-    .right-tab .tab-content.active {
-        transform: translateX(0);
-    }
-    
-    /* Cabecera de pestaña */
-    .tab-header {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+    .btn-seleccionar-todos {
+        background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
         color: white;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-radius: 0 12px 0 0;
     }
     
-    .tab-header h3 {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+    .btn-seleccionar-todos:hover {
+        background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+        transform: translateY(-2px);
     }
     
-    .tab-close {
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
+    .btn-deseleccionar-todos {
+        background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
         color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+    }
+    
+    .btn-deseleccionar-todos:hover {
+        background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+        transform: translateY(-2px);
+    }
+    
+    .actividad-checkbox {
+        margin-right: 10px;
+    }
+    
+    .actividad-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
         cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
+        accent-color: #4a69bd;
     }
     
-    .tab-close:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: rotate(90deg);
+    .actividad-texto {
+        flex: 1;
+        font-size: 13px;
+        color: #333;
+        cursor: pointer;
+        padding: 5px 0;
     }
     
-    /* Grid de ejes */
-    .ejes-grid {
-        padding: 20px;
+    .actividad-texto:hover {
+        color: #0c2461;
+    }
+    
+    /* Panel de elementos seleccionados */
+    .panel-elementos {
         display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
     }
     
-    .eje-card {
+    @media (max-width: 768px) {
+        .panel-elementos {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .elementos-columna {
         background: #f8f9fa;
         border-radius: 8px;
         padding: 15px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        cursor: pointer;
-        transition: all 0.3s ease;
         border: 1px solid #e9ecef;
     }
     
-    .eje-card:hover {
-        background: #e9ecef;
-        transform: translateX(5px);
-        border-color: #4a69bd;
-    }
-    
-    .eje-card.active {
-        background: linear-gradient(135deg, rgba(12, 36, 97, 0.1) 0%, rgba(30, 55, 153, 0.1) 100%);
-        border-color: #4a69bd;
-    }
-    
-    .eje-icon {
-        width: 48px;
-        height: 48px;
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 20px;
-        flex-shrink: 0;
-    }
-    
-    .eje-info h4 {
-        margin: 0 0 5px 0;
-        font-size: 14px;
+    .elementos-columna h4 {
         color: #0c2461;
-        font-weight: 600;
-    }
-    
-    .eje-info p {
-        margin: 0;
-        font-size: 12px;
-        color: #666;
-        line-height: 1.4;
-    }
-    
-    /* Contenido de objetivo */
-    .objetivo-compacto {
-        padding: 20px;
-    }
-    
-    .objetivo-resumen {
-        background: linear-gradient(135deg, rgba(26, 82, 118, 0.1) 0%, rgba(44, 62, 80, 0.1) 100%);
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        border-left: 4px solid #1a5276;
-    }
-    
-    .objetivo-resumen h4 {
-        margin: 0 0 8px 0;
-        color: #1a5276;
+        margin: 0 0 15px 0;
         font-size: 14px;
-        font-weight: 600;
-    }
-    
-    .objetivo-resumen p {
-        margin: 0;
-        font-size: 12px;
-        color: #2c3e50;
-        line-height: 1.4;
-    }
-    
-    .objetivo-detalle p {
-        font-size: 13px;
-        line-height: 1.5;
-        color: #333;
-        margin-bottom: 15px;
-    }
-    
-    .ver-mas {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: #1a5276;
-        font-size: 12px;
-        font-weight: 600;
-        text-decoration: none;
-        padding: 8px 15px;
-        background: rgba(26, 82, 118, 0.1);
-        border-radius: 20px;
-        transition: all 0.3s ease;
-    }
-    
-    .ver-mas:hover {
-        background: rgba(26, 82, 118, 0.2);
-        transform: translateX(5px);
-    }
-    
-    /* Modal de objetivo completo */
-    .modal-objetivo {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 2000;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    
-    .modal-objetivo.active {
-        display: flex;
-        opacity: 1;
-    }
-    
-    .modal-content {
-        background: white;
-        border-radius: 12px;
-        max-width: 800px;
-        width: 100%;
-        max-height: 80vh;
-        overflow: hidden;
-        transform: translateY(20px);
-        transition: transform 0.3s ease;
-    }
-    
-    .modal-objetivo.active .modal-content {
-        transform: translateY(0);
-    }
-    
-    .modal-header {
-        background: linear-gradient(135deg, #1a5276 0%, #2c3e50 100%);
-        color: white;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .modal-header h3 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .modal-close {
-        background: rgba(255, 255, 255, 0.2);
-        border: none;
-        color: white;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-    
-    .modal-close:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: rotate(90deg);
-    }
-    
-    .modal-body {
-        padding: 30px;
-        font-size: 14px;
-        line-height: 1.8;
-        color: #333;
-        text-align: justify;
-        max-height: calc(80vh - 80px);
-        overflow-y: auto;
-    }
-    
-    /* Estilos principales del contenido FODA */
-    .foda-cruzado-main-container {
-        padding: 20px;
-        background: #f5f7fa;
-        min-height: 100vh;
-        transition: margin 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .content-title {
-        color: #0c2461;
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        border-bottom: 3px solid #4a69bd;
-        font-size: 28px;
-        display: flex;
-        align-items: center;
-        gap: 15px;
-    }
-    
-    /* Sección Matriz FODA */
-    .matriz-foda-section {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
-    }
-    
-    .matriz-foda-section h2 {
-        color: #0c2461;
-        margin-bottom: 25px;
-        font-size: 22px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .matriz-container {
-        overflow-x: auto;
-    }
-    
-    .matriz-foda {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        border-radius: 8px;
-        overflow: hidden;
-    }
-    
-    .matriz-foda th,
-    .matriz-foda td {
-        border: 1px solid #e9ecef;
-        padding: 15px;
-        vertical-align: top;
-    }
-    
-    .matriz-foda thead th {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-        font-weight: 600;
-        text-align: center;
-        font-size: 16px;
-        padding: 20px;
-    }
-    
-    .interno-header {
-        background: linear-gradient(135deg, #4a69bd 0%, #6a89cc 100%) !important;
-    }
-    
-    .externo-header {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%) !important;
-    }
-    
-    .positivo-header {
-        background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
-        color: white;
-        font-weight: 600;
-        text-align: center;
-        font-size: 16px;
-        width: 120px;
-    }
-    
-    .negativo-header {
-        background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
-        color: white;
-        font-weight: 600;
-        text-align: center;
-        font-size: 16px;
-        width: 120px;
-    }
-    
-    /* Celdas de la matriz */
-    .fortalezas-cell {
-        background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(46, 125, 50, 0.1) 100%);
-        border-right: 3px solid #4CAF50;
-    }
-    
-    .debilidades-cell {
-        background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(198, 40, 40, 0.1) 100%);
-        border-right: 3px solid #ff6b6b;
-    }
-    
-    .oportunidades-cell {
-        background: linear-gradient(135deg, rgba(12, 36, 97, 0.1) 0%, rgba(30, 55, 153, 0.1) 100%);
-        border-left: 3px solid #0c2461;
-    }
-    
-    .amenazas-cell {
-        background: linear-gradient(135deg, rgba(74, 105, 189, 0.1) 0%, rgba(106, 137, 204, 0.1) 100%);
-        border-left: 3px solid #4a69bd;
-    }
-    
-    .celda-titulo {
-        font-size: 16px;
-        font-weight: 700;
-        margin-bottom: 15px;
-        padding-bottom: 8px;
-        border-bottom: 2px solid rgba(0,0,0,0.1);
-        color: #0c2461;
         display: flex;
         align-items: center;
         gap: 8px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid rgba(12, 36, 97, 0.1);
     }
     
-    .celda-lista {
-        max-height: 300px;
+    .elementos-lista {
+        max-height: 200px;
         overflow-y: auto;
+        margin-bottom: 10px;
         padding-right: 5px;
     }
     
-    .actividad-item {
+    .elemento-seleccionado {
         background: white;
         padding: 10px;
         margin-bottom: 8px;
@@ -963,251 +722,166 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
-    .fortalezas-cell .actividad-item {
+    .elemento-seleccionado.interno {
         border-left-color: #4CAF50;
     }
     
-    .debilidades-cell .actividad-item {
-        border-left-color: #ff6b6b;
-    }
-    
-    .oportunidades-cell .actividad-item {
+    .elemento-seleccionado.externo {
         border-left-color: #0c2461;
     }
     
-    .amenazas-cell .actividad-item {
-        border-left-color: #4a69bd;
-    }
-    
-    .actividad-item:hover {
-        transform: translateX(5px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .actividad-texto {
+    .elemento-texto {
         flex: 1;
-        font-size: 13px;
+        font-size: 12px;
         color: #333;
+        line-height: 1.4;
     }
     
-    .actividad-acciones {
-        margin-left: 10px;
-    }
-    
-    .btn-usar {
-        padding: 5px 10px;
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+    .elemento-remover {
+        background: #ff6b6b;
         color: white;
         border: none;
-        border-radius: 4px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
         cursor: pointer;
-        font-size: 11px;
-        font-weight: 600;
         display: flex;
         align-items: center;
-        gap: 5px;
+        justify-content: center;
+        font-size: 10px;
         transition: all 0.3s;
+        margin-left: 10px;
+        flex-shrink: 0;
     }
     
-    .btn-usar:hover {
-        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
-        transform: scale(1.05);
+    .elemento-remover:hover {
+        background: #c62828;
+        transform: rotate(90deg);
     }
     
-    /* Sección Cruce FODA */
-    .cruce-foda-section {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
+    .elemento-vacio {
+        text-align: center;
+        padding: 20px;
+        color: #666;
     }
     
-    .cruce-foda-section h2 {
+    .elemento-vacio i {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: #dee2e6;
+    }
+    
+    .elemento-vacio p {
+        margin: 0;
+        font-size: 12px;
+    }
+    
+    .elementos-estadistica {
+        text-align: center;
+        padding: 8px;
+        background: rgba(12, 36, 97, 0.05);
+        border-radius: 4px;
+        font-size: 12px;
         color: #0c2461;
-        margin-bottom: 25px;
-        font-size: 22px;
+        font-weight: 600;
+    }
+    
+    /* Estadísticas de combinación */
+    .combinacion-estadisticas {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .estadistica-combinacion {
         display: flex;
         align-items: center;
-        gap: 10px;
+        padding: 15px;
+        background: linear-gradient(135deg, rgba(12, 36, 97, 0.05) 0%, rgba(30, 55, 153, 0.05) 100%);
+        border-radius: 8px;
+        border: 1px solid rgba(12, 36, 97, 0.1);
     }
     
-    .cruce-container {
+    .estadistica-combinacion i {
+        font-size: 24px;
+        color: #0c2461;
+        margin-right: 15px;
+        width: 40px;
+        text-align: center;
+    }
+    
+    .estadistica-info {
+        flex: 1;
+    }
+    
+    .estadistica-valor {
+        display: block;
+        font-size: 24px;
+        font-weight: bold;
+        color: #0c2461;
+        line-height: 1;
+    }
+    
+    .estadistica-label {
+        font-size: 11px;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Opciones de combinación */
+    .combinacion-opciones {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid #e9ecef;
+    }
+    
+    .combinacion-opciones h4 {
+        color: #0c2461;
+        margin: 0 0 15px 0;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .opciones-grid {
         display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 30px;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
     }
     
-    @media (max-width: 1200px) {
-        .cruce-container {
+    @media (max-width: 768px) {
+        .opciones-grid {
             grid-template-columns: 1fr;
         }
     }
     
-    .cruce-tipo-selector {
-        margin-bottom: 25px;
-    }
-    
-    .cruce-tipo-selector h3 {
-        color: #1e3799;
-        margin-bottom: 15px;
-        font-size: 16px;
+    .opcion-checkbox {
         display: flex;
         align-items: center;
-        gap: 8px;
-    }
-    
-    .tipo-cruce-options {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
         gap: 10px;
     }
     
-    @media (max-width: 768px) {
-        .tipo-cruce-options {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
-    .cruce-option {
-        padding: 15px;
-        border: 2px solid #dee2e6;
-        background: white;
-        border-radius: 8px;
+    .opcion-checkbox input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
         cursor: pointer;
-        transition: all 0.3s;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 5px;
+        accent-color: #4a69bd;
     }
     
-    .cruce-option:hover {
-        border-color: #4a69bd;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .cruce-option.selected {
-        border-color: #0c2461;
-        background: linear-gradient(135deg, rgba(12, 36, 97, 0.1) 0%, rgba(30, 55, 153, 0.1) 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.2);
-    }
-    
-    .cruce-option.selected .cruce-label {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-    }
-    
-    .cruce-label {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: bold;
-        font-size: 18px;
-        color: #0c2461;
-        background: #f8f9fa;
-        margin-bottom: 5px;
-    }
-    
-    .cruce-desc {
-        font-size: 12px;
-        color: #666;
-        line-height: 1.3;
-    }
-    
-    .cruce-form h3 {
-        color: #1e3799;
-        margin-bottom: 20px;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #0c2461;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .form-select {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        font-size: 14px;
-        background: white;
+    .opcion-checkbox label {
+        font-size: 13px;
+        color: #333;
         cursor: pointer;
-        transition: all 0.3s;
+        flex: 1;
     }
     
-    .form-select:focus {
-        border-color: #4a69bd;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
-    }
-    
-    .elemento-desc {
-        margin-top: 8px;
-        padding: 10px;
-        background: #f8f9fa;
-        border-radius: 6px;
-        font-size: 13px;
-        color: #666;
-        border-left: 3px solid #4a69bd;
-        display: none;
-    }
-    
-    .form-textarea {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        font-size: 14px;
-        resize: vertical;
-        min-height: 120px;
-        font-family: inherit;
-        transition: all 0.3s;
-    }
-    
-    .form-textarea:focus {
-        border-color: #4a69bd;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
-    }
-    
-    .estrategia-guia {
-        margin-top: 8px;
-        padding: 10px;
-        background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 152, 0, 0.1) 100%);
-        border-radius: 6px;
-        font-size: 13px;
-        color: #856404;
-        border-left: 3px solid #FFC107;
-    }
-    
-    .form-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 25px;
-    }
-    
-    .btn-guardar, .btn-limpiar {
+    /* Botones adicionales */
+    .btn-generar {
         padding: 12px 24px;
         border: none;
         border-radius: 6px;
@@ -1220,129 +894,52 @@
         font-size: 14px;
         flex: 1;
         justify-content: center;
-    }
-    
-    .btn-guardar {
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        background: linear-gradient(135deg, #9C27B0 0%, #7b1fa2 100%);
         color: white;
-        box-shadow: 0 2px 6px rgba(12, 36, 97, 0.2);
+        box-shadow: 0 2px 6px rgba(156, 39, 176, 0.2);
     }
     
-    .btn-guardar:hover {
-        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
+    .btn-generar:hover {
+        background: linear-gradient(135deg, #7b1fa2 0%, #6a1b9a 100%);
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.3);
+        box-shadow: 0 4px 12px rgba(156, 39, 176, 0.3);
     }
     
-    .btn-limpiar {
-        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-        color: white;
-        box-shadow: 0 2px 6px rgba(108, 117, 125, 0.2);
-    }
-    
-    .btn-limpiar:hover {
-        background: linear-gradient(135deg, #495057 0%, #343a40 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
-    }
-    
-    /* Estilos para el selector de ejes */
-    .eje-selector-container {
+    .form-actions {
         display: flex;
         gap: 10px;
-        align-items: center;
+        margin-top: 25px;
     }
     
-    .eje-selector-container .form-select {
-        flex: 1;
+    @media (max-width: 768px) {
+        .form-actions {
+            flex-direction: column;
+        }
     }
     
-    .eje-actions {
-        display: flex;
-        gap: 5px;
+    /* Estadísticas mejoradas */
+    .estadistica-seleccionadas, .estadistica-subinfo {
+        font-size: 11px;
+        color: #666;
+        margin-top: 5px;
     }
     
-    .btn-eje-rapido, .btn-eje-limpiar {
-        width: 40px;
-        height: 40px;
-        border: none;
-        border-radius: 6px;
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
+    .estadistica-card .estadistica-content {
+        position: relative;
     }
     
-    .btn-eje-rapido:hover {
-        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
-        transform: scale(1.05);
-    }
-    
-    .btn-eje-limpiar {
-        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
-    }
-    
-    .btn-eje-limpiar:hover {
-        background: linear-gradient(135deg, #495057 0%, #343a40 100%);
-        transform: scale(1.05);
-    }
-    
-    .eje-seleccionado {
-        margin-top: 10px;
-        display: none;
-    }
-    
-    .eje-seleccionado.active {
-        display: block;
-    }
-    
-    .eje-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 15px;
-        background: linear-gradient(135deg, rgba(12, 36, 97, 0.1) 0%, rgba(30, 55, 153, 0.1) 100%);
-        border-radius: 20px;
-        color: #0c2461;
-        font-weight: 600;
-        font-size: 13px;
-        border: 1px solid rgba(12, 36, 97, 0.2);
-    }
-    
-    .eje-badge i {
-        font-size: 14px;
-        color: #0c2461;
-    }
-    
-    /* Estrategias Guardadas */
-    .estrategias-guardadas {
-        background: #f8f9fa;
-        border-radius: 10px;
-        padding: 20px;
-        border: 1px solid #e9ecef;
-    }
-    
-    .estrategias-guardadas h3 {
-        color: #0c2461;
-        margin-bottom: 20px;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .filtros-estrategias {
-        margin-bottom: 20px;
-    }
-    
+    /* Filtro adicional */
     .filtros-row {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr 1fr 1fr;
         gap: 10px;
         margin-bottom: 15px;
+    }
+    
+    @media (max-width: 992px) {
+        .filtros-row {
+            grid-template-columns: 1fr 1fr;
+        }
     }
     
     @media (max-width: 768px) {
@@ -1351,490 +948,141 @@
         }
     }
     
-    .filtro-select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        font-size: 14px;
-        background: white;
-        cursor: pointer;
+    /* Estrategias con múltiples elementos */
+    .estrategia-multiples {
+        position: relative;
+        border-left: 6px solid #9C27B0 !important;
     }
     
-    .lista-estrategias {
-        max-height: 400px;
-        overflow-y: auto;
-        padding-right: 5px;
-    }
-    
-    .estrategia-item {
-        background: white;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-        transition: all 0.3s;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    }
-    
-    .estrategia-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        border-color: #4a69bd;
-    }
-    
-    .estrategia-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #e9ecef;
-    }
-    
-    .estrategia-tipo {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .estrategia-tipo.fo {
-        background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
-        color: white;
-    }
-    
-    .estrategia-tipo.do {
-        background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%);
-        color: white;
-    }
-    
-    .estrategia-tipo.fa {
-        background: linear-gradient(135deg, #FF9800 0%, #f57c00 100%);
-        color: white;
-    }
-    
-    .estrategia-tipo.da {
+    .badge-multiple {
         background: linear-gradient(135deg, #9C27B0 0%, #7b1fa2 100%);
         color: white;
-    }
-    
-    .estrategia-fecha {
-        font-size: 11px;
-        color: #666;
-    }
-    
-    .estrategia-content {
-        font-size: 13px;
-        color: #333;
-        line-height: 1.5;
-        margin-bottom: 10px;
-    }
-    
-    .estrategia-elementos {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 10px;
-    }
-    
-    .elemento-badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-    }
-    
-    .badge-fortaleza {
-        background: rgba(76, 175, 80, 0.1);
-        color: #2e7d32;
-        border: 1px solid #4CAF50;
-    }
-    
-    .badge-debilidad {
-        background: rgba(255, 107, 107, 0.1);
-        color: #c62828;
-        border: 1px solid #ff6b6b;
-    }
-    
-    .badge-oportunidad {
-        background: rgba(12, 36, 97, 0.1);
-        color: #0c2461;
-        border: 1px solid #0c2461;
-    }
-    
-    .badge-amenaza {
-        background: rgba(74, 105, 189, 0.1);
-        color: #1e3799;
-        border: 1px solid #4a69bd;
-    }
-    
-    .badge-eje {
-        background: linear-gradient(135deg, rgba(156, 39, 176, 0.1) 0%, rgba(123, 31, 162, 0.1) 100%);
-        color: #7b1fa2;
-        border: 1px solid #9C27B0;
-    }
-    
-    .badge-eje i {
-        color: #9C27B0;
-    }
-    
-    .estrategia-empty {
-        text-align: center;
-        padding: 40px 20px;
-        color: #666;
-    }
-    
-    .estrategia-empty i {
-        font-size: 48px;
-        margin-bottom: 15px;
-        color: #dee2e6;
-    }
-    
-    /* Sección Estadísticas */
-    .estadisticas-section {
-        background: white;
+        padding: 2px 8px;
         border-radius: 12px;
-        padding: 25px;
-        margin-bottom: 25px;
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
+        font-size: 10px;
+        font-weight: 600;
+        margin-left: 8px;
     }
     
-    .estadisticas-section h2 {
-        color: #0c2461;
-        margin-bottom: 25px;
-        font-size: 22px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .estadisticas-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 20px;
-    }
-    
-    @media (max-width: 1200px) {
-        .estadisticas-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .estadisticas-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-    
-    .estadistica-card {
-        display: flex;
-        align-items: center;
-        padding: 20px;
-        border-radius: 10px;
-        background: white;
-        border: 2px solid transparent;
-        transition: all 0.3s;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    
-    .estadistica-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
-    
-    .estadistica-card.fortalezas {
-        border-color: #4CAF50;
-        background: linear-gradient(135deg, rgba(76, 175, 80, 0.05) 0%, rgba(46, 125, 50, 0.05) 100%);
-    }
-    
-    .estadistica-card.debilidades {
-        border-color: #ff6b6b;
-        background: linear-gradient(135deg, rgba(255, 107, 107, 0.05) 0%, rgba(198, 40, 40, 0.05) 100%);
-    }
-    
-    .estadistica-card.oportunidades {
-        border-color: #0c2461;
-        background: linear-gradient(135deg, rgba(12, 36, 97, 0.05) 0%, rgba(30, 55, 153, 0.05) 100%);
-    }
-    
-    .estadistica-card.amenazas {
-        border-color: #4a69bd;
-        background: linear-gradient(135deg, rgba(74, 105, 189, 0.05) 0%, rgba(106, 137, 204, 0.05) 100%);
-    }
-    
-    .estadistica-card.estrategias {
-        border-color: #9C27B0;
-        background: linear-gradient(135deg, rgba(156, 39, 176, 0.05) 0%, rgba(123, 31, 162, 0.05) 100%);
-    }
-    
-    .estadistica-card.cruces {
-        border-color: #FF9800;
-        background: linear-gradient(135deg, rgba(255, 152, 0, 0.05) 0%, rgba(245, 124, 0, 0.05) 100%);
-    }
-    
-    .estadistica-card.eje-actual {
-        border-color: #9C27B0;
-        background: linear-gradient(135deg, rgba(156, 39, 176, 0.05) 0%, rgba(123, 31, 162, 0.05) 100%);
-    }
-    
-    .estadistica-icon {
-        width: 60px;
-        height: 60px;
-        background: white;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 20px;
-        font-size: 24px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    
-    .estadistica-card.fortalezas .estadistica-icon {
-        color: #4CAF50;
-        border: 2px solid #4CAF50;
-        background: linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%);
-        color: white;
-    }
-    
-    .estadistica-card.debilidades .estadistica-icon {
-        color: #ff6b6b;
-        border: 2px solid #ff6b6b;
-        background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
-        color: white;
-    }
-    
-    .estadistica-card.oportunidades .estadistica-icon {
-        color: #0c2461;
-        border: 2px solid #0c2461;
+    /* Notificaciones mejoradas */
+    .notificacion-combinacion {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
         background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
         color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        z-index: 10000;
+        max-width: 300px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
     }
     
-    .estadistica-card.amenazas .estadistica-icon {
-        color: #4a69bd;
-        border: 2px solid #4a69bd;
-        background: linear-gradient(135deg, #4a69bd 0%, #6a89cc 100%);
-        color: white;
+    .notificacion-combinacion.show {
+        transform: translateX(0);
     }
     
-    .estadistica-card.estrategias .estadistica-icon {
-        color: #9C27B0;
-        border: 2px solid #9C27B0;
-        background: linear-gradient(135deg, #9C27B0 0%, #7b1fa2 100%);
-        color: white;
-    }
-    
-    .estadistica-card.cruces .estadistica-icon {
-        color: #FF9800;
-        border: 2px solid #FF9800;
-        background: linear-gradient(135deg, #FF9800 0%, #f57c00 100%);
-        color: white;
-    }
-    
-    .estadistica-card.eje-actual .estadistica-icon {
-        color: #9C27B0;
-        border: 2px solid #9C27B0;
-        background: linear-gradient(135deg, #9C27B0 0%, #7b1fa2 100%);
-        color: white;
-    }
-    
-    .estadistica-content h3 {
-        font-size: 14px;
-        color: #666;
+    .notificacion-titulo {
+        font-weight: 600;
         margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
     
-    .estadistica-valor {
-        font-size: 28px;
-        font-weight: bold;
+    .notificacion-desc {
+        font-size: 12px;
+        opacity: 0.9;
     }
     
-    .estadistica-card.fortalezas .estadistica-valor {
-        color: #4CAF50;
+    /* Animaciones para elementos seleccionados */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
     }
     
-    .estadistica-card.debilidades .estadistica-valor {
-        color: #ff6b6b;
+    .elemento-seleccionado.pulse {
+        animation: pulse 0.3s ease;
     }
     
-    .estadistica-card.oportunidades .estadistica-valor {
-        color: #0c2461;
-    }
-    
-    .estadistica-card.amenazas .estadistica-valor {
-        color: #4a69bd;
-    }
-    
-    .estadistica-card.estrategias .estadistica-valor {
-        color: #9C27B0;
-    }
-    
-    .estadistica-card.cruces .estadistica-valor {
-        color: #FF9800;
-    }
-    
-    .estadistica-card.eje-actual .estadistica-valor {
-        color: #9C27B0;
-        font-size: 18px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 150px;
-    }
-    
-    /* Scrollbar personalizada */
-    .tab-content::-webkit-scrollbar,
-    .modal-body::-webkit-scrollbar,
-    .celda-lista::-webkit-scrollbar,
-    .lista-estrategias::-webkit-scrollbar {
+    /* Scrollbar mejorada para paneles */
+    .elementos-lista::-webkit-scrollbar {
         width: 6px;
     }
     
-    .tab-content::-webkit-scrollbar-track,
-    .modal-body::-webkit-scrollbar-track,
-    .celda-lista::-webkit-scrollbar-track,
-    .lista-estrategias::-webkit-scrollbar-track {
+    .elementos-lista::-webkit-scrollbar-track {
         background: #f1f1f1;
+        border-radius: 3px;
     }
     
-    .tab-content::-webkit-scrollbar-thumb,
-    .modal-body::-webkit-scrollbar-thumb,
-    .celda-lista::-webkit-scrollbar-thumb,
-    .lista-estrategias::-webkit-scrollbar-thumb {
+    .elementos-lista::-webkit-scrollbar-thumb {
         background: #c1c1c1;
         border-radius: 3px;
     }
     
-    .tab-content::-webkit-scrollbar-thumb:hover,
-    .modal-body::-webkit-scrollbar-thumb:hover,
-    .celda-lista::-webkit-scrollbar-thumb:hover,
-    .lista-estrategias::-webkit-scrollbar-thumb:hover {
+    .elementos-lista::-webkit-scrollbar-thumb:hover {
         background: #a1a1a1;
     }
     
-    /* Efectos de animación para los ejes */
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    .eje-card {
-        animation: slideIn 0.3s ease forwards;
-        opacity: 0;
-    }
-    
-    .eje-card:nth-child(1) { animation-delay: 0.1s; }
-    .eje-card:nth-child(2) { animation-delay: 0.2s; }
-    .eje-card:nth-child(3) { animation-delay: 0.3s; }
-    .eje-card:nth-child(4) { animation-delay: 0.4s; }
-    .eje-card:nth-child(5) { animation-delay: 0.5s; }
-    .eje-card:nth-child(6) { animation-delay: 0.6s; }
-    .eje-card:nth-child(7) { animation-delay: 0.7s; }
-    
-    /* Responsive */
-    @media (max-width: 1200px) {
-        .context-tab {
-            display: none;
-        }
-        
-        .foda-cruzado-main-container {
-            margin: 0 !important;
-        }
-        
-        .modal-content {
-            max-width: 95%;
-        }
-    }
-    
-    /* Para tablets */
-    @media (max-width: 992px) {
-        .matriz-foda-section,
-        .cruce-foda-section,
-        .estadisticas-section {
-            padding: 20px;
-        }
-        
-        .cruce-container {
-            gap: 20px;
-        }
-        
-        .estadisticas-grid {
-            gap: 15px;
-        }
-    }
-    
-    /* Para móviles */
+    /* Responsive adjustments */
     @media (max-width: 768px) {
-        .foda-cruzado-main-container {
-            padding: 15px;
+        .panel-elementos {
+            grid-template-columns: 1fr;
         }
         
-        .content-title {
-            font-size: 22px;
-            margin-bottom: 20px;
+        .combinacion-estadisticas {
+            grid-template-columns: 1fr;
         }
         
-        .matriz-foda-section h2,
-        .cruce-foda-section h2,
-        .estadisticas-section h2 {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-        
-        .celda-titulo {
-            font-size: 14px;
-        }
-        
-        .cruce-tipo-selector h3,
-        .cruce-form h3,
-        .estrategias-guardadas h3 {
-            font-size: 14px;
-        }
-        
-        .btn-guardar,
-        .btn-limpiar {
-            padding: 10px 15px;
-            font-size: 13px;
-        }
-        
-        .eje-selector-container {
+        .form-actions {
             flex-direction: column;
         }
         
-        .eje-actions {
+        .content-title {
+            font-size: 20px;
+        }
+        
+        .seleccion-multiple {
+            flex-direction: column;
+        }
+        
+        .btn-seleccionar-todos,
+        .btn-deseleccionar-todos {
             width: 100%;
-            justify-content: center;
         }
-        
-        .btn-eje-rapido, .btn-eje-limpiar {
-            flex: 1;
-        }
-        
-        .estadistica-card.eje-actual .estadistica-valor {
-            font-size: 16px;
-            max-width: 120px;
-        }
+    }
+    
+    /* Estados de selección */
+    .actividad-item.selected {
+        background: linear-gradient(135deg, rgba(12, 36, 97, 0.1) 0%, rgba(30, 55, 153, 0.1) 100%);
+        border-left-width: 6px !important;
+    }
+    
+    .fortalezas-cell .actividad-item.selected {
+        border-left-color: #4CAF50 !important;
+    }
+    
+    .debilidades-cell .actividad-item.selected {
+        border-left-color: #ff6b6b !important;
+    }
+    
+    .oportunidades-cell .actividad-item.selected {
+        border-left-color: #0c2461 !important;
+    }
+    
+    .amenazas-cell .actividad-item.selected {
+        border-left-color: #4a69bd !important;
     }
 </style>
 
 <script>
     // Variables globales
     let tipoCruceActual = 'fo';
-    let elementoInternoId = null;
-    let elementoExternoId = null;
+    let elementosInternos = [];
+    let elementosExternos = [];
     let estrategiasGuardadas = [];
     let ejesTabAbierta = false;
     let objetivoTabAbierta = false;
@@ -1845,34 +1093,26 @@
     // Inicializar al cargar
     document.addEventListener('DOMContentLoaded', function() {
         cargarEstrategias();
-        actualizarContadorCruces();
+        actualizarEstadisticas();
         actualizarEjeSeleccionado();
         
         // Agregar interactividad a los ejes en la pestaña
         document.querySelectorAll('.eje-card').forEach(card => {
             card.addEventListener('click', function(e) {
-                // Solo si no estamos seleccionando desde el formulario
                 if (!e.target.closest('.eje-card')?.hasAttribute('onclick')) {
-                    // Remover activo de todos
                     document.querySelectorAll('.eje-card').forEach(c => {
                         c.classList.remove('active');
                     });
                     
-                    // Agregar activo al seleccionado
                     this.classList.add('active');
                     
-                    // Establecer eje activo
                     const eje = this.getAttribute('data-eje');
                     const nombre = this.querySelector('h4').textContent;
                     ejeActivo = { id: eje, nombre: nombre };
                     
-                    // Actualizar estadística
                     document.getElementById('eje-actual-nombre').textContent = nombre;
-                    
-                    // Guardar en localStorage
                     localStorage.setItem('ejeActivo', JSON.stringify(ejeActivo));
                     
-                    // Mostrar notificación
                     mostrarNotificacion(`✅ Eje activo: ${nombre}`, 'info');
                 }
             });
@@ -1900,16 +1140,20 @@
                 cerrarModalObjetivo();
             }
             
-            // Alt+E para ejes
             if (e.altKey && e.key === 'e') {
                 e.preventDefault();
                 toggleEjesTab();
             }
             
-            // Alt+O para objetivo
             if (e.altKey && e.key === 'o') {
                 e.preventDefault();
                 toggleObjetivoTab();
+            }
+            
+            // Ctrl+Enter para guardar
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                guardarEstrategiaMultiple();
             }
         });
         
@@ -1925,11 +1169,299 @@
         }
     });
     
+    // Funciones para manejar selección múltiple
+    function toggleCheckbox(id) {
+        const checkbox = document.getElementById(id);
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change'));
+    }
+    
+    function toggleElementoSeleccionado(tipo, id, texto) {
+        const checkbox = document.getElementById(`${tipo}-${id}`);
+        const item = checkbox.closest('.actividad-item');
+        
+        if (checkbox.checked) {
+            // Agregar elemento
+            const elemento = { id, tipo, texto };
+            
+            if (tipo === 'fortaleza' || tipo === 'debilidad') {
+                if (!elementosInternos.some(e => e.id === id)) {
+                    elementosInternos.push(elemento);
+                    item.classList.add('selected');
+                }
+            } else {
+                if (!elementosExternos.some(e => e.id === id)) {
+                    elementosExternos.push(elemento);
+                    item.classList.add('selected');
+                }
+            }
+        } else {
+            // Remover elemento
+            if (tipo === 'fortaleza' || tipo === 'debilidad') {
+                elementosInternos = elementosInternos.filter(e => e.id !== id);
+                item.classList.remove('selected');
+            } else {
+                elementosExternos = elementosExternos.filter(e => e.id !== id);
+                item.classList.remove('selected');
+            }
+        }
+        
+        actualizarPanelesSeleccion();
+        actualizarEstadisticas();
+        validarSelecciones();
+        
+        if (checkbox.checked) {
+            mostrarNotificacionCombinacion(`✅ ${texto.substring(0, 50)}... agregado`);
+        }
+    }
+    
+    function seleccionarParaCruce(tipo, id, texto) {
+        const checkbox = document.getElementById(`${tipo}-${id}`);
+        if (!checkbox.checked) {
+            checkbox.checked = true;
+            toggleElementoSeleccionado(tipo, id, texto);
+        }
+    }
+    
+    function seleccionarTodos(tipo) {
+        let checkboxes;
+        let elementosTipo;
+        
+        switch(tipo) {
+            case 'fortalezas':
+                checkboxes = document.querySelectorAll('#lista-fortalezas input[type="checkbox"]');
+                elementosTipo = 'fortaleza';
+                break;
+            case 'debilidades':
+                checkboxes = document.querySelectorAll('#lista-debilidades input[type="checkbox"]');
+                elementosTipo = 'debilidad';
+                break;
+            case 'oportunidades':
+                checkboxes = document.querySelectorAll('#lista-oportunidades input[type="checkbox"]');
+                elementosTipo = 'oportunidad';
+                break;
+            case 'amenazas':
+                checkboxes = document.querySelectorAll('#lista-amenazas input[type="checkbox"]');
+                elementosTipo = 'amenaza';
+                break;
+        }
+        
+        checkboxes.forEach(checkbox => {
+            if (!checkbox.checked) {
+                checkbox.checked = true;
+                const id = checkbox.id.split('-')[1];
+                const item = checkbox.closest('.actividad-item');
+                const texto = item.querySelector('.actividad-texto').textContent.replace('• ', '');
+                
+                const elemento = { 
+                    id: parseInt(id), 
+                    tipo: elementosTipo, 
+                    texto: texto 
+                };
+                
+                if (elementosTipo === 'fortaleza' || elementosTipo === 'debilidad') {
+                    if (!elementosInternos.some(e => e.id === parseInt(id))) {
+                        elementosInternos.push(elemento);
+                        item.classList.add('selected');
+                    }
+                } else {
+                    if (!elementosExternos.some(e => e.id === parseInt(id))) {
+                        elementosExternos.push(elemento);
+                        item.classList.add('selected');
+                    }
+                }
+            }
+        });
+        
+        actualizarPanelesSeleccion();
+        actualizarEstadisticas();
+        mostrarNotificacionCombinacion(`✅ Todos los elementos de ${tipo} seleccionados`);
+    }
+    
+    function deseleccionarTodos(tipo) {
+        let checkboxes;
+        let elementosTipo;
+        
+        switch(tipo) {
+            case 'fortalezas':
+                checkboxes = document.querySelectorAll('#lista-fortalezas input[type="checkbox"]');
+                elementosTipo = 'fortaleza';
+                break;
+            case 'debilidades':
+                checkboxes = document.querySelectorAll('#lista-debilidades input[type="checkbox"]');
+                elementosTipo = 'debilidad';
+                break;
+            case 'oportunidades':
+                checkboxes = document.querySelectorAll('#lista-oportunidades input[type="checkbox"]');
+                elementosTipo = 'oportunidad';
+                break;
+            case 'amenazas':
+                checkboxes = document.querySelectorAll('#lista-amenazas input[type="checkbox"]');
+                elementosTipo = 'amenaza';
+                break;
+        }
+        
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                checkbox.checked = false;
+                const id = checkbox.id.split('-')[1];
+                const item = checkbox.closest('.actividad-item');
+                
+                if (elementosTipo === 'fortaleza' || elementosTipo === 'debilidad') {
+                    elementosInternos = elementosInternos.filter(e => e.id !== parseInt(id));
+                    item.classList.remove('selected');
+                } else {
+                    elementosExternos = elementosExternos.filter(e => e.id !== parseInt(id));
+                    item.classList.remove('selected');
+                }
+            }
+        });
+        
+        actualizarPanelesSeleccion();
+        actualizarEstadisticas();
+        mostrarNotificacionCombinacion(`❌ Selección de ${tipo} limpiada`);
+    }
+    
+    function actualizarPanelesSeleccion() {
+        const panelInternos = document.getElementById('panel-internos');
+        const panelExternos = document.getElementById('panel-externos');
+        const contadorInternos = document.getElementById('contador-internos');
+        const contadorExternos = document.getElementById('contador-externos');
+        
+        // Actualizar contadores
+        contadorInternos.textContent = elementosInternos.length;
+        contadorExternos.textContent = elementosExternos.length;
+        
+        // Actualizar panel internos
+        if (elementosInternos.length === 0) {
+            panelInternos.innerHTML = `
+                <div class="elemento-vacio">
+                    <i class="fas fa-info-circle"></i>
+                    <p>No hay elementos internos seleccionados</p>
+                </div>
+            `;
+        } else {
+            panelInternos.innerHTML = '';
+            elementosInternos.forEach(elemento => {
+                const div = document.createElement('div');
+                div.className = 'elemento-seleccionado interno pulse';
+                div.innerHTML = `
+                    <div class="elemento-texto">• ${elemento.texto.substring(0, 80)}${elemento.texto.length > 80 ? '...' : ''}</div>
+                    <button class="elemento-remover" onclick="removerElementoSeleccionado('interno', ${elemento.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                panelInternos.appendChild(div);
+                
+                // Remover animación después de completarla
+                setTimeout(() => div.classList.remove('pulse'), 300);
+            });
+        }
+        
+        // Actualizar panel externos
+        if (elementosExternos.length === 0) {
+            panelExternos.innerHTML = `
+                <div class="elemento-vacio">
+                    <i class="fas fa-info-circle"></i>
+                    <p>No hay elementos externos seleccionados</p>
+                </div>
+            `;
+        } else {
+            panelExternos.innerHTML = '';
+            elementosExternos.forEach(elemento => {
+                const div = document.createElement('div');
+                div.className = 'elemento-seleccionado externo pulse';
+                div.innerHTML = `
+                    <div class="elemento-texto">• ${elemento.texto.substring(0, 80)}${elemento.texto.length > 80 ? '...' : ''}</div>
+                    <button class="elemento-remover" onclick="removerElementoSeleccionado('externo', ${elemento.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                panelExternos.appendChild(div);
+                
+                // Remover animación después de completarla
+                setTimeout(() => div.classList.remove('pulse'), 300);
+            });
+        }
+    }
+    
+    function removerElementoSeleccionado(tipo, id) {
+        if (tipo === 'interno') {
+            elementosInternos = elementosInternos.filter(e => e.id !== id);
+            const checkbox = document.getElementById(`fortaleza-${id}`) || document.getElementById(`debilidad-${id}`);
+            if (checkbox) {
+                checkbox.checked = false;
+                checkbox.closest('.actividad-item').classList.remove('selected');
+            }
+        } else {
+            elementosExternos = elementosExternos.filter(e => e.id !== id);
+            const checkbox = document.getElementById(`oportunidad-${id}`) || document.getElementById(`amenaza-${id}`);
+            if (checkbox) {
+                checkbox.checked = false;
+                checkbox.closest('.actividad-item').classList.remove('selected');
+            }
+        }
+        
+        actualizarPanelesSeleccion();
+        actualizarEstadisticas();
+    }
+    
+    function actualizarEstadisticas() {
+        // Actualizar contadores de selección
+        document.getElementById('fortalezas-seleccionadas').textContent = 
+            elementosInternos.filter(e => e.tipo === 'fortaleza').length;
+        document.getElementById('debilidades-seleccionadas').textContent = 
+            elementosInternos.filter(e => e.tipo === 'debilidad').length;
+        document.getElementById('oportunidades-seleccionadas').textContent = 
+            elementosExternos.filter(e => e.tipo === 'oportunidad').length;
+        document.getElementById('amenazas-seleccionadas').textContent = 
+            elementosExternos.filter(e => e.tipo === 'amenaza').length;
+        
+        // Calcular combinaciones posibles
+        const combPosibles = elementosInternos.length * elementosExternos.length;
+        document.getElementById('combinaciones-posibles').textContent = combPosibles;
+        document.getElementById('combinaciones-activas').textContent = combPosibles;
+        document.getElementById('relacion-activa').textContent = 
+            `${elementosInternos.length}x${elementosExternos.length}`;
+        
+        // Actualizar tipo de cruce actual
+        document.getElementById('tipo-cruce-actual').textContent = tipoCruceActual.toUpperCase();
+        
+        // Calcular eficiencia
+        const fortalezasTotales = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Positivo')|list|length }};
+        const debilidadesTotales = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Negativo')|list|length }};
+        const oportunidadesTotales = {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Positivo')|list|length }};
+        const amenazasTotales = {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Negativo')|list|length }};
+        
+        let elementosInternosTotales = 0;
+        let elementosExternosTotales = 0;
+        
+        if (tipoCruceActual === 'fo' || tipoCruceActual === 'fa') {
+            elementosInternosTotales = fortalezasTotales;
+        } else {
+            elementosInternosTotales = debilidadesTotales;
+        }
+        
+        if (tipoCruceActual === 'fo' || tipoCruceActual === 'do') {
+            elementosExternosTotales = oportunidadesTotales;
+        } else {
+            elementosExternosTotales = amenazasTotales;
+        }
+        
+        const eficiencia = elementosInternosTotales > 0 ? 
+            Math.round((elementosInternos.length / elementosInternosTotales) * 100) : 0;
+        document.getElementById('eficiencia-cruce').textContent = `${eficiencia}%`;
+        
+        const ratio = elementosInternosTotales > 0 ? 
+            (elementosInternos.length / elementosInternosTotales).toFixed(1) : 0;
+        document.getElementById('ratio-cruce').textContent = `${ratio}x`;
+    }
+    
     // Funciones para manejar ejes
     function seleccionarEjeFormulario(ejeId, ejeNombre) {
         document.getElementById('eje-estrategico').value = ejeId;
         actualizarEjeSeleccionado();
-        mostrarNotificacion(`✅ Eje seleccionado: ${ejeNombre}`, 'success');
+        mostrarNotificacionCombinacion(`✅ Eje seleccionado: ${ejeNombre}`);
         cerrarEjesTab();
     }
     
@@ -1955,16 +1487,16 @@
         if (ejeActivo) {
             document.getElementById('eje-estrategico').value = ejeActivo.id;
             actualizarEjeSeleccionado();
-            mostrarNotificacion(`✅ Eje activo seleccionado: ${ejeActivo.nombre}`, 'success');
+            mostrarNotificacionCombinacion(`✅ Eje activo seleccionado: ${ejeActivo.nombre}`);
         } else {
-            mostrarNotificacion('❌ No hay ningún eje activo seleccionado', 'warning');
+            mostrarNotificacionCombinacion('❌ No hay ningún eje activo seleccionado', 'warning');
         }
     }
     
     function limpiarEjeSeleccionado() {
         document.getElementById('eje-estrategico').value = '';
         actualizarEjeSeleccionado();
-        mostrarNotificacion('✅ Eje limpiado', 'info');
+        mostrarNotificacionCombinacion('✅ Eje limpiado', 'info');
     }
     
     // Funciones de las pestañas
@@ -2028,57 +1560,50 @@
         document.body.style.overflow = 'auto';
     }
     
-    // Funciones del FODA con eje
-    function guardarEstrategia() {
+    // Funciones del FODA con combinación múltiple
+    function guardarEstrategiaMultiple() {
         const estrategiaTexto = document.getElementById('estrategia').value.trim();
+        const generarTodas = document.getElementById('generar-todas-combinaciones').checked;
+        const estrategiaGlobal = document.getElementById('estrategia-global').checked;
         
         // Validaciones
-        if (!elementoInternoId || !elementoExternoId) {
-            mostrarNotificacion('❌ Debe seleccionar ambos elementos para el cruce', 'error');
+        if (elementosInternos.length === 0 || elementosExternos.length === 0) {
+            mostrarNotificacionCombinacion('❌ Debe seleccionar al menos un elemento interno y uno externo', 'error');
             return;
         }
         
         if (!ejeSeleccionado) {
-            mostrarNotificacion('❌ Debe seleccionar un eje estratégico', 'error');
+            mostrarNotificacionCombinacion('❌ Debe seleccionar un eje estratégico', 'error');
             return;
         }
         
         if (!estrategiaTexto) {
-            mostrarNotificacion('❌ Debe escribir una estrategia', 'error');
+            mostrarNotificacionCombinacion('❌ Debe escribir una estrategia', 'error');
             document.getElementById('estrategia').focus();
             return;
         }
-        
-        const internoSelect = document.getElementById('elemento-interno');
-        const externoSelect = document.getElementById('elemento-externo');
-        
-        const tipoInterno = internoSelect.options[internoSelect.selectedIndex].getAttribute('data-tipo');
-        const textoInterno = internoSelect.options[internoSelect.selectedIndex].getAttribute('data-desc');
-        
-        const tipoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-tipo');
-        const textoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-desc');
-        
-        const estrategia = {
-            tipo_cruce: tipoCruceActual.toUpperCase(),
-            elemento_interno_id: elementoInternoId,
-            elemento_interno_tipo: tipoInterno,
-            elemento_interno_texto: textoInterno,
-            elemento_externo_id: elementoExternoId,
-            elemento_externo_tipo: tipoExterno,
-            elemento_externo_texto: textoExterno,
-            eje_id: ejeSeleccionado,
-            eje_texto: ejeSeleccionadoTexto,
-            estrategia: estrategiaTexto,
-            fecha: new Date().toISOString()
-        };
         
         const btnGuardar = document.querySelector('.btn-guardar');
         const originalText = btnGuardar.innerHTML;
         btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
         btnGuardar.disabled = true;
         
-        // Enviar al servidor con el eje incluido
-        fetch('/guardar_estrategia_foda_con_eje', {
+        // Preparar datos para enviar
+        const estrategia = {
+            tipo_cruce: tipoCruceActual.toUpperCase(),
+            elementos_internos: elementosInternos,
+            elementos_externos: elementosExternos,
+            eje_id: ejeSeleccionado,
+            eje_texto: ejeSeleccionadoTexto,
+            estrategia: estrategiaTexto,
+            es_multiple: true,
+            generar_todas: generarTodas,
+            estrategia_global: estrategiaGlobal,
+            fecha: new Date().toISOString()
+        };
+        
+        // Enviar al servidor con combinación múltiple
+        fetch('/guardar_estrategia_foda_multiple', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2089,15 +1614,22 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                mostrarNotificacion('✅ Estrategia guardada correctamente con eje', 'success');
+                mostrarNotificacionCombinacion('✅ Estrategia múltiple guardada correctamente', 'success');
                 
-                estrategiasGuardadas.push(estrategia);
+                if (data.estrategias) {
+                    data.estrategias.forEach(estrategia => {
+                        estrategiasGuardadas.push(estrategia);
+                        agregarEstrategiaALista(estrategia);
+                    });
+                } else {
+                    estrategiasGuardadas.push(estrategia);
+                    agregarEstrategiaALista(estrategia);
+                }
                 
-                agregarEstrategiaALista(estrategia);
                 actualizarContadores();
-                limpiarFormulario();
+                limpiarSelecciones();
             } else {
-                mostrarNotificacion('❌ Error: ' + data.message, 'error');
+                mostrarNotificacionCombinacion('❌ Error: ' + data.message, 'error');
             }
             
             btnGuardar.innerHTML = originalText;
@@ -2105,7 +1637,7 @@
         })
         .catch(error => {
             console.error('Error:', error);
-            mostrarNotificacion('❌ Error de conexión al servidor', 'error');
+            mostrarNotificacionCombinacion('❌ Error de conexión al servidor', 'error');
             btnGuardar.innerHTML = originalText;
             btnGuardar.disabled = false;
         });
@@ -2120,8 +1652,9 @@
         }
         
         const estrategiaDiv = document.createElement('div');
-        estrategiaDiv.className = 'estrategia-item';
+        estrategiaDiv.className = `estrategia-item ${estrategia.es_multiple ? 'estrategia-multiples' : ''}`;
         estrategiaDiv.dataset.eje = estrategia.eje_id;
+        estrategiaDiv.dataset.combinacion = estrategia.es_multiple ? 'multiple' : 'simple';
         
         const fecha = new Date(estrategia.fecha);
         const fechaFormateada = fecha.toLocaleDateString('es-ES', {
@@ -2132,34 +1665,71 @@
             minute: '2-digit'
         });
         
-        let iconoInterno = estrategia.elemento_interno_tipo === 'fortaleza' ? 
+        let iconoInterno = estrategia.elementos_internos?.[0]?.tipo === 'fortaleza' ? 
             '<i class="fas fa-shield-alt"></i>' : 
             '<i class="fas fa-exclamation-triangle"></i>';
         
-        let iconoExterno = estrategia.elemento_externo_tipo === 'oportunidad' ?
+        let iconoExterno = estrategia.elementos_externos?.[0]?.tipo === 'oportunidad' ?
             '<i class="fas fa-bullseye"></i>' :
             '<i class="fas fa-skull-crossbones"></i>';
         
+        const esMultiple = estrategia.es_multiple || 
+                          (estrategia.elementos_internos && estrategia.elementos_internos.length > 1) ||
+                          (estrategia.elementos_externos && estrategia.elementos_externos.length > 1);
+        
         estrategiaDiv.innerHTML = `
             <div class="estrategia-header">
-                <span class="estrategia-tipo ${estrategia.tipo_cruce.toLowerCase()}">
-                    ${estrategia.tipo_cruce}
-                </span>
+                <div class="estrategia-tipo-container">
+                    <span class="estrategia-tipo ${estrategia.tipo_cruce.toLowerCase()}">
+                        ${estrategia.tipo_cruce}
+                    </span>
+                    ${esMultiple ? '<span class="badge-multiple">Múltiple</span>' : ''}
+                </div>
                 <span class="estrategia-fecha">${fechaFormateada}</span>
             </div>
             <div class="estrategia-content">
                 ${estrategia.estrategia}
             </div>
             <div class="estrategia-elementos">
-                <span class="elemento-badge badge-${estrategia.elemento_interno_tipo}">
-                    ${iconoInterno} ${estrategia.elemento_interno_tipo}: ${estrategia.elemento_interno_texto.substring(0, 30)}...
-                </span>
-                <span class="elemento-badge badge-${estrategia.elemento_externo_tipo}">
-                    ${iconoExterno} ${estrategia.elemento_externo_tipo}: ${estrategia.elemento_externo_texto.substring(0, 30)}...
-                </span>
-                <span class="elemento-badge badge-eje">
-                    <i class="fas fa-bullseye"></i> ${estrategia.eje_texto}
-                </span>
+                <div class="elementos-grupo">
+                    <div class="elementos-titulo">Elementos Internos (${estrategia.elementos_internos ? estrategia.elementos_internos.length : 1}):</div>
+                    ${estrategia.elementos_internos ? 
+                        estrategia.elementos_internos.map(e => 
+                            `<span class="elemento-badge badge-${e.tipo}">
+                                ${e.tipo === 'fortaleza' ? '<i class="fas fa-shield-alt"></i>' : '<i class="fas fa-exclamation-triangle"></i>'}
+                                ${e.texto.substring(0, 30)}${e.texto.length > 30 ? '...' : ''}
+                            </span>`
+                        ).join('') : 
+                        `<span class="elemento-badge badge-${estrategia.elemento_interno_tipo}">
+                            ${iconoInterno} ${estrategia.elemento_interno_tipo}: ${estrategia.elemento_interno_texto ? estrategia.elemento_interno_texto.substring(0, 30) + '...' : ''}
+                        </span>`
+                    }
+                </div>
+                <div class="elementos-grupo">
+                    <div class="elementos-titulo">Elementos Externos (${estrategia.elementos_externos ? estrategia.elementos_externos.length : 1}):</div>
+                    ${estrategia.elementos_externos ? 
+                        estrategia.elementos_externos.map(e => 
+                            `<span class="elemento-badge badge-${e.tipo}">
+                                ${e.tipo === 'oportunidad' ? '<i class="fas fa-bullseye"></i>' : '<i class="fas fa-skull-crossbones"></i>'}
+                                ${e.texto.substring(0, 30)}${e.texto.length > 30 ? '...' : ''}
+                            </span>`
+                        ).join('') : 
+                        `<span class="elemento-badge badge-${estrategia.elemento_externo_tipo}">
+                            ${iconoExterno} ${estrategia.elemento_externo_tipo}: ${estrategia.elemento_externo_texto ? estrategia.elemento_externo_texto.substring(0, 30) + '...' : ''}
+                        </span>`
+                    }
+                </div>
+                <div class="elementos-grupo">
+                    <span class="elemento-badge badge-eje">
+                        <i class="fas fa-bullseye"></i> ${estrategia.eje_texto}
+                    </span>
+                    ${esMultiple ? 
+                        `<span class="elemento-badge badge-combinacion">
+                            <i class="fas fa-project-diagram"></i> 
+                            ${estrategia.elementos_internos ? estrategia.elementos_internos.length : 1}x${estrategia.elementos_externos ? estrategia.elementos_externos.length : 1}
+                        </span>` : ''
+                    }
+                </div>
             </div>
         `;
         
@@ -2167,8 +1737,7 @@
     }
     
     function cargarEstrategias() {
-        // Cambiar la URL para obtener estrategias con eje
-        fetch('/api/estrategias_foda_con_eje')
+        fetch('/api/estrategias_foda_multiple')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -2196,21 +1765,20 @@
             })
             .catch(error => {
                 console.error('Error al cargar estrategias:', error);
-                // Si falla, intentamos cargar sin eje para compatibilidad
                 cargarEstrategiasCompatibilidad();
             });
     }
     
     function cargarEstrategiasCompatibilidad() {
-        // Para compatibilidad con versiones anteriores
         fetch('/api/estrategias_foda')
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     estrategiasGuardadas = data.estrategias.map(e => ({
                         ...e,
-                        eje_id: 'no_asignado',
-                        eje_texto: 'Sin eje asignado'
+                        eje_id: e.eje_id || 'no_asignado',
+                        eje_texto: e.eje_texto || 'Sin eje asignado',
+                        es_multiple: false
                     }));
                     
                     const lista = document.getElementById('lista-estrategias');
@@ -2241,59 +1809,87 @@
     function filtrarEstrategias() {
         const filtroTipo = document.getElementById('filtro-tipo-estrategia').value;
         const filtroEje = document.getElementById('filtro-eje-estrategia').value;
+        const filtroCombinacion = document.getElementById('filtro-combinacion').value;
         const estrategiasItems = document.querySelectorAll('.estrategia-item');
+        
+        let estrategiasMostradas = 0;
         
         estrategiasItems.forEach(item => {
             const tipo = item.querySelector('.estrategia-tipo').textContent.trim();
             const eje = item.dataset.eje;
+            const combinacion = item.dataset.combinacion;
             
             const pasaTipo = filtroTipo === 'all' || tipo === filtroTipo;
             const pasaEje = filtroEje === 'all' || eje === filtroEje;
+            const pasaCombinacion = filtroCombinacion === 'all' || 
+                                  (filtroCombinacion === 'multiple' && combinacion === 'multiple') ||
+                                  (filtroCombinacion === 'simple' && combinacion === 'simple');
             
-            if (pasaTipo && pasaEje) {
+            if (pasaTipo && pasaEje && pasaCombinacion) {
                 item.style.display = 'block';
+                estrategiasMostradas++;
             } else {
                 item.style.display = 'none';
             }
         });
+        
+        // Mostrar mensaje si no hay resultados
+        const lista = document.getElementById('lista-estrategias');
+        const emptyMsg = lista.querySelector('.estrategia-empty');
+        
+        if (estrategiasMostradas === 0) {
+            if (!emptyMsg) {
+                const msg = document.createElement('div');
+                msg.className = 'estrategia-empty';
+                msg.innerHTML = `
+                    <i class="fas fa-search"></i>
+                    <p>No se encontraron estrategias con los filtros seleccionados.</p>
+                    <p>Intente con otros criterios de búsqueda.</p>
+                `;
+                lista.appendChild(msg);
+            }
+        } else if (emptyMsg) {
+            emptyMsg.remove();
+        }
     }
     
-    function limpiarFormulario() {
-        document.getElementById('elemento-interno').value = '';
-        document.getElementById('elemento-externo').value = '';
-        document.getElementById('eje-estrategico').value = '';
+    function limpiarSelecciones() {
+        // Limpiar todos los checkboxes
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        // Limpiar clases selected
+        document.querySelectorAll('.actividad-item').forEach(item => {
+            item.classList.remove('selected');
+        });
+        
+        // Limpiar arrays
+        elementosInternos = [];
+        elementosExternos = [];
+        
+        // Limpiar textarea
         document.getElementById('estrategia').value = '';
         
-        document.getElementById('desc-interno').style.display = 'none';
-        document.getElementById('desc-externo').style.display = 'none';
+        // Actualizar paneles
+        actualizarPanelesSeleccion();
+        actualizarEstadisticas();
         
-        elementoInternoId = null;
-        elementoExternoId = null;
-        
-        actualizarEjeSeleccionado();
-        
-        mostrarNotificacion('✅ Formulario limpiado', 'success');
+        mostrarNotificacionCombinacion('✅ Todas las selecciones han sido limpiadas', 'success');
     }
     
     function actualizarContadores() {
         const totalEstrategias = estrategiasGuardadas.length;
+        const estrategiasMultiples = estrategiasGuardadas.filter(e => e.es_multiple).length;
+        
         document.getElementById('contador-estrategias').textContent = totalEstrategias;
-        actualizarContadorCruces();
-    }
-    
-    function actualizarContadorCruces() {
-        const fortalezas = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Positivo')|list|length }};
-        const debilidades = {{ aspectos_foda_int|selectattr('tipo', 'equalto', 'Negativo')|list|length }};
-        const oportunidades = {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Positivo')|list|length }};
-        const amenazas = {{ aspectos_foda_ext|selectattr('tipo', 'equalto', 'Negativo')|list|length }};
+        document.getElementById('estrategias-multiples').textContent = estrategiasMultiples;
         
-        const crucesFO = fortalezas * oportunidades;
-        const crucesDO = debilidades * oportunidades;
-        const crucesFA = fortalezas * amenazas;
-        const crucesDA = debilidades * amenazas;
-        
-        const totalCruces = crucesFO + crucesDO + crucesFA + crucesDA;
-        document.getElementById('contador-cruces').textContent = totalCruces;
+        // Actualizar estadísticas por eje
+        if (ejeActivo) {
+            const estrategiasEje = estrategiasGuardadas.filter(e => e.eje_id === ejeActivo.id).length;
+            document.getElementById('estrategias-eje').textContent = estrategiasEje;
+        }
     }
     
     // Funciones del FODA existentes
@@ -2313,171 +1909,141 @@
         const guia = document.getElementById('texto-guia');
         switch(tipoCruceActual) {
             case 'fo':
-                guia.textContent = '¿Cómo usar las fortalezas para aprovechar las oportunidades?';
+                guia.textContent = '¿Cómo usar las fortalezas para aprovechar las oportunidades? (Combinación múltiple)';
                 break;
             case 'do':
-                guia.textContent = '¿Cómo superar las debilidades para aprovechar las oportunidades?';
+                guia.textContent = '¿Cómo superar las debilidades para aprovechar las oportunidades? (Combinación múltiple)';
                 break;
             case 'fa':
-                guia.textContent = '¿Cómo usar las fortalezas para minimizar las amenazas?';
+                guia.textContent = '¿Cómo usar las fortalezas para minimizar las amenazas? (Combinación múltiple)';
                 break;
             case 'da':
-                guia.textContent = '¿Cómo superar las debilidades para evitar las amenazas?';
+                guia.textContent = '¿Cómo superar las debilidades para evitar las amenazas? (Combinación múltiple)';
                 break;
         }
-    }
-    
-    function seleccionarParaCruce(tipo, id, texto) {
-        if (tipo === 'fortaleza' || tipo === 'debilidad') {
-            document.getElementById('elemento-interno').value = id;
-            actualizarDescripcionInterno();
-        } else if (tipo === 'oportunidad' || tipo === 'amenaza') {
-            document.getElementById('elemento-externo').value = id;
-            actualizarDescripcionExterno();
-        }
-        
-        validarSelecciones();
-        mostrarNotificacion(`✅ ${texto.substring(0, 50)}... seleccionado`, 'success');
-    }
-    
-    function actualizarDescripcionInterno() {
-        const select = document.getElementById('elemento-interno');
-        const descDiv = document.getElementById('desc-interno');
-        
-        if (select.value) {
-            const selectedOption = select.options[select.selectedIndex];
-            const desc = selectedOption.getAttribute('data-desc');
-            const tipo = selectedOption.getAttribute('data-tipo');
-            
-            let tipoTexto = tipo === 'fortaleza' ? 'Fortaleza' : 'Debilidad';
-            let color = tipo === 'fortaleza' ? '#4CAF50' : '#ff6b6b';
-            
-            descDiv.innerHTML = `
-                <strong style="color: ${color}">${tipoTexto}:</strong> ${desc}
-            `;
-            descDiv.style.display = 'block';
-            descDiv.style.borderLeftColor = color;
-            
-            elementoInternoId = select.value;
-        } else {
-            descDiv.style.display = 'none';
-            elementoInternoId = null;
-        }
-        
-        validarSelecciones();
-    }
-    
-    function actualizarDescripcionExterno() {
-        const select = document.getElementById('elemento-externo');
-        const descDiv = document.getElementById('desc-externo');
-        
-        if (select.value) {
-            const selectedOption = select.options[select.selectedIndex];
-            const desc = selectedOption.getAttribute('data-desc');
-            const tipo = selectedOption.getAttribute('data-tipo');
-            
-            let tipoTexto = tipo === 'oportunidad' ? 'Oportunidad' : 'Amenaza';
-            let color = tipo === 'oportunidad' ? '#0c2461' : '#4a69bd';
-            
-            descDiv.innerHTML = `
-                <strong style="color: ${color}">${tipoTexto}:</strong> ${desc}
-            `;
-            descDiv.style.display = 'block';
-            descDiv.style.borderLeftColor = color;
-            
-            elementoExternoId = select.value;
-        } else {
-            descDiv.style.display = 'none';
-            elementoExternoId = null;
-        }
-        
-        validarSelecciones();
     }
     
     function validarSelecciones() {
-        const internoSelect = document.getElementById('elemento-interno');
-        const externoSelect = document.getElementById('elemento-externo');
+        // Validar que los elementos seleccionados sean del tipo correcto según el cruce
+        const tiposPermitidosInterno = tipoCruceActual === 'fo' || tipoCruceActual === 'fa' ? 
+            ['fortaleza'] : ['debilidad'];
         
-        if (internoSelect.value) {
-            const tipoInterno = internoSelect.options[internoSelect.selectedIndex].getAttribute('data-tipo');
-            
-            if ((tipoCruceActual === 'fo' || tipoCruceActual === 'fa') && tipoInterno !== 'fortaleza') {
-                mostrarNotificacion('⚠️ Para este tipo de cruce debe seleccionar una Fortaleza', 'warning');
-                internoSelect.value = '';
-                actualizarDescripcionInterno();
-            }
-            else if ((tipoCruceActual === 'do' || tipoCruceActual === 'da') && tipoInterno !== 'debilidad') {
-                mostrarNotificacion('⚠️ Para este tipo de cruce debe seleccionar una Debilidad', 'warning');
-                internoSelect.value = '';
-                actualizarDescripcionInterno();
-            }
-        }
+        const tiposPermitidosExterno = tipoCruceActual === 'fo' || tipoCruceActual === 'do' ? 
+            ['oportunidad'] : ['amenaza'];
         
-        if (externoSelect.value) {
-            const tipoExterno = externoSelect.options[externoSelect.selectedIndex].getAttribute('data-tipo');
+        // Filtrar elementos que no corresponden
+        elementosInternos = elementosInternos.filter(e => tiposPermitidosInterno.includes(e.tipo));
+        elementosExternos = elementosExternos.filter(e => tiposPermitidosExterno.includes(e.tipo));
+        
+        // Actualizar checkboxes
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            const id = checkbox.id;
+            const tipo = id.split('-')[0];
+            const item = checkbox.closest('.actividad-item');
             
-            if ((tipoCruceActual === 'fo' || tipoCruceActual === 'do') && tipoExterno !== 'oportunidad') {
-                mostrarNotificacion('⚠️ Para este tipo de cruce debe seleccionar una Oportunidad', 'warning');
-                externoSelect.value = '';
-                actualizarDescripcionExterno();
+            if ((tiposPermitidosInterno.includes(tipo) || tiposPermitidosExterno.includes(tipo))) {
+                checkbox.disabled = false;
+                item.style.opacity = '1';
+            } else {
+                checkbox.disabled = true;
+                checkbox.checked = false;
+                item.style.opacity = '0.5';
             }
-            else if ((tipoCruceActual === 'fa' || tipoCruceActual === 'da') && tipoExterno !== 'amenaza') {
-                mostrarNotificacion('⚠️ Para este tipo de cruce debe seleccionar una Amenaza', 'warning');
-                externoSelect.value = '';
-                actualizarDescripcionExterno();
-            }
-        }
+        });
+        
+        actualizarPanelesSeleccion();
+        actualizarEstadisticas();
     }
     
-    function mostrarNotificacion(mensaje, tipo) {
-        let alerta = document.getElementById('alerta-flotante');
-        
-        if (!alerta) {
-            alerta = document.createElement('div');
-            alerta.id = 'alerta-flotante';
-            alerta.style.cssText = `
-                position: fixed;
-                top: 100px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 8px;
-                color: white;
-                font-weight: 600;
-                z-index: 10000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                transition: all 0.3s ease;
-                transform: translateX(100%);
-                opacity: 0;
-                max-width: 400px;
-                backdrop-filter: blur(10px);
-            `;
-            document.body.appendChild(alerta);
+    function generarEstrategiaAutomatica() {
+        if (elementosInternos.length === 0 || elementosExternos.length === 0) {
+            mostrarNotificacionCombinacion('❌ Debe seleccionar elementos primero', 'error');
+            return;
         }
         
-        let background = '';
-        if (tipo === 'success') {
-            background = 'linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%)';
-        } else if (tipo === 'error') {
-            background = 'linear-gradient(135deg, #ff6b6b 0%, #c62828 100%)';
-        } else if (tipo === 'warning') {
-            background = 'linear-gradient(135deg, #FF9800 0%, #f57c00 100%)';
-        } else if (tipo === 'info') {
-            background = 'linear-gradient(135deg, #2196F3 0%, #1565c0 100%)';
-        } else {
-            background = 'linear-gradient(135deg, #0c2461 0%, #1e3799 100%)';
+        const btnGenerar = document.querySelector('.btn-generar');
+        const originalText = btnGenerar.innerHTML;
+        btnGenerar.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando...';
+        btnGenerar.disabled = true;
+        
+        // Simular generación de estrategia
+        setTimeout(() => {
+            const estrategiasBase = {
+                'fo': [
+                    'Aprovechar las fortalezas seleccionadas para maximizar las oportunidades identificadas, creando sinergias entre los diferentes elementos.',
+                    'Combinar estratégicamente las capacidades internas con las oportunidades externas para generar ventajas competitivas sostenibles.',
+                    'Utilizar las fortalezas como palanca para capitalizar las oportunidades, generando un efecto multiplicador en los resultados.'
+                ],
+                'do': [
+                    'Transformar las debilidades identificadas mediante el aprovechamiento de las oportunidades, superando limitaciones mediante alianzas estratégicas.',
+                    'Utilizar las oportunidades externas como catalizadores para mejorar las áreas de debilidad, fortaleciendo las capacidades internas.',
+                    'Alinear los esfuerzos de mejora con las oportunidades del entorno, convirtiendo debilidades en fortalezas progresivas.'
+                ],
+                'fa': [
+                    'Utilizar las fortalezas como barrera protectora frente a las amenazas, creando capacidades de resiliencia y adaptación.',
+                    'Convertir las amenazas en desafíos manejables mediante el despliegue estratégico de las fortalezas disponibles.',
+                    'Establecer mecanismos de prevención basados en las fortalezas para neutralizar o minimizar el impacto de las amenazas.'
+                ],
+                'da': [
+                    'Implementar acciones defensivas coordinadas para proteger las áreas vulnerables frente a las amenazas identificadas.',
+                    'Desarrollar planes de contingencia que aborden simultáneamente debilidades internas y amenazas externas.',
+                    'Establecer alianzas y colaboraciones para compensar debilidades y distribuir riesgos frente a amenazas comunes.'
+                ]
+            };
+            
+            const estrategias = estrategiasBase[tipoCruceActual] || estrategiasBase['fo'];
+            const estrategiaAleatoria = estrategias[Math.floor(Math.random() * estrategias.length)];
+            
+            // Personalizar con información específica
+            const numInternos = elementosInternos.length;
+            const numExternos = elementosExternos.length;
+            const ejeNombre = ejeSeleccionadoTexto || 'el eje estratégico seleccionado';
+            
+            const estrategiaPersonalizada = `Considerando los ${numInternos} elementos internos y ${numExternos} elementos externos seleccionados, ${estrategiaAleatoria} Esta estrategia se enmarca en ${ejeNombre} y busca crear valor a través de la combinación múltiple de factores.`;
+            
+            document.getElementById('estrategia').value = estrategiaPersonalizada;
+            
+            btnGenerar.innerHTML = originalText;
+            btnGenerar.disabled = false;
+            
+            mostrarNotificacionCombinacion('✅ Estrategia generada automáticamente', 'success');
+        }, 1000);
+    }
+    
+    function mostrarNotificacionCombinacion(mensaje, tipo = 'info') {
+        let notificacion = document.getElementById('notificacion-combinacion');
+        
+        if (!notificacion) {
+            notificacion = document.createElement('div');
+            notificacion.id = 'notificacion-combinacion';
+            notificacion.className = 'notificacion-combinacion';
+            document.body.appendChild(notificacion);
         }
         
-        alerta.style.background = background;
-        alerta.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${mensaje}`;
+        let icono = '';
+        switch(tipo) {
+            case 'success':
+                icono = '<i class="fas fa-check-circle"></i>';
+                break;
+            case 'error':
+                icono = '<i class="fas fa-exclamation-circle"></i>';
+                break;
+            case 'warning':
+                icono = '<i class="fas fa-exclamation-triangle"></i>';
+                break;
+            default:
+                icono = '<i class="fas fa-info-circle"></i>';
+        }
+        
+        notificacion.innerHTML = `
+            <div class="notificacion-titulo">${icono} ${mensaje.split(':')[0]}</div>
+            <div class="notificacion-desc">${mensaje.split(':').slice(1).join(':').trim() || 'Operación completada'}</div>
+        `;
+        
+        notificacion.classList.add('show');
         
         setTimeout(() => {
-            alerta.style.transform = 'translateX(0)';
-            alerta.style.opacity = '1';
-        }, 10);
-        
-        setTimeout(() => {
-            alerta.style.transform = 'translateX(100%)';
-            alerta.style.opacity = '0';
+            notificacion.classList.remove('show');
         }, 4000);
     }
 </script>
