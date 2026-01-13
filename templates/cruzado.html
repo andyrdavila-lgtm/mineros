@@ -19,6 +19,9 @@
             <button class="btn-export" onclick="exportarEstrategias()">
                 <i class="fas fa-file-export"></i> Exportar
             </button>
+            <button class="btn-debug" onclick="debugSelecciones()" style="background: #f39c12; color: white; padding: 10px 20px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-bug"></i> Depurar
+            </button>
         </div>
     </div>
     
@@ -63,17 +66,17 @@
                     </div>
                     <div class="celda-body" id="lista-fortalezas">
                         {% for aspecto in aspectos_foda_int if aspecto.tipo == 'Positivo' %}
-                        <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="fortaleza">
+                        <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="fortaleza" data-texto="{{ aspecto.actividad }}">
                             <div class="elemento-check">
                                 <input type="checkbox" id="fortaleza-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('fortaleza', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
+                                       onchange="toggleElementoSeleccionado(this)">
                                 <label for="fortaleza-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('fortaleza-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('fortaleza', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
+                                <button class="btn-add" onclick="seleccionarParaCruce(this)">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -103,17 +106,17 @@
                     </div>
                     <div class="celda-body" id="lista-oportunidades">
                         {% for aspecto in aspectos_foda_ext if aspecto.tipo == 'Positivo' %}
-                        <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="oportunidad">
+                        <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="oportunidad" data-texto="{{ aspecto.actividad }}">
                             <div class="elemento-check">
                                 <input type="checkbox" id="oportunidad-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('oportunidad', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
+                                       onchange="toggleElementoSeleccionado(this)">
                                 <label for="oportunidad-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('oportunidad-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('oportunidad', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
+                                <button class="btn-add" onclick="seleccionarParaCruce(this)">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -143,17 +146,17 @@
                     </div>
                     <div class="celda-body" id="lista-debilidades">
                         {% for aspecto in aspectos_foda_int if aspecto.tipo == 'Negativo' %}
-                        <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="debilidad">
+                        <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="debilidad" data-texto="{{ aspecto.actividad }}">
                             <div class="elemento-check">
                                 <input type="checkbox" id="debilidad-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('debilidad', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
+                                       onchange="toggleElementoSeleccionado(this)">
                                 <label for="debilidad-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('debilidad-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('debilidad', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
+                                <button class="btn-add" onclick="seleccionarParaCruce(this)">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -183,17 +186,17 @@
                     </div>
                     <div class="celda-body" id="lista-amenazas">
                         {% for aspecto in aspectos_foda_ext if aspecto.tipo == 'Negativo' %}
-                        <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="amenaza">
+                        <div class="elemento-foda" data-id="{{ aspecto.id }}" data-tipo="amenaza" data-texto="{{ aspecto.actividad }}">
                             <div class="elemento-check">
                                 <input type="checkbox" id="amenaza-{{ aspecto.id }}" 
-                                       onchange="toggleElementoSeleccionado('amenaza', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
+                                       onchange="toggleElementoSeleccionado(this)">
                                 <label for="amenaza-{{ aspecto.id }}"></label>
                             </div>
                             <div class="elemento-content" onclick="toggleCheckbox('amenaza-{{ aspecto.id }}')">
                                 <span class="elemento-text">{{ aspecto.actividad }}</span>
                             </div>
                             <div class="elemento-action">
-                                <button class="btn-add" onclick="seleccionarParaCruce('amenaza', {{ aspecto.id }}, {{ aspecto.actividad|tojson }})">
+                                <button class="btn-add" onclick="seleccionarParaCruce(this)">
                                     <i class="fas fa-plus-circle"></i>
                                 </button>
                             </div>
@@ -668,7 +671,7 @@
         gap: 10px;
     }
     
-    .btn-help, .btn-export {
+    .btn-help, .btn-export, .btn-debug {
         padding: 10px 20px;
         border: none;
         border-radius: var(--border-radius);
@@ -702,6 +705,11 @@
         background: linear-gradient(135deg, #229954 0%, var(--success-color) 100%);
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(39, 174, 96, 0.2);
+    }
+    
+    .btn-debug:hover {
+        background: #e67e22;
+        transform: translateY(-2px);
     }
     
     /* Secciones */
@@ -2099,7 +2107,7 @@
             width: 100%;
         }
         
-        .btn-help, .btn-export {
+        .btn-help, .btn-export, .btn-debug {
             flex: 1;
         }
         
@@ -2250,8 +2258,9 @@
     
     // Inicializar al cargar
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== INICIALIZANDO FODA CRUZADO ===');
         inicializarUI();
-        cargarEstrategiasReales();  // Cargar estrategias desde la base de datos
+        cargarEstrategiasReales();
         actualizarEstadisticas();
         actualizarEjeSeleccionado();
         
@@ -2260,6 +2269,7 @@
         if (ejeGuardado) {
             try {
                 ejeActivo = JSON.parse(ejeGuardado);
+                console.log('Eje activo cargado:', ejeActivo);
             } catch (e) {
                 console.error('Error al cargar eje activo:', e);
             }
@@ -2267,6 +2277,7 @@
     });
     
     function inicializarUI() {
+        console.log('Inicializando UI...');
         actualizarContadores();
         configurarEventos();
     }
@@ -2290,9 +2301,20 @@
         }
     }
     
-    function toggleElementoSeleccionado(tipo, id, texto) {
-        const checkbox = document.getElementById(`${tipo}-${id}`);
+    function toggleElementoSeleccionado(checkbox) {
+        console.log('toggleElementoSeleccionado llamado con checkbox:', checkbox);
+        
         const elementoDiv = checkbox.closest('.elemento-foda');
+        if (!elementoDiv) {
+            console.error('No se encontró el elemento-foda para el checkbox');
+            return;
+        }
+        
+        const id = elementoDiv.dataset.id;
+        const tipo = elementoDiv.dataset.tipo;
+        const texto = elementoDiv.dataset.texto;
+        
+        console.log('Datos del elemento:', { id, tipo, texto });
         
         if (checkbox.checked) {
             agregarElementoSeleccionado(tipo, id, texto, elementoDiv);
@@ -2305,18 +2327,54 @@
         actualizarEstadisticas();
     }
     
+    function seleccionarParaCruce(button) {
+        const elementoDiv = button.closest('.elemento-foda');
+        if (!elementoDiv) {
+            console.error('No se encontró el elemento-foda para el botón');
+            return;
+        }
+        
+        const id = elementoDiv.dataset.id;
+        const tipo = elementoDiv.dataset.tipo;
+        const texto = elementoDiv.dataset.texto;
+        const checkbox = elementoDiv.querySelector('input[type="checkbox"]');
+        
+        if (!checkbox.checked) {
+            checkbox.checked = true;
+            checkbox.dispatchEvent(new Event('change'));
+        }
+    }
+    
     function agregarElementoSeleccionado(tipo, id, texto, elementoDiv) {
-        const elemento = { id, tipo, texto };
+        console.log('agregarElementoSeleccionado:', { tipo, id, texto });
+        
+        const elemento = { 
+            id: parseInt(id), 
+            tipo, 
+            texto: texto 
+        };
         
         if (tipo === 'fortaleza' || tipo === 'debilidad') {
-            if (!elementosInternos.some(e => e.id === id)) {
+            if (!elementosInternos.some(e => e.id === elemento.id)) {
                 elementosInternos.push(elemento);
-                elementoDiv.classList.add('selected');
+                if (elementoDiv) {
+                    elementoDiv.classList.add('selected');
+                }
+                console.log('Elemento interno agregado:', elemento);
+                console.log('Elementos internos ahora:', elementosInternos);
+            } else {
+                console.log('Elemento interno ya existe:', elemento.id);
             }
         } else {
-            if (!elementosExternos.some(e => e.id === id)) {
+            if (!elementosExternos.some(e => e.id === elemento.id)) {
                 elementosExternos.push(elemento);
-                elementoDiv.classList.add('selected');
+                if (elementoDiv) {
+                    elementoDiv.classList.add('selected');
+                }
+                console.log('Elemento externo agregado:', elemento);
+                console.log('Elementos externos ahora:', elementosExternos);
+            } else {
+                console.log('Elemento externo ya existe:', elemento.id);
             }
         }
         
@@ -2324,55 +2382,57 @@
     }
     
     function removerElementoSeleccionado(tipo, id, elementoDiv) {
+        console.log('removerElementoSeleccionado:', { tipo, id });
+        
         if (tipo === 'fortaleza' || tipo === 'debilidad') {
-            elementosInternos = elementosInternos.filter(e => e.id !== id);
+            elementosInternos = elementosInternos.filter(e => e.id !== parseInt(id));
         } else {
-            elementosExternos = elementosExternos.filter(e => e.id !== id);
+            elementosExternos = elementosExternos.filter(e => e.id !== parseInt(id));
         }
         
-        elementoDiv.classList.remove('selected');
-    }
-    
-    function seleccionarParaCruce(tipo, id, texto) {
-        const checkbox = document.getElementById(`${tipo}-${id}`);
-        if (!checkbox.checked) {
-            checkbox.checked = true;
-            toggleElementoSeleccionado(tipo, id, texto);
+        if (elementoDiv) {
+            elementoDiv.classList.remove('selected');
         }
+        
+        console.log('Elementos internos después de remover:', elementosInternos);
+        console.log('Elementos externos después de remover:', elementosExternos);
     }
     
     function seleccionarTodos(tipo) {
+        console.log('seleccionarTodos:', tipo);
+        
         let selector;
         let tipoElemento;
         
         switch(tipo) {
             case 'fortalezas':
-                selector = '#lista-fortalezas input[type="checkbox"]';
+                selector = '#lista-fortalezas .elemento-foda';
                 tipoElemento = 'fortaleza';
                 break;
             case 'debilidades':
-                selector = '#lista-debilidades input[type="checkbox"]';
+                selector = '#lista-debilidades .elemento-foda';
                 tipoElemento = 'debilidad';
                 break;
             case 'oportunidades':
-                selector = '#lista-oportunidades input[type="checkbox"]';
+                selector = '#lista-oportunidades .elemento-foda';
                 tipoElemento = 'oportunidad';
                 break;
             case 'amenazas':
-                selector = '#lista-amenazas input[type="checkbox"]';
+                selector = '#lista-amenazas .elemento-foda';
                 tipoElemento = 'amenaza';
                 break;
         }
         
-        const checkboxes = document.querySelectorAll(selector);
-        checkboxes.forEach(checkbox => {
+        const elementos = document.querySelectorAll(selector);
+        elementos.forEach(elementoDiv => {
+            const checkbox = elementoDiv.querySelector('input[type="checkbox"]');
             if (!checkbox.checked) {
                 checkbox.checked = true;
-                const id = checkbox.id.split('-')[1];
-                const elementoDiv = checkbox.closest('.elemento-foda');
-                const texto = elementoDiv.querySelector('.elemento-text').textContent;
                 
-                agregarElementoSeleccionado(tipoElemento, parseInt(id), texto, elementoDiv);
+                const id = elementoDiv.dataset.id;
+                const texto = elementoDiv.dataset.texto;
+                
+                agregarElementoSeleccionado(tipoElemento, id, texto, elementoDiv);
             }
         });
         
@@ -2380,35 +2440,38 @@
     }
     
     function deseleccionarTodos(tipo) {
+        console.log('deseleccionarTodos:', tipo);
+        
         let selector;
         let tipoElemento;
         
         switch(tipo) {
             case 'fortalezas':
-                selector = '#lista-fortalezas input[type="checkbox"]';
+                selector = '#lista-fortalezas .elemento-foda';
                 tipoElemento = 'fortaleza';
                 break;
             case 'debilidades':
-                selector = '#lista-debilidades input[type="checkbox"]';
+                selector = '#lista-debilidades .elemento-foda';
                 tipoElemento = 'debilidad';
                 break;
             case 'oportunidades':
-                selector = '#lista-oportunidades input[type="checkbox"]';
+                selector = '#lista-oportunidades .elemento-foda';
                 tipoElemento = 'oportunidad';
                 break;
             case 'amenazas':
-                selector = '#lista-amenazas input[type="checkbox"]';
+                selector = '#lista-amenazas .elemento-foda';
                 tipoElemento = 'amenaza';
                 break;
         }
         
-        const checkboxes = document.querySelectorAll(selector);
-        checkboxes.forEach(checkbox => {
+        const elementos = document.querySelectorAll(selector);
+        elementos.forEach(elementoDiv => {
+            const checkbox = elementoDiv.querySelector('input[type="checkbox"]');
             if (checkbox.checked) {
                 checkbox.checked = false;
-                const id = checkbox.id.split('-')[1];
-                const elementoDiv = checkbox.closest('.elemento-foda');
-                removerElementoSeleccionado(tipoElemento, parseInt(id), elementoDiv);
+                
+                const id = elementoDiv.dataset.id;
+                removerElementoSeleccionado(tipoElemento, id, elementoDiv);
             }
         });
         
@@ -2416,22 +2479,29 @@
     }
     
     function actualizarContadores() {
+        console.log('actualizarContadores - Elementos internos:', elementosInternos.length, 'externos:', elementosExternos.length);
+        
         // Contadores generales
         document.getElementById('total-internos').textContent = elementosInternos.length;
         document.getElementById('total-externos').textContent = elementosExternos.length;
         
         // Contadores por categoría
+        const fortalezasSeleccionadas = elementosInternos.filter(e => e.tipo === 'fortaleza').length;
+        const debilidadesSeleccionadas = elementosInternos.filter(e => e.tipo === 'debilidad').length;
+        const oportunidadesSeleccionadas = elementosExternos.filter(e => e.tipo === 'oportunidad').length;
+        const amenazasSeleccionadas = elementosExternos.filter(e => e.tipo === 'amenaza').length;
+        
         document.getElementById('fortalezas-seleccionadas').textContent = 
-            `${elementosInternos.filter(e => e.tipo === 'fortaleza').length} seleccionadas`;
+            `${fortalezasSeleccionadas} seleccionadas`;
         
         document.getElementById('debilidades-seleccionadas').textContent = 
-            `${elementosInternos.filter(e => e.tipo === 'debilidad').length} seleccionadas`;
+            `${debilidadesSeleccionadas} seleccionadas`;
         
         document.getElementById('oportunidades-seleccionadas').textContent = 
-            `${elementosExternos.filter(e => e.tipo === 'oportunidad').length} seleccionadas`;
+            `${oportunidadesSeleccionadas} seleccionadas`;
         
         document.getElementById('amenazas-seleccionadas').textContent = 
-            `${elementosExternos.filter(e => e.tipo === 'amenaza').length} seleccionadas`;
+            `${amenazasSeleccionadas} seleccionadas`;
         
         // Contadores de paneles
         document.getElementById('contador-internos').textContent = elementosInternos.length;
@@ -2439,6 +2509,7 @@
     }
     
     function actualizarPanelesSeleccion() {
+        console.log('actualizarPanelesSeleccion');
         const panelInternos = document.getElementById('panel-internos');
         const panelExternos = document.getElementById('panel-externos');
         
@@ -2490,19 +2561,31 @@
     }
     
     function removerElementoDelPanel(tipo, id) {
+        console.log('removerElementoDelPanel:', tipo, id);
+        
         if (tipo === 'interno') {
             elementosInternos = elementosInternos.filter(e => e.id !== id);
-            const checkbox = document.getElementById(`fortaleza-${id}`) || document.getElementById(`debilidad-${id}`);
-            if (checkbox) {
-                checkbox.checked = false;
-                checkbox.closest('.elemento-foda').classList.remove('selected');
+            
+            // Buscar y desmarcar el checkbox correspondiente
+            const elementoDiv = document.querySelector(`.elemento-foda[data-id="${id}"][data-tipo="fortaleza"], .elemento-foda[data-id="${id}"][data-tipo="debilidad"]`);
+            if (elementoDiv) {
+                const checkbox = elementoDiv.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = false;
+                    elementoDiv.classList.remove('selected');
+                }
             }
         } else {
             elementosExternos = elementosExternos.filter(e => e.id !== id);
-            const checkbox = document.getElementById(`oportunidad-${id}`) || document.getElementById(`amenaza-${id}`);
-            if (checkbox) {
-                checkbox.checked = false;
-                checkbox.closest('.elemento-foda').classList.remove('selected');
+            
+            // Buscar y desmarcar el checkbox correspondiente
+            const elementoDiv = document.querySelector(`.elemento-foda[data-id="${id}"][data-tipo="oportunidad"], .elemento-foda[data-id="${id}"][data-tipo="amenaza"]`);
+            if (elementoDiv) {
+                const checkbox = elementoDiv.querySelector('input[type="checkbox"]');
+                if (checkbox) {
+                    checkbox.checked = false;
+                    elementoDiv.classList.remove('selected');
+                }
             }
         }
         
@@ -2562,6 +2645,60 @@
             `${amenazasSeleccionadas} de ${totalAmenazas} seleccionadas`;
     }
     
+    function validarSelecciones() {
+        console.log('validarSelecciones - tipoCruceActual:', tipoCruceActual);
+        
+        const tiposPermitidosInterno = tipoCruceActual === 'fo' || tipoCruceActual === 'fa' ? 
+            ['fortaleza'] : ['debilidad'];
+        
+        const tiposPermitidosExterno = tipoCruceActual === 'fo' || tipoCruceActual === 'do' ? 
+            ['oportunidad'] : ['amenaza'];
+        
+        console.log('Tipos permitidos internos:', tiposPermitidosInterno);
+        console.log('Tipos permitidos externos:', tiposPermitidosExterno);
+        
+        // Filtrar elementos no permitidos
+        elementosInternos = elementosInternos.filter(e => tiposPermitidosInterno.includes(e.tipo));
+        elementosExternos = elementosExternos.filter(e => tiposPermitidosExterno.includes(e.tipo));
+        
+        console.log('Elementos internos después de filtrar:', elementosInternos);
+        console.log('Elementos externos después de filtrar:', elementosExternos);
+        
+        // Actualizar todos los elementos FODA en la matriz
+        const todosElementos = document.querySelectorAll('.elemento-foda');
+        todosElementos.forEach(elementoDiv => {
+            const tipo = elementoDiv.dataset.tipo;
+            const checkbox = elementoDiv.querySelector('input[type="checkbox"]');
+            
+            // Verificar si el elemento está permitido
+            const esPermitido = tiposPermitidosInterno.includes(tipo) || tiposPermitidosExterno.includes(tipo);
+            
+            if (esPermitido) {
+                elementoDiv.style.opacity = '1';
+                checkbox.disabled = false;
+            } else {
+                elementoDiv.style.opacity = '0.5';
+                checkbox.disabled = true;
+                
+                // Si estaba seleccionado, deseleccionarlo
+                if (checkbox.checked) {
+                    checkbox.checked = false;
+                    elementoDiv.classList.remove('selected');
+                    
+                    // Remover del array correspondiente si existe
+                    if (tiposPermitidosInterno.includes(tipo)) {
+                        elementosInternos = elementosInternos.filter(e => e.id !== parseInt(elementoDiv.dataset.id));
+                    } else if (tiposPermitidosExterno.includes(tipo)) {
+                        elementosExternos = elementosExternos.filter(e => e.id !== parseInt(elementoDiv.dataset.id));
+                    }
+                }
+            }
+        });
+        
+        actualizarContadores();
+        actualizarPanelesSeleccion();
+    }
+    
     // Funciones para manejar ejes
     function seleccionarEjeFormulario(ejeId, ejeNombre) {
         document.getElementById('eje-estrategico').value = ejeId;
@@ -2605,6 +2742,7 @@
     
     // Funciones del FODA
     function seleccionarTipoCruce(tipo) {
+        console.log('seleccionarTipoCruce:', tipo);
         tipoCruceActual = tipo;
         
         // Actualizar UI
@@ -2640,38 +2778,6 @@
         }
     }
     
-    function validarSelecciones() {
-        const tiposPermitidosInterno = tipoCruceActual === 'fo' || tipoCruceActual === 'fa' ? 
-            ['fortaleza'] : ['debilidad'];
-        
-        const tiposPermitidosExterno = tipoCruceActual === 'fo' || tipoCruceActual === 'do' ? 
-            ['oportunidad'] : ['amenaza'];
-        
-        // Filtrar elementos no permitidos
-        elementosInternos = elementosInternos.filter(e => tiposPermitidosInterno.includes(e.tipo));
-        elementosExternos = elementosExternos.filter(e => tiposPermitidosExterno.includes(e.tipo));
-        
-        // Actualizar checkboxes
-        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            const id = checkbox.id;
-            const tipo = id.split('-')[0];
-            const elementoDiv = checkbox.closest('.elemento-foda');
-            
-            if ((tiposPermitidosInterno.includes(tipo) || tiposPermitidosExterno.includes(tipo))) {
-                checkbox.disabled = false;
-                elementoDiv.style.opacity = '1';
-            } else {
-                checkbox.disabled = true;
-                checkbox.checked = false;
-                elementoDiv.style.opacity = '0.5';
-                elementoDiv.classList.remove('selected');
-            }
-        });
-        
-        actualizarContadores();
-        actualizarPanelesSeleccion();
-    }
-    
     // MODIFICAR: Función para cargar estrategias reales desde la base de datos
     function cargarEstrategiasReales() {
         fetch('/api/estrategias_foda_con_eje')
@@ -2696,7 +2802,6 @@
             })
             .catch(error => {
                 console.error('Error al cargar estrategias:', error);
-                // Mantener notificación silenciosa para no molestar al usuario
             });
     }
     
@@ -2862,6 +2967,13 @@
         const estrategiaTexto = document.getElementById('estrategia').value.trim();
         const generarTodas = document.getElementById('generar-todas-combinaciones').checked;
         const estrategiaGlobal = document.getElementById('estrategia-global').checked;
+        
+        console.log('guardarEstrategiaMultiple - Validando:', {
+            elementosInternos: elementosInternos.length,
+            elementosExternos: elementosExternos.length,
+            ejeSeleccionado: ejeSeleccionado,
+            estrategiaTexto: estrategiaTexto ? 'Presente' : 'Vacía'
+        });
         
         // Validaciones
         if (elementosInternos.length === 0 || elementosExternos.length === 0) {
@@ -3164,15 +3276,21 @@
     }
     
     function limpiarSelecciones() {
+        console.log('limpiarSelecciones');
+        
         // Limpiar checkboxes
-        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        document.querySelectorAll('.elemento-foda input[type="checkbox"]').forEach(checkbox => {
             checkbox.checked = false;
         });
         
-        // Limpiar clases selected
+        // Limpiar clases selected y restaurar opacidad
         document.querySelectorAll('.elemento-foda').forEach(item => {
             item.classList.remove('selected');
             item.style.opacity = '1';
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.disabled = false;
+            }
         });
         
         // Limpiar arrays
@@ -3267,13 +3385,27 @@
         }, 2000);
     }
     
+    // Función de depuración
+    function debugSelecciones() {
+        console.log('=== DEBUG SELECCIONES ===');
+        console.log('Tipo de cruce actual:', tipoCruceActual);
+        console.log('Elementos internos:', elementosInternos);
+        console.log('Elementos externos:', elementosExternos);
+        console.log('Total checkboxes:', document.querySelectorAll('input[type="checkbox"]').length);
+        console.log('Checkboxes seleccionados:', document.querySelectorAll('input[type="checkbox"]:checked').length);
+        
+        // Mostrar en una alerta también
+        alert(`Internos: ${elementosInternos.length}\nExternos: ${elementosExternos.length}\nVer consola para más detalles.`);
+    }
+    
     // Sistema de notificaciones
     function mostrarNotificacion(tipo, titulo, mensaje) {
-        const container = document.querySelector('.notification-container');
+        // Crear contenedor si no existe
+        let container = document.querySelector('.notification-container');
         if (!container) {
-            const newContainer = document.createElement('div');
-            newContainer.className = 'notification-container';
-            document.body.appendChild(newContainer);
+            container = document.createElement('div');
+            container.className = 'notification-container';
+            document.body.appendChild(container);
         }
         
         const notification = document.createElement('div');
@@ -3291,7 +3423,7 @@
             </div>
         `;
         
-        document.querySelector('.notification-container').appendChild(notification);
+        container.appendChild(notification);
         
         // Mostrar con animación
         setTimeout(() => {
