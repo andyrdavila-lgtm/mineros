@@ -1,7 +1,7 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Mapa Neuronal Estratégico - Versión Mejorada -->
+<!-- Mapa Neuronal Estratégico - Versión Final -->
 <div class="mapa-neuronal-container" id="mapaFullscreen">
     <!-- Cabecera principal -->
     <div class="mapa-header-glass">
@@ -18,7 +18,7 @@
                 </div>
                 <div class="stat-badge">
                     <i class="fas fa-layer-group"></i>
-                    <span>7 Ejes</span>
+                    <span id="total-ejes">7 Ejes</span>
                 </div>
                 <div class="stat-badge">
                     <i class="fas fa-chess-board"></i>
@@ -49,13 +49,16 @@
                 <button class="control-btn tooltip" onclick="exportMap()" data-tooltip="Exportar">
                     <i class="fas fa-download"></i>
                 </button>
+                <button class="control-btn tooltip" onclick="cargarDatosDesdeAPI()" data-tooltip="Actualizar datos">
+                    <i class="fas fa-sync"></i>
+                </button>
             </div>
         </div>
         
         <div class="grupo-controles">
             <h4><i class="fas fa-filter"></i> Filtros</h4>
-            <select id="filtro-nivel" onchange="filtrarNodos()" class="filtro-select">
-                <option value="all">Todos los niveles</option>
+            <select id="filtro-nivel" onchange="aplicarFiltro()" class="filtro-select">
+                <option value="todos">Todos los niveles</option>
                 <option value="objetivo">Objetivo Central</option>
                 <option value="ejes">Ejes Estratégicos</option>
                 <option value="estrategias">Estrategias</option>
@@ -63,10 +66,25 @@
                 <option value="tareas">Tareas</option>
             </select>
             
+            <select id="filtro-eje" onchange="filtrarPorEje()" class="filtro-select">
+                <option value="todos">Todos los ejes</option>
+                <option value="educacion">Educación</option>
+                <option value="salud">Salud</option>
+                <option value="empleabilidad">Empleabilidad</option>
+                <option value="desarrollo">Desarrollo Económico</option>
+                <option value="agua">Sostenibilidad Ambiental</option>
+                <option value="comunicacion">Comunicación</option>
+                <option value="institucional">Institucional</option>
+            </select>
+            
             <div class="filtro-checkbox">
                 <label>
                     <input type="checkbox" id="mostrar-conexiones" checked onchange="toggleConexiones()">
                     <span>Mostrar conexiones</span>
+                </label>
+                <label>
+                    <input type="checkbox" id="mostrar-nombres" checked onchange="toggleNombres()">
+                    <span>Mostrar nombres</span>
                 </label>
             </div>
         </div>
@@ -79,6 +97,14 @@
                        oninput="zoomSliderChange(this.value)">
                 <button class="zoom-btn" onclick="zoomIn()">+</button>
                 <div class="zoom-value" id="zoomValue">100%</div>
+            </div>
+            <div class="modo-controls">
+                <button class="modo-btn active" onclick="cambiarModo('navegacion')" id="modo-navegacion">
+                    <i class="fas fa-hand-paper"></i> Navegar
+                </button>
+                <button class="modo-btn" onclick="cambiarModo('seleccion')" id="modo-seleccion">
+                    <i class="fas fa-mouse-pointer"></i> Seleccionar
+                </button>
             </div>
         </div>
     </div>
@@ -103,6 +129,14 @@
                     <stop offset="0%" stop-color="#2ecc71" stop-opacity="0.7" />
                     <stop offset="100%" stop-color="#27ae60" stop-opacity="0.7" />
                 </linearGradient>
+                <linearGradient id="gradient-actividad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#e74c3c" stop-opacity="0.7" />
+                    <stop offset="100%" stop-color="#c0392b" stop-opacity="0.7" />
+                </linearGradient>
+                <linearGradient id="gradient-tarea" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#f39c12" stop-opacity="0.7" />
+                    <stop offset="100%" stop-color="#d35400" stop-opacity="0.7" />
+                </linearGradient>
                 <filter id="glow">
                     <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
                     <feMerge>
@@ -110,6 +144,9 @@
                         <feMergeNode in="SourceGraphic"/>
                     </feMerge>
                 </filter>
+                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                    <polygon points="0 0, 10 3.5, 0 7" fill="#3498db"/>
+                </marker>
             </defs>
         </svg>
         
@@ -131,7 +168,7 @@
                     </button>
                     <div class="nodo-stats-grid">
                         <div class="stat-item">
-                            <div class="stat-value">7</div>
+                            <div class="stat-value" id="contador-ejes">7</div>
                             <div class="stat-label">Ejes</div>
                         </div>
                         <div class="stat-item">
@@ -149,6 +186,11 @@
             <div class="estrategias-container" id="estrategiasContainer"></div>
             <div class="actividades-container" id="actividadesContainer"></div>
             <div class="tareas-container" id="tareasContainer"></div>
+        </div>
+        
+        <!-- Mini mapa de navegación -->
+        <div class="minimap" id="minimap">
+            <div class="minimap-viewport" id="minimapViewport"></div>
         </div>
     </div>
     
@@ -179,18 +221,44 @@
                 <span>Tareas</span>
             </div>
         </div>
+        <div class="leyenda-stats">
+            <div class="stat-leyenda">
+                <span id="leyenda-activos">0</span> nodos activos
+            </div>
+            <div class="stat-leyenda">
+                <span id="leyenda-conexiones">0</span> conexiones
+            </div>
+        </div>
     </div>
     
     <!-- Panel de detalles -->
     <div class="panel-detalles" id="panelDetalles">
         <div class="panel-header">
-            <h3 id="detalleTitulo"><i class="fas fa-info-circle"></i> Detalles</h3>
+            <h3 id="detalleTitulo"><i class="fas fa-info-circle"></i> Detalles del Nodo</h3>
             <button class="panel-close" onclick="cerrarPanel()">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="panel-body" id="detalleContenido">
-            <!-- Contenido dinámico -->
+            <div class="cargando-detalles">
+                <i class="fas fa-spinner fa-spin"></i> Cargando detalles...
+            </div>
+        </div>
+    </div>
+    
+    <!-- Indicador de carga -->
+    <div class="cargando-overlay" id="cargandoOverlay">
+        <div class="cargando-content">
+            <div class="cargando-spinner">
+                <i class="fas fa-project-diagram fa-spin"></i>
+            </div>
+            <div class="cargando-texto">
+                <h3>Cargando Mapa Neuronal</h3>
+                <p id="estadoCarga">Inicializando sistema...</p>
+                <div class="cargando-progreso">
+                    <div class="cargando-barra" id="progresoCarga"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -287,7 +355,7 @@
         position: absolute;
         top: 90px;
         right: 20px;
-        width: 320px;
+        width: 350px;
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(20px);
         border-radius: 15px;
@@ -321,7 +389,7 @@
     
     .controles-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(5, 1fr);
         gap: 8px;
     }
     
@@ -392,10 +460,17 @@
     
     .filtro-checkbox {
         display: flex;
-        align-items: center;
+        flex-direction: column;
         gap: 8px;
         color: rgba(255, 255, 255, 0.9);
         font-size: 14px;
+    }
+    
+    .filtro-checkbox label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
     }
     
     .filtro-checkbox input {
@@ -406,6 +481,7 @@
         display: flex;
         align-items: center;
         gap: 10px;
+        margin-bottom: 15px;
     }
     
     .zoom-btn {
@@ -430,6 +506,17 @@
         border-radius: 8px;
         height: 6px;
         outline: none;
+        -webkit-appearance: none;
+    }
+    
+    .zoom-controls input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #3498db;
+        cursor: pointer;
+        box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
     }
     
     .zoom-value {
@@ -440,6 +527,33 @@
         background: rgba(255, 255, 255, 0.1);
         padding: 5px;
         border-radius: 6px;
+    }
+    
+    .modo-controls {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .modo-btn {
+        flex: 1;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-size: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .modo-btn.active {
+        background: rgba(52, 152, 219, 0.3);
+        border-color: rgba(52, 152, 219, 0.5);
+        color: white;
     }
     
     /* Canvas principal */
@@ -467,6 +581,13 @@
         z-index: 1;
     }
     
+    .particle {
+        position: absolute;
+        background: rgba(52, 152, 219, 0.3);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    
     /* SVG para conexiones */
     .conexiones-svg {
         position: absolute;
@@ -482,6 +603,11 @@
         stroke-width: 2;
         fill: none;
         filter: url(#glow);
+        transition: stroke-width 0.3s ease;
+    }
+    
+    .conexion:hover {
+        stroke-width: 3;
     }
     
     .conexion-central {
@@ -492,22 +618,18 @@
     
     .conexion-eje {
         stroke: url(#gradient-eje);
-        stroke-dasharray: 1000;
-        stroke-dashoffset: 1000;
-        animation: drawLine 2s ease-out forwards;
     }
     
     .conexion-estrategia {
         stroke: url(#gradient-estrategia);
-        stroke-dasharray: 1000;
-        stroke-dashoffset: 1000;
-        animation: drawLine 1.5s ease-out forwards;
     }
     
-    @keyframes drawLine {
-        to {
-            stroke-dashoffset: 0;
-        }
+    .conexion-actividad {
+        stroke: url(#gradient-actividad);
+    }
+    
+    .conexion-tarea {
+        stroke: url(#gradient-tarea);
     }
     
     @keyframes dashMove {
@@ -538,6 +660,12 @@
     
     .nodo:hover {
         z-index: 1000;
+        transform: scale(1.05);
+    }
+    
+    .nodo.seleccionado {
+        z-index: 999;
+        box-shadow: 0 0 30px rgba(52, 152, 219, 0.8);
     }
     
     /* Nodo central */
@@ -815,6 +943,12 @@
         color: white;
         text-align: center;
         line-height: 1.2;
+        max-height: 40px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
     }
     
     /* Leyenda flotante */
@@ -826,7 +960,7 @@
         backdrop-filter: blur(20px);
         border-radius: 15px;
         padding: 15px;
-        width: 200px;
+        width: 220px;
         z-index: 1000;
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
@@ -845,6 +979,7 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
+        margin-bottom: 15px;
     }
     
     .leyenda-item {
@@ -880,6 +1015,26 @@
     
     .nodo-tarea-color {
         background: linear-gradient(135deg, #f39c12, #d35400);
+    }
+    
+    .leyenda-stats {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .stat-leyenda {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        display: flex;
+        justify-content: space-between;
+    }
+    
+    .stat-leyenda span {
+        color: white;
+        font-weight: 600;
     }
     
     /* Panel de detalles */
@@ -943,6 +1098,88 @@
         color: rgba(255, 255, 255, 0.9);
     }
     
+    .cargando-detalles {
+        text-align: center;
+        padding: 40px 20px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    /* Mini mapa */
+    .minimap {
+        position: absolute;
+        bottom: 250px;
+        left: 20px;
+        width: 150px;
+        height: 150px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        z-index: 1000;
+    }
+    
+    .minimap-viewport {
+        position: absolute;
+        border: 2px solid rgba(52, 152, 219, 0.8);
+        background: rgba(52, 152, 219, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    /* Indicador de carga */
+    .cargando-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(12, 14, 42, 0.95);
+        backdrop-filter: blur(10px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.5s ease;
+    }
+    
+    .cargando-content {
+        text-align: center;
+        color: white;
+        max-width: 400px;
+        padding: 40px;
+    }
+    
+    .cargando-spinner {
+        font-size: 60px;
+        margin-bottom: 20px;
+        color: #3498db;
+    }
+    
+    .cargando-texto h3 {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: white;
+    }
+    
+    .cargando-texto p {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 20px;
+    }
+    
+    .cargando-progreso {
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    
+    .cargando-barra {
+        height: 100%;
+        background: linear-gradient(90deg, #3498db, #9b59b6);
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+    
     /* Animaciones */
     @keyframes pulseGlow {
         0%, 100% {
@@ -997,7 +1234,7 @@
     /* Responsive */
     @media (max-width: 1200px) {
         .panel-controles {
-            width: 280px;
+            width: 300px;
             top: 90px;
             right: 10px;
         }
@@ -1007,7 +1244,11 @@
         }
         
         .leyenda-flotante {
-            width: 180px;
+            width: 200px;
+        }
+        
+        .minimap {
+            display: none;
         }
     }
     
@@ -1032,22 +1273,8 @@
         .panel-controles {
             width: calc(100% - 20px);
             right: 10px;
-            flex-direction: row;
-            flex-wrap: wrap;
+            flex-direction: column;
             top: 80px;
-        }
-        
-        .grupo-controles {
-            flex: 1;
-            min-width: 200px;
-            border-bottom: none;
-            border-right: 1px solid rgba(255, 255, 255, 0.1);
-            padding-right: 15px;
-            margin-right: 15px;
-        }
-        
-        .grupo-controles:last-child {
-            border-right: none;
         }
         
         .panel-detalles {
@@ -1056,6 +1283,11 @@
         }
         
         .leyenda-flotante {
+            width: calc(100% - 40px);
+            left: 20px;
+        }
+        
+        .minimap {
             display: none;
         }
         
@@ -1073,76 +1305,131 @@
 
 <script>
     // Variables globales
-    let nodos = {
-        ejes: [
-            { id: 'educacion', nombre: 'EDUCACIÓN', icono: 'graduation-cap', color: '#3498db' },
-            { id: 'salud', nombre: 'SALUD', icono: 'heartbeat', color: '#e74c3c' },
-            { id: 'empleabilidad', nombre: 'EMPLEABILIDAD', icono: 'briefcase', color: '#2ecc71' },
-            { id: 'desarrollo', nombre: 'DESARROLLO ECONÓMICO', icono: 'chart-line', color: '#9b59b6' },
-            { id: 'agua', nombre: 'SOSTENIBILIDAD AMBIENTAL', icono: 'tint', color: '#1abc9c' },
-            { id: 'comunicacion', nombre: 'COMUNICACIÓN', icono: 'bullhorn', color: '#f1c40f' },
-            { id: 'institucional', nombre: 'INSTITUCIONAL', icono: 'landmark', color: '#e67e22' }
-        ],
+    let mapa = {
+        ejes: [],
         estrategias: [],
         actividades: [],
-        tareas: []
+        tareas: [],
+        conexiones: []
     };
     
-    let conexiones = [];
-    let animacionesActivas = true;
-    let zoomLevel = 1;
-    let panning = false;
-    let startX, startY;
-    let translateX = 0, translateY = 0;
-    let nodoSeleccionado = null;
-    let particulas = [];
-    let intervaloConexiones;
-    let mostrarConexiones = true;
+    let config = {
+        animacionesActivas: true,
+        zoomLevel: 1,
+        panning: false,
+        startX: 0,
+        startY: 0,
+        translateX: 0,
+        translateY: 0,
+        nodoSeleccionado: null,
+        mostrarConexiones: true,
+        mostrarNombres: true,
+        modo: 'navegacion',
+        filtroNivel: 'todos',
+        filtroEje: 'todos'
+    };
+    
+    let elementos = {
+        particulas: [],
+        intervaloConexiones: null,
+        animacionFrame: null
+    };
     
     // Inicialización
     document.addEventListener('DOMContentLoaded', function() {
         inicializarMapa();
         crearParticulas();
-        cargarDatos();
         inicializarEventos();
-        animarEntrada();
-        
-        // Iniciar actualización continua de conexiones
-        intervaloConexiones = setInterval(actualizarConexiones, 100);
+        cargarDatosDesdeAPI();
     });
     
     function inicializarMapa() {
-        // Configurar canvas para pan y zoom
-        const canvas = document.getElementById('mapaCanvas');
-        const nodosContainer = document.getElementById('nodosContainer');
+        mostrarCargando('Inicializando mapa...', 10);
         
         // Posicionar nodo central
         const objetivo = document.getElementById('nodo-objetivo');
+        const canvas = document.getElementById('mapaCanvas');
         const canvasRect = canvas.getBoundingClientRect();
+        
         objetivo.style.left = '50%';
         objetivo.style.top = '50%';
+        objetivo.style.transform = 'translate(-50%, -50%)';
         
-        // Crear nodos de ejes
+        // Crear nodos de ejes iniciales
         crearNodosEjes();
         
-        // Aplicar transformación inicial
-        actualizarTransformacion();
+        actualizarProgresoCarga(30);
+        
+        // Iniciar sistema de actualización de conexiones
+        iniciarSistemaConexiones();
+        
+        actualizarProgresoCarga(50);
     }
     
     function crearNodosEjes() {
         const ejesContainer = document.getElementById('ejesContainer');
         ejesContainer.innerHTML = '';
         
-        const objetivo = document.getElementById('nodo-objetivo');
-        const objetivoRect = objetivo.getBoundingClientRect();
-        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+        // Definir ejes estratégicos
+        mapa.ejes = [
+            { 
+                id: 'educacion', 
+                nombre: 'EDUCACIÓN', 
+                icono: 'graduation-cap', 
+                color: '#3498db',
+                descripcion: 'Mejora de infraestructura educativa y capacitación docente'
+            },
+            { 
+                id: 'salud', 
+                nombre: 'SALUD', 
+                icono: 'heartbeat', 
+                color: '#e74c3c',
+                descripcion: 'Equipamiento médico y mejoras en servicios de salud'
+            },
+            { 
+                id: 'empleabilidad', 
+                nombre: 'EMPLEABILIDAD', 
+                icono: 'briefcase', 
+                color: '#2ecc71',
+                descripcion: 'Formación técnica y oportunidades de empleo local'
+            },
+            { 
+                id: 'desarrollo', 
+                nombre: 'DESARROLLO ECONÓMICO', 
+                icono: 'chart-line', 
+                color: '#9b59b6',
+                descripcion: 'Impulso al desarrollo económico comunitario'
+            },
+            { 
+                id: 'agua', 
+                nombre: 'SOSTENIBILIDAD AMBIENTAL', 
+                icono: 'tint', 
+                color: '#1abc9c',
+                descripcion: 'Gestión sostenible del recurso hídrico y monitoreo ambiental'
+            },
+            { 
+                id: 'comunicacion', 
+                nombre: 'COMUNICACIÓN', 
+                icono: 'bullhorn', 
+                color: '#f1c40f',
+                descripcion: 'Sistema de comunicación comunitaria y transparencia'
+            },
+            { 
+                id: 'institucional', 
+                nombre: 'INSTITUCIONAL', 
+                icono: 'landmark', 
+                color: '#e67e22',
+                descripcion: 'Cooperación técnica con GADs y niveles distritales'
+            }
+        ];
         
+        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
         const centroX = canvasRect.width / 2;
         const centroY = canvasRect.height / 2;
         const radio = Math.min(canvasRect.width, canvasRect.height) * 0.35;
         
-        nodos.ejes.forEach((eje, index) => {
-            const angulo = (2 * Math.PI / nodos.ejes.length) * index;
+        mapa.ejes.forEach((eje, index) => {
+            const angulo = (2 * Math.PI / mapa.ejes.length) * index - Math.PI / 2;
             const x = centroX + radio * Math.cos(angulo);
             const y = centroY + radio * Math.sin(angulo);
             
@@ -1150,6 +1437,7 @@
             nodoDiv.className = 'nodo nodo-eje nodo-aparecer';
             nodoDiv.id = `nodo-${eje.id}`;
             nodoDiv.dataset.ejeId = eje.id;
+            nodoDiv.dataset.tipo = 'eje';
             nodoDiv.style.left = `${x}px`;
             nodoDiv.style.top = `${y}px`;
             nodoDiv.style.transform = 'translate(-50%, -50%)';
@@ -1157,7 +1445,7 @@
             
             nodoDiv.innerHTML = `
                 <div class="nodo-content">
-                    <div class="nodo-icon">
+                    <div class="nodo-icon" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)})">
                         <i class="fas fa-${eje.icono}"></i>
                     </div>
                     <div class="nodo-title">${eje.nombre}</div>
@@ -1167,24 +1455,58 @@
             
             ejesContainer.appendChild(nodoDiv);
             
-            // Agregar evento de clic
+            // Agregar eventos
             nodoDiv.addEventListener('click', function(e) {
                 e.stopPropagation();
                 seleccionarNodo(this.id);
                 mostrarDetallesEje(eje.id);
             });
-            
-            // Agregar conexión con el objetivo
-            conexiones.push({
+        });
+        
+        // Crear conexiones iniciales
+        crearConexionesEjes();
+        
+        actualizarEstadisticas();
+    }
+    
+    function oscurecerColor(color, percent) {
+        let num = parseInt(color.replace("#", ""), 16),
+            amt = Math.round(2.55 * percent),
+            R = (num >> 16) - amt,
+            G = (num >> 8 & 0x00FF) - amt,
+            B = (num & 0x0000FF) - amt;
+        
+        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+    }
+    
+    function crearConexionesEjes() {
+        mapa.conexiones = [];
+        
+        // Conexiones desde el objetivo central hacia cada eje
+        mapa.ejes.forEach(eje => {
+            mapa.conexiones.push({
+                id: `conexion-objetivo-${eje.id}`,
                 tipo: 'central',
                 sourceId: 'nodo-objetivo',
                 targetId: `nodo-${eje.id}`,
                 color: eje.color
             });
         });
+    }
+    
+    function iniciarSistemaConexiones() {
+        // Usar requestAnimationFrame para mejor rendimiento
+        function actualizarFrame() {
+            if (config.mostrarConexiones) {
+                dibujarConexiones();
+            }
+            actualizarMinimap();
+            elementos.animacionFrame = requestAnimationFrame(actualizarFrame);
+        }
         
-        // Actualizar conexiones
-        dibujarConexiones();
+        elementos.animacionFrame = requestAnimationFrame(actualizarFrame);
     }
     
     function inicializarEventos() {
@@ -1203,10 +1525,18 @@
         canvas.addEventListener('touchend', endPan);
         
         // Evento de rueda para zoom
-        canvas.addEventListener('wheel', zoomWheel);
+        canvas.addEventListener('wheel', zoomWheel, { passive: false });
         
         // Evento de redimensionamiento
         window.addEventListener('resize', recalcularPosiciones);
+        
+        // Eventos de clic en nodos
+        document.addEventListener('click', function(e) {
+            if (config.modo === 'seleccion' && e.target.closest('.nodo')) {
+                const nodo = e.target.closest('.nodo');
+                seleccionarNodo(nodo.id);
+            }
+        });
         
         // Evento para cerrar panel al hacer clic fuera
         document.addEventListener('click', function(e) {
@@ -1214,94 +1544,113 @@
                 cerrarPanel();
             }
         });
+        
+        // Detectar cambios en fullscreen
+        document.addEventListener('fullscreenchange', recalcularPosiciones);
+        document.addEventListener('webkitfullscreenchange', recalcularPosiciones);
+        document.addEventListener('mozfullscreenchange', recalcularPosiciones);
+        document.addEventListener('MSFullscreenChange', recalcularPosiciones);
+        
+        // Agregar evento al nodo objetivo
+        const objetivo = document.getElementById('nodo-objetivo');
+        objetivo.addEventListener('click', function(e) {
+            e.stopPropagation();
+            seleccionarNodo('nodo-objetivo');
+            mostrarDetallesObjetivo();
+        });
     }
     
     // Funciones de pan y zoom
     function startPan(e) {
-        panning = true;
-        startX = e.clientX - translateX;
-        startY = e.clientY - translateY;
+        if (config.modo !== 'navegacion') return;
+        
+        config.panning = true;
+        config.startX = e.clientX - config.translateX;
+        config.startY = e.clientY - config.translateY;
         document.getElementById('mapaCanvas').style.cursor = 'grabbing';
     }
     
     function pan(e) {
-        if (!panning) return;
+        if (!config.panning || config.modo !== 'navegacion') return;
         e.preventDefault();
-        translateX = e.clientX - startX;
-        translateY = e.clientY - startY;
+        config.translateX = e.clientX - config.startX;
+        config.translateY = e.clientY - config.startY;
         actualizarTransformacion();
     }
     
     function endPan() {
-        panning = false;
-        document.getElementById('mapaCanvas').style.cursor = 'grab';
-    }
-    
-    function startPanTouch(e) {
-        if (e.touches.length === 1) {
-            panning = true;
-            startX = e.touches[0].clientX - translateX;
-            startY = e.touches[0].clientY - translateY;
+        config.panning = false;
+        if (config.modo === 'navegacion') {
+            document.getElementById('mapaCanvas').style.cursor = 'grab';
         }
     }
     
+    function startPanTouch(e) {
+        if (config.modo !== 'navegacion' || e.touches.length !== 1) return;
+        config.panning = true;
+        config.startX = e.touches[0].clientX - config.translateX;
+        config.startY = e.touches[0].clientY - config.translateY;
+    }
+    
     function panTouch(e) {
-        if (!panning || e.touches.length !== 1) return;
+        if (!config.panning || config.modo !== 'navegacion' || e.touches.length !== 1) return;
         e.preventDefault();
-        translateX = e.touches[0].clientX - startX;
-        translateY = e.touches[0].clientY - startY;
+        config.translateX = e.touches[0].clientX - config.startX;
+        config.translateY = e.touches[0].clientY - config.startY;
         actualizarTransformacion();
     }
     
     function zoomWheel(e) {
+        if (config.modo !== 'navegacion') return;
+        
         e.preventDefault();
         const zoomIntensity = 0.1;
-        const oldZoom = zoomLevel;
+        const oldZoom = config.zoomLevel;
         
-        zoomLevel += e.deltaY < 0 ? zoomIntensity : -zoomIntensity;
-        zoomLevel = Math.min(Math.max(0.3, zoomLevel), 3);
+        config.zoomLevel += e.deltaY < 0 ? zoomIntensity : -zoomIntensity;
+        config.zoomLevel = Math.min(Math.max(0.3, config.zoomLevel), 3);
         
-        document.getElementById('zoomSlider').value = zoomLevel;
-        document.getElementById('zoomValue').textContent = `${Math.round(zoomLevel * 100)}%`;
+        document.getElementById('zoomSlider').value = config.zoomLevel;
+        document.getElementById('zoomValue').textContent = `${Math.round(config.zoomLevel * 100)}%`;
         
         const rect = e.target.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
         
-        translateX = mouseX - (mouseX - translateX) * (zoomLevel / oldZoom);
-        translateY = mouseY - (mouseY - translateY) * (zoomLevel / oldZoom);
+        config.translateX = mouseX - (mouseX - config.translateX) * (config.zoomLevel / oldZoom);
+        config.translateY = mouseY - (mouseY - config.translateY) * (config.zoomLevel / oldZoom);
         
         actualizarTransformacion();
     }
     
     function zoomSliderChange(value) {
-        const oldZoom = zoomLevel;
-        zoomLevel = parseFloat(value);
+        const oldZoom = config.zoomLevel;
+        config.zoomLevel = parseFloat(value);
         
-        document.getElementById('zoomValue').textContent = `${Math.round(zoomLevel * 100)}%`;
+        document.getElementById('zoomValue').textContent = `${Math.round(config.zoomLevel * 100)}%`;
         
         const canvas = document.getElementById('mapaCanvas');
         const rect = canvas.getBoundingClientRect();
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
         
-        translateX = centerX - (centerX - translateX) * (zoomLevel / oldZoom);
-        translateY = centerY - (centerY - translateY) * (zoomLevel / oldZoom);
+        config.translateX = centerX - (centerX - config.translateX) * (config.zoomLevel / oldZoom);
+        config.translateY = centerY - (centerY - config.translateY) * (config.zoomLevel / oldZoom);
         
         actualizarTransformacion();
     }
     
     function zoomIn() {
-        zoomSliderChange(Math.min(zoomLevel + 0.1, 3));
+        zoomSliderChange(Math.min(config.zoomLevel + 0.1, 3));
     }
     
     function zoomOut() {
-        zoomSliderChange(Math.max(zoomLevel - 0.1, 0.3));
+        zoomSliderChange(Math.max(config.zoomLevel - 0.1, 0.3));
     }
     
     function actualizarTransformacion() {
         const nodosContainer = document.getElementById('nodosContainer');
-        nodosContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`;
+        nodosContainer.style.transform = `translate(${config.translateX}px, ${config.translateY}px) scale(${config.zoomLevel})`;
     }
     
     // Funciones de conexiones dinámicas
@@ -1313,70 +1662,115 @@
         const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
         
         // Calcular posición relativa al canvas considerando el zoom y pan
-        const x = (rect.left + rect.width / 2 - canvasRect.left - translateX) / zoomLevel;
-        const y = (rect.top + rect.height / 2 - canvasRect.top - translateY) / zoomLevel;
+        const x = (rect.left + rect.width / 2 - canvasRect.left - config.translateX) / config.zoomLevel;
+        const y = (rect.top + rect.height / 2 - canvasRect.top - config.translateY) / config.zoomLevel;
         
         return { x, y };
     }
     
     function dibujarConexiones() {
-        if (!mostrarConexiones) {
+        if (!config.mostrarConexiones || mapa.conexiones.length === 0) {
             document.getElementById('conexionesSvg').innerHTML = '';
             return;
         }
         
         const svg = document.getElementById('conexionesSvg');
-        svg.innerHTML = '<defs><linearGradient id="gradient-central" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#9C27B0" stop-opacity="0.8" /><stop offset="100%" stop-color="#E91E63" stop-opacity="0.8" /></linearGradient><linearGradient id="gradient-eje" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3498db" stop-opacity="0.7" /><stop offset="100%" stop-color="#2980b9" stop-opacity="0.7" /></linearGradient><linearGradient id="gradient-estrategia" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#2ecc71" stop-opacity="0.7" /><stop offset="100%" stop-color="#27ae60" stop-opacity="0.7" /></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="2.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+        let svgHTML = '<defs>' +
+            '<linearGradient id="gradient-central" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#9C27B0" stop-opacity="0.8" /><stop offset="100%" stop-color="#E91E63" stop-opacity="0.8" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-eje" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#3498db" stop-opacity="0.7" /><stop offset="100%" stop-color="#2980b9" stop-opacity="0.7" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-estrategia" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#2ecc71" stop-opacity="0.7" /><stop offset="100%" stop-color="#27ae60" stop-opacity="0.7" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-actividad" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#e74c3c" stop-opacity="0.7" /><stop offset="100%" stop-color="#c0392b" stop-opacity="0.7" />' +
+            '</linearGradient>' +
+            '<linearGradient id="gradient-tarea" x1="0%" y1="0%" x2="100%" y2="0%">' +
+            '<stop offset="0%" stop-color="#f39c12" stop-opacity="0.7" /><stop offset="100%" stop-color="#d35400" stop-opacity="0.7" />' +
+            '</linearGradient>' +
+            '<filter id="glow">' +
+            '<feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>' +
+            '<feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>' +
+            '</filter></defs>';
         
-        conexiones.forEach((conexion, index) => {
+        mapa.conexiones.forEach((conexion, index) => {
             const sourcePos = obtenerPosicionNodo(conexion.sourceId);
             const targetPos = obtenerPosicionNodo(conexion.targetId);
             
             if (!sourcePos || !targetPos) return;
             
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', sourcePos.x);
-            line.setAttribute('y1', sourcePos.y);
-            line.setAttribute('x2', targetPos.x);
-            line.setAttribute('y2', targetPos.y);
+            // Calcular puntos de control para curva Bezier
+            const midX = (sourcePos.x + targetPos.x) / 2;
+            const midY = (sourcePos.y + targetPos.y) / 2;
+            
+            // Crear curva suave
+            const dx = targetPos.x - sourcePos.x;
+            const dy = targetPos.y - sourcePos.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const offset = Math.min(distance * 0.2, 50);
             
             let claseConexion = 'conexion';
+            let gradientId = 'gradient-eje';
+            
             switch(conexion.tipo) {
                 case 'central':
                     claseConexion += ' conexion-central';
-                    line.setAttribute('stroke', 'url(#gradient-central)');
+                    gradientId = 'gradient-central';
                     break;
                 case 'eje':
                     claseConexion += ' conexion-eje';
-                    line.setAttribute('stroke', conexion.color || 'url(#gradient-eje)');
+                    gradientId = 'gradient-eje';
                     break;
                 case 'estrategia':
                     claseConexion += ' conexion-estrategia';
-                    line.setAttribute('stroke', conexion.color || 'url(#gradient-estrategia)');
+                    gradientId = 'gradient-estrategia';
+                    break;
+                case 'actividad':
+                    claseConexion += ' conexion-actividad';
+                    gradientId = 'gradient-actividad';
+                    break;
+                case 'tarea':
+                    claseConexion += ' conexion-tarea';
+                    gradientId = 'gradient-tarea';
                     break;
             }
             
-            line.setAttribute('class', claseConexion);
-            line.setAttribute('stroke-width', '2');
-            line.style.animationDelay = `${index * 0.05}s`;
+            // Crear línea curva
+            const line = `<path d="M ${sourcePos.x},${sourcePos.y} Q ${midX + offset},${midY - offset} ${targetPos.x},${targetPos.y}" 
+                class="${claseConexion}" 
+                stroke="url(#${gradientId})" 
+                fill="none" 
+                stroke-width="2"
+                data-conexion-id="${conexion.id}"
+                style="animation-delay: ${index * 0.05}s" />`;
             
-            svg.appendChild(line);
+            svgHTML += line;
         });
-    }
-    
-    function actualizarConexiones() {
-        dibujarConexiones();
+        
+        svg.innerHTML = svgHTML;
     }
     
     function toggleConexiones() {
-        mostrarConexiones = !mostrarConexiones;
-        dibujarConexiones();
+        config.mostrarConexiones = document.getElementById('mostrar-conexiones').checked;
+        if (!config.mostrarConexiones) {
+            document.getElementById('conexionesSvg').innerHTML = '';
+        }
+    }
+    
+    function toggleNombres() {
+        config.mostrarNombres = document.getElementById('mostrar-nombres').checked;
+        document.querySelectorAll('.nodo-title').forEach(titulo => {
+            titulo.style.display = config.mostrarNombres ? 'block' : 'none';
+        });
     }
     
     // Crear partículas de fondo
     function crearParticulas() {
         const container = document.getElementById('particlesContainer');
-        const particulaCount = 80;
+        const particulaCount = 60;
         
         for (let i = 0; i < particulaCount; i++) {
             const particula = document.createElement('div');
@@ -1393,47 +1787,325 @@
             particula.style.width = `${size}px`;
             particula.style.height = `${size}px`;
             particula.style.animation = `float ${duration}s infinite ${delay}s linear`;
-            particula.style.opacity = Math.random() * 0.3 + 0.1;
-            particula.style.backgroundColor = `rgba(52, 152, 219, ${Math.random() * 0.5})`;
+            particula.style.opacity = Math.random() * 0.2 + 0.1;
+            particula.style.backgroundColor = `rgba(52, 152, 219, ${Math.random() * 0.3})`;
             
             container.appendChild(particula);
-            particulas.push(particula);
+            elementos.particulas.push(particula);
         }
-        
-        // Agregar animación de flotar
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes float {
-                0%, 100% { transform: translate(0, 0) rotate(0deg); }
-                25% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px) rotate(90deg); }
-                50% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px) rotate(180deg); }
-                75% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px) rotate(270deg); }
-            }
-        `;
-        document.head.appendChild(style);
     }
     
-    // Cargar datos del backend
-    function cargarDatos() {
-        // Simular carga de datos
-        setTimeout(() => {
-            // Datos de ejemplo para estrategias
-            nodos.estrategias = [
-                { id: 1, eje_id: 'educacion', nombre: 'Capacitación docente', tipo: 'FO' },
-                { id: 2, eje_id: 'educacion', nombre: 'Infraestructura educativa', tipo: 'DA' },
-                { id: 3, eje_id: 'salud', nombre: 'Equipamiento médico', tipo: 'FO' },
-                { id: 4, eje_id: 'empleabilidad', nombre: 'Formación técnica', tipo: 'FA' },
-                { id: 5, eje_id: 'agua', nombre: 'Monitoreo calidad', tipo: 'DO' }
-            ];
+    // Cargar datos desde API
+    async function cargarDatosDesdeAPI() {
+        mostrarCargando('Cargando datos estratégicos...', 60);
+        
+        try {
+            // Cargar estrategias desde la API
+            const respuesta = await fetch('/api/estrategias_foda_con_eje');
+            const data = await respuesta.json();
             
-            actualizarContadoresEjes();
-            actualizarEstadisticas();
-        }, 1000);
+            if (data.success && data.estrategias) {
+                mapa.estrategias = data.estrategias;
+                actualizarProgresoCarga(70);
+                
+                // Cargar actividades para cada estrategia
+                await cargarActividades();
+                actualizarProgresoCarga(85);
+                
+                // Cargar tareas para cada actividad
+                await cargarTareas();
+                actualizarProgresoCarga(95);
+                
+                // Crear nodos de estrategias
+                crearNodosEstrategias();
+                
+                // Crear conexiones
+                crearConexionesJerarquicas();
+                
+                actualizarProgresoCarga(100);
+                
+                setTimeout(() => {
+                    ocultarCargando();
+                    mostrarNotificacion('Mapa cargado exitosamente', 'success');
+                    animarEntrada();
+                }, 500);
+            } else {
+                throw new Error('Error en la respuesta de la API');
+            }
+        } catch (error) {
+            console.error('Error al cargar datos:', error);
+            mostrarNotificacion('Error al cargar datos. Usando datos de ejemplo.', 'error');
+            cargarDatosEjemplo();
+        }
+    }
+    
+    async function cargarActividades() {
+        try {
+            // Aquí iría la llamada real a la API
+            // const respuesta = await fetch('/api/actividades');
+            // mapa.actividades = await respuesta.json();
+            
+            // Datos de ejemplo
+            mapa.actividades = [
+                { id: 1, estrategia_id: 1, nombre: 'Capacitación en metodologías activas', eje_id: 'educacion' },
+                { id: 2, estrategia_id: 1, nombre: 'Actualización de planes de estudio', eje_id: 'educacion' },
+                { id: 3, estrategia_id: 2, nombre: 'Construcción de aulas', eje_id: 'educacion' },
+                { id: 4, estrategia_id: 3, nombre: 'Adquisición de equipos médicos', eje_id: 'salud' },
+                { id: 5, estrategia_id: 4, nombre: 'Talleres de formación técnica', eje_id: 'empleabilidad' },
+                { id: 6, estrategia_id: 5, nombre: 'Monitoreo de calidad del agua', eje_id: 'agua' }
+            ];
+        } catch (error) {
+            console.error('Error al cargar actividades:', error);
+        }
+    }
+    
+    async function cargarTareas() {
+        try {
+            // Aquí iría la llamada real a la API
+            // const respuesta = await fetch('/api/tareas');
+            // mapa.tareas = await respuesta.json();
+            
+            // Datos de ejemplo
+            mapa.tareas = [
+                { id: 1, actividad_id: 1, nombre: 'Organizar taller inicial', estado: 'completada' },
+                { id: 2, actividad_id: 1, nombre: 'Evaluar participantes', estado: 'en-progreso' },
+                { id: 3, actividad_id: 2, nombre: 'Revisar currículo actual', estado: 'pendiente' },
+                { id: 4, actividad_id: 3, nombre: 'Elaborar planos', estado: 'completada' },
+                { id: 5, actividad_id: 4, nombre: 'Cotizar equipos', estado: 'en-progreso' },
+                { id: 6, actividad_id: 5, nombre: 'Convocar participantes', estado: 'pendiente' }
+            ];
+        } catch (error) {
+            console.error('Error al cargar tareas:', error);
+        }
+    }
+    
+    function cargarDatosEjemplo() {
+        // Datos de ejemplo para cuando falla la API
+        mapa.estrategias = [
+            { id: 1, eje_id: 'educacion', estrategia: 'Capacitación docente en metodologías activas', tipo_cruce: 'FO' },
+            { id: 2, eje_id: 'educacion', estrategia: 'Mejora de infraestructura educativa', tipo_cruce: 'DA' },
+            { id: 3, eje_id: 'salud', estrategia: 'Equipamiento de centros de salud', tipo_cruce: 'FO' },
+            { id: 4, eje_id: 'empleabilidad', estrategia: 'Formación técnica para jóvenes', tipo_cruce: 'FA' },
+            { id: 5, eje_id: 'agua', estrategia: 'Monitoreo permanente de calidad del agua', tipo_cruce: 'DO' }
+        ];
+        
+        crearNodosEstrategias();
+        crearConexionesJerarquicas();
+        ocultarCargando();
+        animarEntrada();
+    }
+    
+    function crearNodosEstrategias() {
+        const estrategiasContainer = document.getElementById('estrategiasContainer');
+        estrategiasContainer.innerHTML = '';
+        
+        mapa.estrategias.forEach((estrategia, index) => {
+            const eje = mapa.ejes.find(e => e.id === estrategia.eje_id);
+            if (!eje) return;
+            
+            // Encontrar posición del eje
+            const ejeElement = document.getElementById(`nodo-${eje.id}`);
+            if (!ejeElement) return;
+            
+            const ejeRect = ejeElement.getBoundingClientRect();
+            const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+            
+            // Posicionar estrategias en círculo alrededor del eje
+            const estrategiasDelEje = mapa.estrategias.filter(e => e.eje_id === estrategia.eje_id);
+            const indice = estrategiasDelEje.findIndex(e => e.id === estrategia.id);
+            const total = estrategiasDelEje.length;
+            
+            const angulo = (2 * Math.PI / total) * indice;
+            const radio = 120;
+            
+            const x = (ejeRect.left + ejeRect.width / 2 - canvasRect.left) + radio * Math.cos(angulo);
+            const y = (ejeRect.top + ejeRect.height / 2 - canvasRect.top) + radio * Math.sin(angulo);
+            
+            const nodoDiv = document.createElement('div');
+            nodoDiv.className = 'nodo nodo-estrategia nodo-aparecer';
+            nodoDiv.id = `estrategia-${estrategia.id}`;
+            nodoDiv.dataset.estrategiaId = estrategia.id;
+            nodoDiv.dataset.ejeId = estrategia.eje_id;
+            nodoDiv.dataset.tipo = 'estrategia';
+            nodoDiv.style.left = `${x}px`;
+            nodoDiv.style.top = `${y}px`;
+            nodoDiv.style.transform = 'translate(-50%, -50%)';
+            nodoDiv.style.animationDelay = `${index * 0.05 + 0.5}s`;
+            
+            let tipoTexto = '';
+            switch(estrategia.tipo_cruce) {
+                case 'FO': tipoTexto = 'FORTALEZA + OPORTUNIDAD'; break;
+                case 'DO': tipoTexto = 'DEBILIDAD + OPORTUNIDAD'; break;
+                case 'FA': tipoTexto = 'FORTALEZA + AMENAZA'; break;
+                case 'DA': tipoTexto = 'DEBILIDAD + AMENAZA'; break;
+                default: tipoTexto = estrategia.tipo_cruce;
+            }
+            
+            nodoDiv.innerHTML = `
+                <div class="nodo-content">
+                    <div class="nodo-icon">
+                        <i class="fas fa-chess-board"></i>
+                    </div>
+                    <div class="nodo-title">${tipoTexto}</div>
+                    <div class="nodo-counter">${estrategia.eje_id.toUpperCase()}</div>
+                </div>
+            `;
+            
+            estrategiasContainer.appendChild(nodoDiv);
+            
+            // Agregar eventos
+            nodoDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                seleccionarNodo(this.id);
+                mostrarDetallesEstrategia(estrategia.id);
+            });
+            
+            // Crear conexión con el eje
+            mapa.conexiones.push({
+                id: `conexion-${eje.id}-estrategia-${estrategia.id}`,
+                tipo: 'estrategia',
+                sourceId: `nodo-${eje.id}`,
+                targetId: `estrategia-${estrategia.id}`,
+                color: '#2ecc71'
+            });
+            
+            // Crear nodos de actividades para esta estrategia
+            crearNodosActividades(estrategia.id, x, y);
+        });
+        
+        actualizarContadoresEjes();
+    }
+    
+    function crearNodosActividades(estrategiaId, estrategiaX, estrategiaY) {
+        const actividadesContainer = document.getElementById('actividadesContainer');
+        const actividades = mapa.actividades.filter(a => a.estrategia_id === estrategiaId);
+        
+        if (actividades.length === 0) return;
+        
+        actividades.forEach((actividad, index) => {
+            const angulo = (2 * Math.PI / actividades.length) * index;
+            const radio = 80;
+            
+            const x = estrategiaX + radio * Math.cos(angulo);
+            const y = estrategiaY + radio * Math.sin(angulo);
+            
+            const nodoDiv = document.createElement('div');
+            nodoDiv.className = 'nodo nodo-actividad nodo-aparecer';
+            nodoDiv.id = `actividad-${actividad.id}`;
+            nodoDiv.dataset.actividadId = actividad.id;
+            nodoDiv.dataset.estrategiaId = estrategiaId;
+            nodoDiv.dataset.tipo = 'actividad';
+            nodoDiv.style.left = `${x}px`;
+            nodoDiv.style.top = `${y}px`;
+            nodoDiv.style.transform = 'translate(-50%, -50%)';
+            nodoDiv.style.animationDelay = `${index * 0.05 + 1}s`;
+            
+            nodoDiv.innerHTML = `
+                <div class="nodo-content">
+                    <div class="nodo-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="nodo-title">${actividad.nombre.substring(0, 30)}...</div>
+                </div>
+            `;
+            
+            actividadesContainer.appendChild(nodoDiv);
+            
+            // Agregar eventos
+            nodoDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                seleccionarNodo(this.id);
+                mostrarDetallesActividad(actividad.id);
+            });
+            
+            // Crear conexión con la estrategia
+            mapa.conexiones.push({
+                id: `conexion-estrategia-${estrategiaId}-actividad-${actividad.id}`,
+                tipo: 'actividad',
+                sourceId: `estrategia-${estrategiaId}`,
+                targetId: `actividad-${actividad.id}`,
+                color: '#e74c3c'
+            });
+            
+            // Crear nodos de tareas para esta actividad
+            crearNodosTareas(actividad.id, x, y);
+        });
+    }
+    
+    function crearNodosTareas(actividadId, actividadX, actividadY) {
+        const tareasContainer = document.getElementById('tareasContainer');
+        const tareas = mapa.tareas.filter(t => t.actividad_id === actividadId);
+        
+        if (tareas.length === 0) return;
+        
+        tareas.forEach((tarea, index) => {
+            const angulo = (2 * Math.PI / tareas.length) * index;
+            const radio = 60;
+            
+            const x = actividadX + radio * Math.cos(angulo);
+            const y = actividadY + radio * Math.sin(angulo);
+            
+            const nodoDiv = document.createElement('div');
+            nodoDiv.className = 'nodo nodo-tarea nodo-aparecer';
+            nodoDiv.id = `tarea-${tarea.id}`;
+            nodoDiv.dataset.tareaId = tarea.id;
+            nodoDiv.dataset.actividadId = actividadId;
+            nodoDiv.dataset.tipo = 'tarea';
+            nodoDiv.style.left = `${x}px`;
+            nodoDiv.style.top = `${y}px`;
+            nodoDiv.style.transform = 'translate(-50%, -50%)';
+            nodoDiv.style.animationDelay = `${index * 0.05 + 1.5}s`;
+            
+            let estadoIcono = 'fa-clock';
+            let estadoColor = '#f39c12';
+            switch(tarea.estado) {
+                case 'completada':
+                    estadoIcono = 'fa-check-circle';
+                    estadoColor = '#2ecc71';
+                    break;
+                case 'en-progreso':
+                    estadoIcono = 'fa-spinner';
+                    estadoColor = '#3498db';
+                    break;
+            }
+            
+            nodoDiv.innerHTML = `
+                <div class="nodo-content">
+                    <div class="nodo-icon" style="background: linear-gradient(135deg, ${estadoColor}, ${oscurecerColor(estadoColor, 20)})">
+                        <i class="fas ${estadoIcono}"></i>
+                    </div>
+                    <div class="nodo-title">${tarea.nombre.substring(0, 20)}...</div>
+                </div>
+            `;
+            
+            tareasContainer.appendChild(nodoDiv);
+            
+            // Agregar eventos
+            nodoDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                seleccionarNodo(this.id);
+                mostrarDetallesTarea(tarea.id);
+            });
+            
+            // Crear conexión con la actividad
+            mapa.conexiones.push({
+                id: `conexion-actividad-${actividadId}-tarea-${tarea.id}`,
+                tipo: 'tarea',
+                sourceId: `actividad-${actividadId}`,
+                targetId: `tarea-${tarea.id}`,
+                color: estadoColor
+            });
+        });
+    }
+    
+    function crearConexionesJerarquicas() {
+        // Las conexiones ya se crearon al crear los nodos
+        actualizarEstadisticas();
     }
     
     function actualizarContadoresEjes() {
-        nodos.ejes.forEach(eje => {
-            const count = nodos.estrategias.filter(e => e.eje_id === eje.id).length;
+        mapa.ejes.forEach(eje => {
+            const count = mapa.estrategias.filter(e => e.eje_id === eje.id).length;
             const counterElement = document.getElementById(`counter-${eje.id}`);
             if (counterElement) {
                 counterElement.textContent = `${count} estrategias`;
@@ -1442,12 +2114,20 @@
     }
     
     function actualizarEstadisticas() {
-        const totalEstrategias = nodos.estrategias.length;
-        const totalConexiones = conexiones.length;
+        const totalEjes = mapa.ejes.length;
+        const totalEstrategias = mapa.estrategias.length;
+        const totalActividades = mapa.actividades.length;
+        const totalTareas = mapa.tareas.length;
+        const totalConexiones = mapa.conexiones.length;
+        const totalNodos = totalEjes + totalEstrategias + totalActividades + totalTareas + 1; // +1 por el objetivo
         
+        document.getElementById('total-ejes').textContent = `${totalEjes} Ejes`;
         document.getElementById('total-estrategias').textContent = `${totalEstrategias} Estrategias`;
-        document.getElementById('contador-estrategias').textContent = totalEstrategias;
         document.getElementById('total-conexiones').textContent = `${totalConexiones} Conexiones`;
+        document.getElementById('contador-ejes').textContent = totalEjes;
+        document.getElementById('contador-estrategias').textContent = totalEstrategias;
+        document.getElementById('leyenda-activos').textContent = totalNodos;
+        document.getElementById('leyenda-conexiones').textContent = totalConexiones;
     }
     
     // Funciones de animación y visualización
@@ -1455,7 +2135,7 @@
         const todosNodos = document.querySelectorAll('.nodo');
         todosNodos.forEach((nodo, index) => {
             nodo.classList.add('nodo-aparecer');
-            nodo.style.animationDelay = `${index * 0.05}s`;
+            nodo.style.animationDelay = `${index * 0.02}s`;
         });
         
         // Efecto de onda desde el centro
@@ -1495,14 +2175,14 @@
     }
     
     function seleccionarNodo(nodoId) {
-        if (nodoSeleccionado) {
-            nodoSeleccionado.classList.remove('nodo-seleccionado');
+        if (config.nodoSeleccionado) {
+            config.nodoSeleccionado.classList.remove('seleccionado');
         }
         
-        nodoSeleccionado = document.getElementById(nodoId);
-        if (nodoSeleccionado) {
-            nodoSeleccionado.classList.add('nodo-seleccionado');
-            nodoSeleccionado.style.zIndex = '1000';
+        config.nodoSeleccionado = document.getElementById(nodoId);
+        if (config.nodoSeleccionado) {
+            config.nodoSeleccionado.classList.add('seleccionado');
+            config.nodoSeleccionado.style.zIndex = '1000';
         }
     }
     
@@ -1512,75 +2192,762 @@
         const titulo = document.getElementById('detalleTitulo');
         const contenido = document.getElementById('detalleContenido');
         
-        const eje = nodos.ejes.find(e => e.id === ejeId);
+        const eje = mapa.ejes.find(e => e.id === ejeId);
         if (!eje) return;
         
-        const estrategiasEje = nodos.estrategias.filter(e => e.eje_id === ejeId);
+        const estrategiasEje = mapa.estrategias.filter(e => e.eje_id === ejeId);
+        const actividadesEje = mapa.actividades.filter(a => a.eje_id === ejeId);
         
         titulo.innerHTML = `<i class="fas fa-${eje.icono}"></i> ${eje.nombre}`;
         
+        let estrategiasHTML = '';
+        if (estrategiasEje.length > 0) {
+            estrategiasHTML = `
+                <div class="seccion-detalles">
+                    <h4><i class="fas fa-chess-board"></i> Estrategias (${estrategiasEje.length})</h4>
+                    ${estrategiasEje.map(estrategia => `
+                        <div class="item-detalle" onclick="mostrarDetallesEstrategia(${estrategia.id})">
+                            <div class="item-tipo ${estrategia.tipo_cruce.toLowerCase()}">${estrategia.tipo_cruce}</div>
+                            <div class="item-texto">${estrategia.estrategia}</div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        let actividadesHTML = '';
+        if (actividadesEje.length > 0) {
+            actividadesHTML = `
+                <div class="seccion-detalles">
+                    <h4><i class="fas fa-tasks"></i> Actividades (${actividadesEje.length})</h4>
+                    ${actividadesEje.map(actividad => `
+                        <div class="item-detalle" onclick="mostrarDetallesActividad(${actividad.id})">
+                            <div class="item-texto">${actividad.nombre}</div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
         contenido.innerHTML = `
             <div class="detalle-eje">
-                <div class="eje-header" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)}); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                    <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                        <i class="fas fa-${eje.icono}" style="font-size: 28px; color: white;"></i>
+                <div class="encabezado-detalle" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)});">
+                    <div class="icono-grande">
+                        <i class="fas fa-${eje.icono}"></i>
                     </div>
-                    <h4 style="color: white; margin-top: 10px; text-align: center;">${eje.nombre}</h4>
+                    <h3>${eje.nombre}</h3>
+                    <p>${eje.descripcion}</p>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
-                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; color: white;">${estrategiasEje.length}</div>
-                        <div style="font-size: 12px; color: rgba(255,255,255,0.7);">Estrategias</div>
+                <div class="estadisticas-detalle">
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${estrategiasEje.length}</div>
+                        <div class="estadistica-label">Estrategias</div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center;">
-                        <div style="font-size: 24px; font-weight: bold; color: white;">${conexiones.length}</div>
-                        <div style="font-size: 12px; color: rgba(255,255,255,0.7);">Conexiones</div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${actividadesEje.length}</div>
+                        <div class="estadistica-label">Actividades</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${mapa.tareas.filter(t => mapa.actividades.find(a => a.id === t.actividad_id && a.eje_id === ejeId)).length}</div>
+                        <div class="estadistica-label">Tareas</div>
                     </div>
                 </div>
                 
-                ${estrategiasEje.length > 0 ? `
-                    <div class="estrategias-lista">
-                        <h5 style="color: white; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-chess-board"></i> Estrategias relacionadas:
-                        </h5>
-                        ${estrategiasEje.map(estrategia => `
-                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid ${eje.color};">
-                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
-                                    <div style="background: ${eje.color}; color: white; padding: 3px 10px; border-radius: 15px; font-size: 11px; font-weight: bold;">
-                                        ${estrategia.tipo}
-                                    </div>
-                                    <div style="font-size: 12px; color: rgba(255,255,255,0.7);">Estrategia #${estrategia.id}</div>
-                                </div>
-                                <div style="color: rgba(255,255,255,0.9); font-size: 14px;">${estrategia.nombre}</div>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : '<div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.7);"><i class="fas fa-inbox" style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;"></i><p>No hay estrategias asignadas a este eje aún.</p></div>'}
+                ${estrategiasHTML}
+                ${actividadesHTML}
             </div>
+            
+            <style>
+                .encabezado-detalle {
+                    padding: 30px;
+                    border-radius: 15px;
+                    margin-bottom: 20px;
+                    text-align: center;
+                    color: white;
+                }
+                
+                .icono-grande {
+                    width: 80px;
+                    height: 80px;
+                    background: rgba(255,255,255,0.2);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 15px;
+                    font-size: 32px;
+                }
+                
+                .encabezado-detalle h3 {
+                    font-size: 24px;
+                    margin-bottom: 10px;
+                }
+                
+                .encabezado-detalle p {
+                    opacity: 0.9;
+                    font-size: 14px;
+                }
+                
+                .estadisticas-detalle {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 15px;
+                    margin-bottom: 25px;
+                }
+                
+                .estadistica-item {
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 10px;
+                    padding: 15px;
+                    text-align: center;
+                }
+                
+                .estadistica-valor {
+                    font-size: 28px;
+                    font-weight: bold;
+                    color: white;
+                    margin-bottom: 5px;
+                }
+                
+                .estadistica-label {
+                    font-size: 12px;
+                    color: rgba(255,255,255,0.7);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                .seccion-detalles {
+                    margin-bottom: 25px;
+                }
+                
+                .seccion-detalles h4 {
+                    font-size: 16px;
+                    color: white;
+                    margin-bottom: 15px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+                
+                .item-detalle {
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 10px;
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    border-left: 4px solid ${eje.color};
+                }
+                
+                .item-detalle:hover {
+                    background: rgba(255,255,255,0.1);
+                    transform: translateX(5px);
+                }
+                
+                .item-tipo {
+                    background: ${eje.color};
+                    color: white;
+                    padding: 4px 10px;
+                    border-radius: 15px;
+                    font-size: 11px;
+                    font-weight: bold;
+                    min-width: 40px;
+                    text-align: center;
+                }
+                
+                .item-texto {
+                    flex: 1;
+                    color: rgba(255,255,255,0.9);
+                    font-size: 14px;
+                }
+                
+                .item-detalle .fa-chevron-right {
+                    color: rgba(255,255,255,0.5);
+                    font-size: 12px;
+                }
+            </style>
         `;
         
         panel.classList.add('open');
     }
     
-    function oscurecerColor(color, percent) {
-        let num = parseInt(color.replace("#", ""), 16),
-            amt = Math.round(2.55 * percent),
-            R = (num >> 16) - amt,
-            G = (num >> 8 & 0x00FF) - amt,
-            B = (num & 0x0000FF) - amt;
+    function mostrarDetallesEstrategia(estrategiaId) {
+        const panel = document.getElementById('panelDetalles');
+        const titulo = document.getElementById('detalleTitulo');
+        const contenido = document.getElementById('detalleContenido');
         
-        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        const estrategia = mapa.estrategias.find(e => e.id === estrategiaId);
+        if (!estrategia) return;
+        
+        const eje = mapa.ejes.find(e => e.id === estrategia.eje_id);
+        const actividades = mapa.actividades.filter(a => a.estrategia_id === estrategiaId);
+        
+        titulo.innerHTML = `<i class="fas fa-chess-board"></i> Estrategia #${estrategiaId}`;
+        
+        let tipoTexto = '';
+        switch(estrategia.tipo_cruce) {
+            case 'FO': tipoTexto = 'FORTALEZA + OPORTUNIDAD'; break;
+            case 'DO': tipoTexto = 'DEBILIDAD + OPORTUNIDAD'; break;
+            case 'FA': tipoTexto = 'FORTALEZA + AMENAZA'; break;
+            case 'DA': tipoTexto = 'DEBILIDAD + AMENAZA'; break;
+            default: tipoTexto = estrategia.tipo_cruce;
+        }
+        
+        let actividadesHTML = '';
+        if (actividades.length > 0) {
+            actividadesHTML = `
+                <div class="seccion-detalles">
+                    <h4><i class="fas fa-tasks"></i> Actividades (${actividades.length})</h4>
+                    ${actividades.map(actividad => `
+                        <div class="item-detalle" onclick="mostrarDetallesActividad(${actividad.id})">
+                            <div class="item-texto">${actividad.nombre}</div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        contenido.innerHTML = `
+            <div class="detalle-estrategia">
+                <div class="encabezado-detalle" style="background: linear-gradient(135deg, #2ecc71, #27ae60);">
+                    <div class="icono-grande">
+                        <i class="fas fa-chess-board"></i>
+                    </div>
+                    <div class="badge-eje" style="background: ${eje ? eje.color : '#3498db'}">
+                        ${eje ? eje.nombre : 'EJE'}
+                    </div>
+                    <h3>${tipoTexto}</h3>
+                    <p>${estrategia.estrategia}</p>
+                </div>
+                
+                <div class="estadisticas-detalle">
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${actividades.length}</div>
+                        <div class="estadistica-label">Actividades</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${mapa.tareas.filter(t => actividades.find(a => a.id === t.actividad_id)).length}</div>
+                        <div class="estadistica-label">Tareas</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${actividades.filter(a => mapa.tareas.filter(t => t.actividad_id === a.id && t.estado === 'completada').length > 0).length}</div>
+                        <div class="estadistica-label">En progreso</div>
+                    </div>
+                </div>
+                
+                ${actividadesHTML}
+                
+                <button class="btn-accion" onclick="seleccionarNodo('nodo-${estrategia.eje_id}')">
+                    <i class="fas fa-arrow-up"></i> Ver eje padre: ${eje ? eje.nombre : 'Eje'}
+                </button>
+            </div>
+            
+            <style>
+                .badge-eje {
+                    display: inline-block;
+                    padding: 5px 15px;
+                    background: ${eje ? eje.color : '#3498db'};
+                    color: white;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: bold;
+                    margin-bottom: 15px;
+                }
+                
+                .btn-accion {
+                    width: 100%;
+                    padding: 12px;
+                    background: rgba(255,255,255,0.1);
+                    border: 1px solid rgba(255,255,255,0.2);
+                    color: white;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    font-size: 14px;
+                    transition: all 0.3s ease;
+                    margin-top: 20px;
+                }
+                
+                .btn-accion:hover {
+                    background: rgba(255,255,255,0.2);
+                    transform: translateY(-2px);
+                }
+            </style>
+        `;
+        
+        panel.classList.add('open');
+    }
+    
+    function mostrarDetallesActividad(actividadId) {
+        const panel = document.getElementById('panelDetalles');
+        const titulo = document.getElementById('detalleTitulo');
+        const contenido = document.getElementById('detalleContenido');
+        
+        const actividad = mapa.actividades.find(a => a.id === actividadId);
+        if (!actividad) return;
+        
+        const estrategia = mapa.estrategias.find(e => e.id === actividad.estrategia_id);
+        const tareas = mapa.tareas.filter(t => t.actividad_id === actividadId);
+        
+        titulo.innerHTML = `<i class="fas fa-tasks"></i> Actividad #${actividadId}`;
+        
+        let tareasHTML = '';
+        if (tareas.length > 0) {
+            tareasHTML = `
+                <div class="seccion-detalles">
+                    <h4><i class="fas fa-check-circle"></i> Tareas (${tareas.length})</h4>
+                    ${tareas.map(tarea => {
+                        let estadoIcono = 'fa-clock';
+                        let estadoColor = '#f39c12';
+                        let estadoTexto = 'Pendiente';
+                        
+                        switch(tarea.estado) {
+                            case 'completada':
+                                estadoIcono = 'fa-check-circle';
+                                estadoColor = '#2ecc71';
+                                estadoTexto = 'Completada';
+                                break;
+                            case 'en-progreso':
+                                estadoIcono = 'fa-spinner';
+                                estadoColor = '#3498db';
+                                estadoTexto = 'En progreso';
+                                break;
+                        }
+                        
+                        return `
+                            <div class="item-detalle" onclick="mostrarDetallesTarea(${tarea.id})">
+                                <div class="item-estado" style="background: ${estadoColor}">
+                                    <i class="fas ${estadoIcono}"></i>
+                                </div>
+                                <div class="item-texto">${tarea.nombre}</div>
+                                <div class="item-badge" style="color: ${estadoColor}">${estadoTexto}</div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        contenido.innerHTML = `
+            <div class="detalle-actividad">
+                <div class="encabezado-detalle" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                    <div class="icono-grande">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3>${actividad.nombre}</h3>
+                    <p>Actividad de la estrategia: ${estrategia ? estrategia.estrategia.substring(0, 50) + '...' : 'No especificada'}</p>
+                </div>
+                
+                <div class="estadisticas-detalle">
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${tareas.length}</div>
+                        <div class="estadistica-label">Tareas</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${tareas.filter(t => t.estado === 'completada').length}</div>
+                        <div class="estadistica-label">Completadas</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${tareas.filter(t => t.estado === 'en-progreso').length}</div>
+                        <div class="estadistica-label">En progreso</div>
+                    </div>
+                </div>
+                
+                ${tareasHTML}
+                
+                <button class="btn-accion" onclick="seleccionarNodo('estrategia-${actividad.estrategia_id}')">
+                    <i class="fas fa-arrow-up"></i> Ver estrategia padre
+                </button>
+            </div>
+            
+            <style>
+                .item-estado {
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 14px;
+                }
+                
+                .item-badge {
+                    font-size: 11px;
+                    padding: 3px 10px;
+                    border-radius: 12px;
+                    background: rgba(255,255,255,0.1);
+                }
+            </style>
+        `;
+        
+        panel.classList.add('open');
+    }
+    
+    function mostrarDetallesTarea(tareaId) {
+        const panel = document.getElementById('panelDetalles');
+        const titulo = document.getElementById('detalleTitulo');
+        const contenido = document.getElementById('detalleContenido');
+        
+        const tarea = mapa.tareas.find(t => t.id === tareaId);
+        if (!tarea) return;
+        
+        const actividad = mapa.actividades.find(a => a.id === tarea.actividad_id);
+        
+        let estadoIcono = 'fa-clock';
+        let estadoColor = '#f39c12';
+        let estadoTexto = 'Pendiente';
+        
+        switch(tarea.estado) {
+            case 'completada':
+                estadoIcono = 'fa-check-circle';
+                estadoColor = '#2ecc71';
+                estadoTexto = 'Completada';
+                break;
+            case 'en-progreso':
+                estadoIcono = 'fa-spinner';
+                estadoColor = '#3498db';
+                estadoTexto = 'En progreso';
+                break;
+        }
+        
+        titulo.innerHTML = `<i class="fas ${estadoIcono}"></i> Tarea #${tareaId}`;
+        
+        contenido.innerHTML = `
+            <div class="detalle-tarea">
+                <div class="encabezado-detalle" style="background: linear-gradient(135deg, ${estadoColor}, ${oscurecerColor(estadoColor, 20)});">
+                    <div class="icono-grande">
+                        <i class="fas ${estadoIcono}"></i>
+                    </div>
+                    <div class="estado-badge">${estadoTexto}</div>
+                    <h3>${tarea.nombre}</h3>
+                    <p>Tarea de la actividad: ${actividad ? actividad.nombre.substring(0, 50) + '...' : 'No especificada'}</p>
+                </div>
+                
+                <div class="info-detalle">
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-calendar"></i> Estado
+                        </div>
+                        <div class="info-value" style="color: ${estadoColor}">
+                            ${estadoTexto}
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="fas fa-layer-group"></i> Jerarquía
+                        </div>
+                        <div class="info-value">
+                            ${actividad ? 
+                                `Actividad → Tarea` : 
+                                `Tarea independiente`
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="acciones-detalle">
+                    <button class="btn-accion" onclick="cambiarEstadoTarea(${tareaId}, 'pendiente')" style="background: ${tarea.estado === 'pendiente' ? estadoColor : 'rgba(255,255,255,0.1)'}">
+                        <i class="fas fa-clock"></i> Pendiente
+                    </button>
+                    <button class="btn-accion" onclick="cambiarEstadoTarea(${tareaId}, 'en-progreso')" style="background: ${tarea.estado === 'en-progreso' ? estadoColor : 'rgba(255,255,255,0.1)'}">
+                        <i class="fas fa-spinner"></i> En progreso
+                    </button>
+                    <button class="btn-accion" onclick="cambiarEstadoTarea(${tareaId}, 'completada')" style="background: ${tarea.estado === 'completada' ? estadoColor : 'rgba(255,255,255,0.1)'}">
+                        <i class="fas fa-check-circle"></i> Completada
+                    </button>
+                </div>
+                
+                <button class="btn-accion" onclick="seleccionarNodo('actividad-${tarea.actividad_id}')">
+                    <i class="fas fa-arrow-up"></i> Ver actividad padre
+                </button>
+            </div>
+            
+            <style>
+                .estado-badge {
+                    display: inline-block;
+                    padding: 8px 20px;
+                    background: rgba(255,255,255,0.2);
+                    color: white;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    font-weight: bold;
+                    margin-bottom: 15px;
+                }
+                
+                .info-detalle {
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin: 20px 0;
+                }
+                
+                .info-item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    padding: 10px 0;
+                    border-bottom: 1px solid rgba(255,255,255,0.1);
+                }
+                
+                .info-item:last-child {
+                    border-bottom: none;
+                }
+                
+                .info-label {
+                    color: rgba(255,255,255,0.7);
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                
+                .info-value {
+                    color: white;
+                    font-weight: 600;
+                }
+                
+                .acciones-detalle {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                    margin: 20px 0;
+                }
+                
+                .acciones-detalle .btn-accion {
+                    margin: 0;
+                    padding: 10px;
+                    font-size: 12px;
+                }
+            </style>
+        `;
+        
+        panel.classList.add('open');
+    }
+    
+    function cambiarEstadoTarea(tareaId, nuevoEstado) {
+        const tarea = mapa.tareas.find(t => t.id === tareaId);
+        if (tarea) {
+            tarea.estado = nuevoEstado;
+            
+            // Actualizar nodo visualmente
+            const nodoTarea = document.getElementById(`tarea-${tareaId}`);
+            if (nodoTarea) {
+                let estadoColor = '#f39c12';
+                let estadoIcono = 'fa-clock';
+                
+                switch(nuevoEstado) {
+                    case 'completada':
+                        estadoColor = '#2ecc71';
+                        estadoIcono = 'fa-check-circle';
+                        break;
+                    case 'en-progreso':
+                        estadoColor = '#3498db';
+                        estadoIcono = 'fa-spinner';
+                        break;
+                }
+                
+                const icono = nodoTarea.querySelector('.nodo-icon');
+                if (icono) {
+                    icono.style.background = `linear-gradient(135deg, ${estadoColor}, ${oscurecerColor(estadoColor, 20)})`;
+                    icono.innerHTML = `<i class="fas ${estadoIcono}"></i>`;
+                }
+            }
+            
+            // Actualizar conexión
+            const conexion = mapa.conexiones.find(c => c.targetId === `tarea-${tareaId}`);
+            if (conexion) {
+                conexion.color = estadoColor;
+            }
+            
+            mostrarDetallesTarea(tareaId);
+            mostrarNotificacion(`Tarea actualizada: ${nuevoEstado}`, 'success');
+        }
+    }
+    
+    function mostrarDetallesObjetivo() {
+        const panel = document.getElementById('panelDetalles');
+        const titulo = document.getElementById('detalleTitulo');
+        const contenido = document.getElementById('detalleContenido');
+        
+        titulo.innerHTML = `<i class="fas fa-brain"></i> Objetivo Estratégico`;
+        
+        contenido.innerHTML = `
+            <div class="detalle-objetivo">
+                <div class="encabezado-detalle" style="background: linear-gradient(135deg, #9C27B0, #E91E63);">
+                    <div class="icono-grande">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>OBJETIVO ESTRATÉGICO</h3>
+                    <p>Proyecto El Domo</p>
+                </div>
+                
+                <div class="descripcion-objetivo">
+                    <p>Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras, a través de la repotenciación de sistemas comunitarios y el monitoreo estricto de su calidad; este compromiso se complementa con la mejora de equipamiento en salud, la intervención en infraestructura sanitaria y lúdica de 4 unidades educativas, la reubicación estratégica de al menos el 60% del personal local hacia nuevos departamentos, y una cooperación técnica con los GADs y niveles distritales, todo dinamizado por un sistema de comunicación comunitaria que transparente la propuesta de valor y los beneficios del proyecto en el AID y AII.</p>
+                </div>
+                
+                <div class="estadisticas-detalle">
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${mapa.ejes.length}</div>
+                        <div class="estadistica-label">Ejes Estratégicos</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${mapa.estrategias.length}</div>
+                        <div class="estadistica-label">Estrategias</div>
+                    </div>
+                    <div class="estadistica-item">
+                        <div class="estadistica-valor">${mapa.actividades.length}</div>
+                        <div class="estadistica-label">Actividades</div>
+                    </div>
+                </div>
+                
+                <div class="ejes-lista">
+                    <h4><i class="fas fa-layer-group"></i> Ejes Estratégicos</h4>
+                    ${mapa.ejes.map(eje => `
+                        <div class="item-detalle" onclick="mostrarDetallesEje('${eje.id}')">
+                            <div class="item-icono" style="background: ${eje.color}">
+                                <i class="fas fa-${eje.icono}"></i>
+                            </div>
+                            <div class="item-texto">${eje.nombre}</div>
+                            <div class="item-badge">${mapa.estrategias.filter(e => e.eje_id === eje.id).length} estrategias</div>
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+            
+            <style>
+                .descripcion-objetivo {
+                    background: rgba(255,255,255,0.05);
+                    border-radius: 10px;
+                    padding: 20px;
+                    margin: 20px 0;
+                    line-height: 1.6;
+                    color: rgba(255,255,255,0.9);
+                }
+                
+                .item-icono {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                }
+            </style>
+        `;
+        
+        panel.classList.add('open');
+    }
+    
+    function mostrarDetalleObjetivo() {
+        mostrarDetallesObjetivo();
     }
     
     function cerrarPanel() {
         document.getElementById('panelDetalles').classList.remove('open');
-        if (nodoSeleccionado) {
-            nodoSeleccionado.classList.remove('nodo-seleccionado');
-            nodoSeleccionado = null;
+        if (config.nodoSeleccionado) {
+            config.nodoSeleccionado.classList.remove('seleccionado');
+            config.nodoSeleccionado = null;
         }
+    }
+    
+    // Funciones de filtrado
+    function aplicarFiltro() {
+        config.filtroNivel = document.getElementById('filtro-nivel').value;
+        
+        const todosNodos = document.querySelectorAll('.nodo');
+        
+        todosNodos.forEach(nodo => {
+            const tipo = nodo.dataset.tipo || (nodo.id === 'nodo-objetivo' ? 'objetivo' : '');
+            
+            if (config.filtroNivel === 'todos') {
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+            } else if (config.filtroNivel === 'objetivo' && nodo.id === 'nodo-objetivo') {
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+            } else if (config.filtroNivel === 'ejes' && tipo === 'eje') {
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+            } else if (config.filtroNivel === 'estrategias' && tipo === 'estrategia') {
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+            } else if (config.filtroNivel === 'actividades' && tipo === 'actividad') {
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+            } else if (config.filtroNivel === 'tareas' && tipo === 'tarea') {
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+            } else {
+                nodo.style.opacity = '0.2';
+                nodo.style.pointerEvents = 'none';
+            }
+        });
+        
+        // Aplicar también filtro por eje si está activo
+        if (config.filtroEje !== 'todos') {
+            filtrarPorEje();
+        }
+        
+        mostrarNotificacion(`Filtro aplicado: ${config.filtroNivel}`, 'info');
+    }
+    
+    function filtrarPorEje() {
+        config.filtroEje = document.getElementById('filtro-eje').value;
+        
+        if (config.filtroEje === 'todos') {
+            // Mostrar todos los nodos según el filtro de nivel
+            aplicarFiltro();
+            return;
+        }
+        
+        const todosNodos = document.querySelectorAll('.nodo');
+        
+        todosNodos.forEach(nodo => {
+            const ejeId = nodo.dataset.ejeId || 
+                         (nodo.id === 'nodo-objetivo' ? 'todos' : 
+                          (nodo.id.startsWith('estrategia-') ? mapa.estrategias.find(e => e.id === parseInt(nodo.id.replace('estrategia-', '')))?.eje_id : null));
+            
+            if (nodo.id === 'nodo-objetivo') {
+                // El objetivo siempre visible
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+            } else if (ejeId === config.filtroEje) {
+                // Mostrar nodos del eje seleccionado
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+            } else if (nodo.dataset.tipo === 'eje' && nodo.id === `nodo-${config.filtroEje}`) {
+                // Mostrar el eje seleccionado
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
+            } else {
+                // Ocultar otros nodos
+                nodo.style.opacity = '0.1';
+                nodo.style.pointerEvents = 'none';
+            }
+        });
+        
+        // Resaltar el eje seleccionado
+        const ejeSeleccionado = document.getElementById(`nodo-${config.filtroEje}`);
+        if (ejeSeleccionado) {
+            ejeSeleccionado.classList.add('seleccionado');
+            config.nodoSeleccionado = ejeSeleccionado;
+        }
+        
+        mostrarNotificacion(`Mostrando eje: ${config.filtroEje}`, 'info');
     }
     
     // Funciones de control
@@ -1597,9 +2964,9 @@
     }
     
     function resetView() {
-        zoomLevel = 1;
-        translateX = 0;
-        translateY = 0;
+        config.zoomLevel = 1;
+        config.translateX = 0;
+        config.translateY = 0;
         document.getElementById('zoomSlider').value = 1;
         document.getElementById('zoomValue').textContent = '100%';
         actualizarTransformacion();
@@ -1607,83 +2974,92 @@
     }
     
     function toggleAnimations() {
-        animacionesActivas = !animacionesActivas;
+        config.animacionesActivas = !config.animacionesActivas;
         const icon = document.getElementById('animacionIcon');
         
-        if (animacionesActivas) {
+        if (config.animacionesActivas) {
             icon.className = 'fas fa-pause';
-            document.querySelectorAll('.conexion').forEach(line => {
-                line.style.animationPlayState = 'running';
+            document.querySelectorAll('.conexion, .nodo-icon-pulse').forEach(elemento => {
+                elemento.style.animationPlayState = 'running';
             });
         } else {
             icon.className = 'fas fa-play';
-            document.querySelectorAll('.conexion').forEach(line => {
-                line.style.animationPlayState = 'paused';
+            document.querySelectorAll('.conexion, .nodo-icon-pulse').forEach(elemento => {
+                elemento.style.animationPlayState = 'paused';
             });
         }
         
-        mostrarNotificacion(`Animaciones ${animacionesActivas ? 'activadas' : 'pausadas'}`, 'info');
+        mostrarNotificacion(`Animaciones ${config.animacionesActivas ? 'activadas' : 'pausadas'}`, 'info');
+    }
+    
+    function cambiarModo(modo) {
+        config.modo = modo;
+        
+        // Actualizar botones
+        document.querySelectorAll('.modo-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(`modo-${modo}`).classList.add('active');
+        
+        // Cambiar cursor
+        const canvas = document.getElementById('mapaCanvas');
+        canvas.style.cursor = modo === 'navegacion' ? 'grab' : 'pointer';
+        
+        mostrarNotificacion(`Modo: ${modo === 'navegacion' ? 'Navegación' : 'Selección'}`, 'info');
     }
     
     function exportMap() {
         mostrarNotificacion('Preparando exportación del mapa...', 'success');
+        
+        // En una implementación real, aquí se exportaría el mapa como imagen
         setTimeout(() => {
             mostrarNotificacion('Mapa exportado exitosamente', 'success');
         }, 1500);
     }
     
-    function filtrarNodos() {
-        const nivel = document.getElementById('filtro-nivel').value;
-        const todosNodos = document.querySelectorAll('.nodo');
-        
-        todosNodos.forEach(nodo => {
-            if (nivel === 'all') {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (nivel === 'objetivo' && nodo.classList.contains('nodo-central')) {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (nivel === 'ejes' && nodo.classList.contains('nodo-eje')) {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (nivel === 'estrategias' && nodo.classList.contains('nodo-estrategia')) {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (nivel === 'actividades' && nodo.classList.contains('nodo-actividad')) {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else if (nivel === 'tareas' && nodo.classList.contains('nodo-tarea')) {
-                nodo.style.opacity = '1';
-                nodo.style.pointerEvents = 'auto';
-            } else {
-                nodo.style.opacity = '0.2';
-                nodo.style.pointerEvents = 'none';
-            }
-        });
-        
-        mostrarNotificacion(`Filtro aplicado: ${nivel}`, 'info');
+    function recalcularPosiciones() {
+        // Esta función se llama cuando se redimensiona la ventana
+        // En una implementación más avanzada, se recalcularían las posiciones de todos los nodos
+        dibujarConexiones();
     }
     
-    function recalcularPosiciones() {
-        const ejes = document.querySelectorAll('.nodo-eje');
-        const canvas = document.getElementById('mapaCanvas');
-        const canvasRect = canvas.getBoundingClientRect();
+    function actualizarMinimap() {
+        const minimap = document.getElementById('minimapViewport');
+        if (!minimap) return;
         
-        const centroX = canvasRect.width / 2;
-        const centroY = canvasRect.height / 2;
-        const radio = Math.min(canvasRect.width, canvasRect.height) * 0.35;
+        const scale = 0.15;
+        const viewportWidth = 150 * (1/config.zoomLevel);
+        const viewportHeight = 150 * (1/config.zoomLevel);
+        const viewportX = -config.translateX * scale + 75;
+        const viewportY = -config.translateY * scale + 75;
         
-        ejes.forEach((eje, index) => {
-            const angulo = (2 * Math.PI / ejes.length) * index;
-            const x = centroX + radio * Math.cos(angulo);
-            const y = centroY + radio * Math.sin(angulo);
-            
-            eje.style.left = `${x}px`;
-            eje.style.top = `${y}px`;
-        });
-        
-        // Actualizar conexiones
-        dibujarConexiones();
+        minimap.style.width = `${viewportWidth}px`;
+        minimap.style.height = `${viewportHeight}px`;
+        minimap.style.left = `${viewportX}px`;
+        minimap.style.top = `${viewportY}px`;
+    }
+    
+    // Funciones de carga
+    function mostrarCargando(mensaje, progreso) {
+        const overlay = document.getElementById('cargandoOverlay');
+        overlay.style.display = 'flex';
+        document.getElementById('estadoCarga').textContent = mensaje;
+        actualizarProgresoCarga(progreso);
+    }
+    
+    function actualizarProgresoCarga(progreso) {
+        document.getElementById('progresoCarga').style.width = `${progreso}%`;
+    }
+    
+    function ocultarCargando() {
+        setTimeout(() => {
+            const overlay = document.getElementById('cargandoOverlay');
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.style.opacity = '1';
+            }, 500);
+        }, 500);
     }
     
     function mostrarNotificacion(mensaje, tipo) {
@@ -1694,7 +3070,9 @@
             top: 100px;
             right: 20px;
             padding: 15px 20px;
-            background: ${tipo === 'success' ? 'rgba(46, 204, 113, 0.9)' : tipo === 'info' ? 'rgba(52, 152, 219, 0.9)' : 'rgba(241, 196, 15, 0.9)'};
+            background: ${tipo === 'success' ? 'rgba(46, 204, 113, 0.9)' : 
+                         tipo === 'error' ? 'rgba(231, 76, 60, 0.9)' : 
+                         'rgba(52, 152, 219, 0.9)'};
             color: white;
             border-radius: 10px;
             font-weight: 600;
@@ -1707,10 +3085,13 @@
             align-items: center;
             gap: 10px;
             max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         `;
         
         notificacion.innerHTML = `
-            <i class="fas fa-${tipo === 'success' ? 'check-circle' : 'info-circle'}"></i>
+            <i class="fas fa-${tipo === 'success' ? 'check-circle' : 
+                               tipo === 'error' ? 'exclamation-circle' : 
+                               'info-circle'}"></i>
             ${mensaje}
         `;
         
@@ -1728,16 +3109,10 @@
         }, 3000);
     }
     
-    // Detectar cambios en fullscreen
-    document.addEventListener('fullscreenchange', recalcularPosiciones);
-    document.addEventListener('webkitfullscreenchange', recalcularPosiciones);
-    document.addEventListener('mozfullscreenchange', recalcularPosiciones);
-    document.addEventListener('MSFullscreenChange', recalcularPosiciones);
-    
-    // Limpiar intervalo al salir
+    // Limpiar recursos al salir
     window.addEventListener('beforeunload', function() {
-        if (intervaloConexiones) {
-            clearInterval(intervaloConexiones);
+        if (elementos.animacionFrame) {
+            cancelAnimationFrame(elementos.animacionFrame);
         }
     });
 </script>
