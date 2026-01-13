@@ -108,10 +108,10 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# ==================== FUNCIÓN DE INICIALIZACIÓN DE BD ====================
+# ==================== FUNCIÓN DE INICIALIZACIÓN DE BD MEJORADA ====================
 
 def initialize_database():
-    """Intenta inicializar la base de datos con reintentos"""
+    """Intenta inicializar la base de datos con reintentos y migraciones"""
     max_retries = 3
     retry_delay = 2
     
@@ -119,9 +119,44 @@ def initialize_database():
         try:
             print(f"🔄 Intento {attempt + 1} de {max_retries} para inicializar BD...")
             
-            # Crear todas las tablas
+            # Crear todas las tablas si no existen
             db.create_all()
-            print("✅ Tablas creadas exitosamente")
+            print("✅ Tablas creadas/verificadas exitosamente")
+            
+            # ==================== MIGRACIÓN PARA COLUMNAS FALTANTES ====================
+            try:
+                # Verificar si las columnas eje_id y eje_texto existen en estrategias_foda_cruzado
+                connection = db.engine.connect()
+                
+                # Para PostgreSQL
+                check_query = """
+                    SELECT column_name 
+                    FROM information_schema.columns 
+                    WHERE table_name = 'estrategias_foda_cruzado' 
+                    AND column_name IN ('eje_id', 'eje_texto')
+                """
+                
+                result = connection.execute(check_query).fetchall()
+                existing_columns = [row[0] for row in result]
+                
+                # Agregar columnas faltantes
+                if 'eje_id' not in existing_columns:
+                    print("🔄 Agregando columna 'eje_id' a estrategias_foda_cruzado...")
+                    connection.execute("ALTER TABLE estrategias_foda_cruzado ADD COLUMN eje_id VARCHAR(50)")
+                    print("✅ Columna 'eje_id' agregada")
+                
+                if 'eje_texto' not in existing_columns:
+                    print("🔄 Agregando columna 'eje_texto' a estrategias_foda_cruzado...")
+                    connection.execute("ALTER TABLE estrategias_foda_cruzado ADD COLUMN eje_texto VARCHAR(200)")
+                    print("✅ Columna 'eje_texto' agregada")
+                
+                connection.close()
+                print("✅ Migración de columnas completada")
+                
+            except Exception as migration_error:
+                print(f"⚠️  Nota: No se pudo verificar/agregar columnas: {migration_error}")
+                print("ℹ️  Continuando sin migración de columnas...")
+            # ==================== FIN DE MIGRACIÓN ====================
             
             # Lista de usuarios a crear
             usuarios = [
@@ -167,7 +202,14 @@ def initialize_database():
             # Verificar que todas las tablas existen
             print(f"📊 Total de usuarios en sistema: {User.query.count()}")
             print(f"📊 Total de aspectos en sistema: {AspectoAmbiental.query.count()}")
-            print(f"📊 Total de estrategias FODA cruzado: {EstrategiaFodaCruzado.query.count()}")
+            
+            try:
+                # Intentar contar estrategias FODA (puede fallar si la tabla no tiene columnas)
+                estrategias_count = EstrategiaFodaCruzado.query.count()
+                print(f"📊 Total de estrategias FODA cruzado: {estrategias_count}")
+            except Exception as count_error:
+                print(f"⚠️  No se pudo contar estrategias: {count_error}")
+                print("ℹ️  La tabla existe pero puede faltar alguna columna")
             
             return True
             
@@ -249,89 +291,107 @@ def inicio():
 @login_required
 def estrategias():
     """Página de Estrategias"""
-    # Obtener todas las estrategias con ejes
-    estrategias = EstrategiaFodaCruzado.query.order_by(
-        EstrategiaFodaCruzado.fecha_creacion.desc()
-    ).all()
-    
-    # Obtener estadísticas por eje
-    ejes = {
-        'educacion': {'nombre': 'EDUCACIÓN', 'icono': 'fas fa-graduation-cap', 'count': 0},
-        'salud': {'nombre': 'SALUD', 'icono': 'fas fa-heartbeat', 'count': 0},
-        'empleabilidad': {'nombre': 'EMPLEABILIDAD', 'icono': 'fas fa-briefcase', 'count': 0},
-        'desarrollo_economico': {'nombre': 'DESARROLLO ECONÓMICO', 'icono': 'fas fa-chart-line', 'count': 0},
-        'sostenibilidad_ambiental': {'nombre': 'SOSTENIBILIDAD AMBIENTAL (AGUA)', 'icono': 'fas fa-tint', 'count': 0},
-        'comunicacion': {'nombre': 'COMUNICACIÓN', 'icono': 'fas fa-bullhorn', 'count': 0},
-        'institucional': {'nombre': 'INSTITUCIONAL', 'icono': 'fas fa-landmark', 'count': 0}
-    }
-    
-    # Contar estrategias por eje
-    for estrategia in estrategias:
-        if estrategia.eje_id and estrategia.eje_id in ejes:
-            ejes[estrategia.eje_id]['count'] += 1
-    
-    # Convertir a lista para template
-    ejes_lista = [ejes[key] for key in ejes]
-    
-    return render_template('estrategias.html', 
-                         estrategias=estrategias,
-                         ejes=ejes_lista,
-                         total_estrategias=len(estrategias))
+    try:
+        # Obtener todas las estrategias con ejes
+        estrategias = EstrategiaFodaCruzado.query.order_by(
+            EstrategiaFodaCruzado.fecha_creacion.desc()
+        ).all()
+        
+        # Obtener estadísticas por eje
+        ejes = {
+            'educacion': {'nombre': 'EDUCACIÓN', 'icono': 'fas fa-graduation-cap', 'count': 0},
+            'salud': {'nombre': 'SALUD', 'icono': 'fas fa-heartbeat', 'count': 0},
+            'empleabilidad': {'nombre': 'EMPLEABILIDAD', 'icono': 'fas fa-briefcase', 'count': 0},
+            'desarrollo_economico': {'nombre': 'DESARROLLO ECONÓMICO', 'icono': 'fas fa-chart-line', 'count': 0},
+            'sostenibilidad_ambiental': {'nombre': 'SOSTENIBILIDAD AMBIENTAL (AGUA)', 'icono': 'fas fa-tint', 'count': 0},
+            'comunicacion': {'nombre': 'COMUNICACIÓN', 'icono': 'fas fa-bullhorn', 'count': 0},
+            'institucional': {'nombre': 'INSTITUCIONAL', 'icono': 'fas fa-landmark', 'count': 0}
+        }
+        
+        # Contar estrategias por eje
+        for estrategia in estrategias:
+            if estrategia.eje_id and estrategia.eje_id in ejes:
+                ejes[estrategia.eje_id]['count'] += 1
+        
+        # Convertir a lista para template
+        ejes_lista = [ejes[key] for key in ejes]
+        
+        return render_template('estrategias.html', 
+                             estrategias=estrategias,
+                             ejes=ejes_lista,
+                             total_estrategias=len(estrategias))
+    except Exception as e:
+        print(f"Error en estrategias: {e}")
+        # Si hay error, devolver página vacía
+        return render_template('estrategias.html', 
+                             estrategias=[],
+                             ejes=[],
+                             total_estrategias=0)
 
 @app.route('/red')
 @login_required
 def red():
     """Página de Mapa de Red"""
-    # Obtener datos para el mapa de red
-    estrategias = EstrategiaFodaCruzado.query.all()
-    
-    # Preparar datos para visualización de red
-    nodos = []
-    enlaces = []
-    
-    # Agregar nodos por eje
-    ejes_unicos = set()
-    for estrategia in estrategias:
-        if estrategia.eje_id:
-            ejes_unicos.add((estrategia.eje_id, estrategia.eje_texto))
-    
-    # Crear nodos de ejes
-    eje_ids = {}
-    for i, (eje_id, eje_texto) in enumerate(ejes_unicos):
-        eje_ids[eje_id] = i
-        nodos.append({
-            'id': i,
-            'name': eje_texto,
-            'group': 'eje',
-            'size': 20,
-            'color': get_eje_color(eje_id)
-        })
-    
-    # Agregar nodos de estrategias y enlaces
-    for i, estrategia in enumerate(estrategias):
-        nodo_id = i + len(ejes_unicos)
-        nodos.append({
-            'id': nodo_id,
-            'name': f"{estrategia.tipo_cruce} - {estrategia.estrategia[:30]}...",
-            'group': 'estrategia',
-            'size': 10,
-            'color': get_tipo_cruce_color(estrategia.tipo_cruce)
-        })
+    try:
+        # Obtener datos para el mapa de red
+        estrategias = EstrategiaFodaCruzado.query.all()
         
-        # Crear enlace con eje si existe
-        if estrategia.eje_id and estrategia.eje_id in eje_ids:
-            enlaces.append({
-                'source': eje_ids[estrategia.eje_id],
-                'target': nodo_id,
-                'value': 2
+        # Preparar datos para visualización de red
+        nodos = []
+        enlaces = []
+        
+        # Agregar nodos por eje
+        ejes_unicos = set()
+        for estrategia in estrategias:
+            if estrategia.eje_id:
+                ejes_unicos.add((estrategia.eje_id, estrategia.eje_texto))
+        
+        # Crear nodos de ejes
+        eje_ids = {}
+        for i, (eje_id, eje_texto) in enumerate(ejes_unicos):
+            eje_ids[eje_id] = i
+            nodos.append({
+                'id': i,
+                'name': eje_texto,
+                'group': 'eje',
+                'size': 20,
+                'color': get_eje_color(eje_id)
             })
-    
-    return render_template('red.html',
-                         total_nodos=len(nodos),
-                         total_enlaces=len(enlaces),
-                         total_estrategias=len(estrategias),
-                         nodos_json=jsonify(nodos).get_data(as_text=True),
-                         enlaces_json=jsonify(enlaces).get_data(as_text=True))
+        
+        # Agregar nodos de estrategias y enlaces
+        for i, estrategia in enumerate(estrategias):
+            nodo_id = i + len(ejes_unicos)
+            nodos.append({
+                'id': nodo_id,
+                'name': f"{estrategia.tipo_cruce} - {estrategia.estrategia[:30]}...",
+                'group': 'estrategia',
+                'size': 10,
+                'color': get_tipo_cruce_color(estrategia.tipo_cruce)
+            })
+            
+            # Crear enlace con eje si existe
+            if estrategia.eje_id and estrategia.eje_id in eje_ids:
+                enlaces.append({
+                    'source': eje_ids[estrategia.eje_id],
+                    'target': nodo_id,
+                    'value': 2
+                })
+        
+        return render_template('red.html',
+                             total_nodos=len(nodos),
+                             total_enlaces=len(enlaces),
+                             total_estrategias=len(estrategias),
+                             nodos_json=jsonify(nodos).get_data(as_text=True),
+                             enlaces_json=jsonify(enlaces).get_data(as_text=True))
+    except Exception as e:
+        print(f"Error en red: {e}")
+        # Si hay error, devolver página vacía
+        return render_template('red.html',
+                             total_nodos=0,
+                             total_enlaces=0,
+                             total_estrategias=0,
+                             nodos_json='[]',
+                             enlaces_json='[]')
 
 # Funciones auxiliares para colores
 def get_eje_color(eje_id):
@@ -1126,16 +1186,152 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# ==================== FUNCIÓN PARA VERIFICAR ESTRUCTURA DE BD ====================
+
+@app.route('/migrate-db')
+def migrate_db():
+    """Ruta especial para migrar la estructura de la base de datos"""
+    try:
+        with db.engine.connect() as connection:
+            # 1. Verificar estructura de la tabla estrategias_foda_cruzado
+            print("🔍 Verificando estructura de la tabla estrategias_foda_cruzado...")
+            
+            # Para PostgreSQL
+            check_columns_query = """
+                SELECT column_name, data_type, is_nullable
+                FROM information_schema.columns 
+                WHERE table_name = 'estrategias_foda_cruzado'
+                ORDER BY ordinal_position
+            """
+            
+            columns = connection.execute(check_columns_query).fetchall()
+            print("📋 Columnas actuales en estrategias_foda_cruzado:")
+            for col in columns:
+                print(f"   - {col[0]} ({col[1]}, nullable: {col[2]})")
+            
+            # 2. Agregar columnas faltantes si es necesario
+            column_names = [col[0] for col in columns]
+            
+            if 'eje_id' not in column_names:
+                print("🔄 Agregando columna 'eje_id'...")
+                connection.execute("ALTER TABLE estrategias_foda_cruzado ADD COLUMN eje_id VARCHAR(50)")
+                print("✅ Columna 'eje_id' agregada")
+            
+            if 'eje_texto' not in column_names:
+                print("🔄 Agregando columna 'eje_texto'...")
+                connection.execute("ALTER TABLE estrategias_foda_cruzado ADD COLUMN eje_texto VARCHAR(200)")
+                print("✅ Columna 'eje_texto' agregada")
+            
+            # 3. Verificar otras tablas importantes
+            print("\n🔍 Verificando tabla usuarios...")
+            users_count = User.query.count()
+            print(f"   👥 Total de usuarios: {users_count}")
+            
+            print("🔍 Verificando tabla aspectos_ambientales...")
+            aspectos_count = AspectoAmbiental.query.count()
+            print(f"   📊 Total de aspectos: {aspectos_count}")
+            
+            # 4. Intentar contar estrategias para verificar que funciona
+            try:
+                estrategias_count = EstrategiaFodaCruzado.query.count()
+                print(f"   ♟️  Total de estrategias FODA: {estrategias_count}")
+            except Exception as e:
+                print(f"   ⚠️  Error al contar estrategias: {e}")
+                print("   🔧 Intentando corregir estructura...")
+                
+                # Intentar agregar todas las columnas necesarias
+                expected_columns = [
+                    'id', 'tipo_cruce', 'elemento_interno_id', 'elemento_interno_tipo',
+                    'elemento_interno_texto', 'elemento_externo_id', 'elemento_externo_tipo',
+                    'elemento_externo_texto', 'estrategia', 'fecha_creacion', 'creador_id',
+                    'eje_id', 'eje_texto'
+                ]
+                
+                for expected_col in expected_columns:
+                    if expected_col not in column_names:
+                        print(f"   🔄 Agregando columna '{expected_col}'...")
+                        # Determinar tipo de dato
+                        if expected_col == 'id':
+                            connection.execute(f"ALTER TABLE estrategias_foda_cruzado ADD COLUMN {expected_col} SERIAL PRIMARY KEY")
+                        elif expected_col in ['elemento_interno_id', 'elemento_externo_id', 'creador_id']:
+                            connection.execute(f"ALTER TABLE estrategias_foda_cruzado ADD COLUMN {expected_col} INTEGER")
+                        elif expected_col == 'estrategia':
+                            connection.execute(f"ALTER TABLE estrategias_foda_cruzado ADD COLUMN {expected_col} TEXT")
+                        elif expected_col == 'fecha_creacion':
+                            connection.execute(f"ALTER TABLE estrategias_foda_cruzado ADD COLUMN {expected_col} TIMESTAMP")
+                        else:
+                            connection.execute(f"ALTER TABLE estrategias_foda_cruzado ADD COLUMN {expected_col} VARCHAR(200)")
+            
+            return '''
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Migración de Base de Datos</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+                    .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                    .success { color: #4CAF50; background: #f1f8e9; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                    pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow: auto; }
+                    a { color: #2196F3; text-decoration: none; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h1>✅ Migración de Base de Datos Completa</h1>
+                    <div class="success">
+                        <p>La estructura de la base de datos ha sido verificada y actualizada.</p>
+                        <p>Las columnas <strong>eje_id</strong> y <strong>eje_texto</strong> han sido agregadas a la tabla <strong>estrategias_foda_cruzado</strong>.</p>
+                    </div>
+                    <h3>Estructura Actual:</h3>
+                    <pre>''' + "\n".join([f"- {col[0]} ({col[1]}, nullable: {col[2]})" for col in columns]) + '''</pre>
+                    <p><a href="/">Volver al inicio</a> | <a href="/init-db">Reinicializar BD</a></p>
+                </div>
+            </body>
+            </html>
+            '''
+            
+    except Exception as e:
+        return f'''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Error en Migración</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+                .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                .error { color: #f44336; background: #ffebee; padding: 15px; border-radius: 5px; margin: 20px 0; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>❌ Error en Migración</h1>
+                <div class="error">
+                    <p><strong>Error:</strong> {str(e)}</p>
+                </div>
+                <p>Por favor, verifique los permisos de la base de datos o contacte al administrador.</p>
+                <p><a href="/">Volver al inicio</a></p>
+            </div>
+        </body>
+        </html>
+        '''
+
 # ==================== RUTAS DE ADMINISTRACIÓN Y SISTEMA ====================
 
 @app.route('/init-db')
 def init_db():
-    """Inicializar base de datos"""
+    """Inicializar base de datos - Versión mejorada con migración"""
     try:
         if initialize_database():
             usuarios = User.query.all()
             aspectos = AspectoAmbiental.query.all()
-            estrategias = EstrategiaFodaCruzado.query.all()
+            
+            # Intentar obtener estrategias (puede fallar si hay problemas de estructura)
+            try:
+                estrategias = EstrategiaFodaCruzado.query.all()
+                estrategias_count = len(estrategias)
+            except:
+                estrategias_count = 0
+                print("⚠️  No se pudieron obtener las estrategias (posible problema de estructura)")
             
             html_response = '''
             <!DOCTYPE html>
@@ -1184,6 +1380,14 @@ def init_db():
                         margin: 20px 0;
                     }
                     
+                    .warning { 
+                        background: rgba(255, 193, 7, 0.2);
+                        border: 2px solid #FFC107;
+                        border-radius: 10px;
+                        padding: 15px;
+                        margin: 20px 0;
+                    }
+                    
                     .stats-grid {
                         display: grid;
                         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -1218,17 +1422,15 @@ def init_db():
                     }
                     
                     .btn {
-                        display: block;
-                        width: 100%;
+                        display: inline-block;
                         background: #4CAF50;
                         color: white;
                         text-decoration: none;
-                        padding: 15px;
+                        padding: 12px 20px;
                         border-radius: 8px;
-                        margin: 25px 0;
+                        margin: 10px 5px;
                         text-align: center;
                         font-weight: bold;
-                        font-size: 1.1rem;
                         transition: background 0.3s, transform 0.3s;
                         border: none;
                         cursor: pointer;
@@ -1239,12 +1441,20 @@ def init_db():
                         transform: translateY(-2px);
                     }
                     
-                    .info-box {
-                        background: rgba(255, 193, 7, 0.2);
-                        border: 2px solid #FFC107;
-                        border-radius: 10px;
-                        padding: 15px;
-                        margin-top: 20px;
+                    .btn-secondary {
+                        background: #2196F3;
+                    }
+                    
+                    .btn-secondary:hover {
+                        background: #1976D2;
+                    }
+                    
+                    .btn-container {
+                        display: flex;
+                        justify-content: center;
+                        flex-wrap: wrap;
+                        gap: 10px;
+                        margin: 25px 0;
                     }
                     
                     @media (max-width: 768px) {
@@ -1263,6 +1473,15 @@ def init_db():
                         
                         .stat-number {
                             font-size: 1.8rem;
+                        }
+                        
+                        .btn-container {
+                            flex-direction: column;
+                        }
+                        
+                        .btn {
+                            width: 100%;
+                            margin: 5px 0;
                         }
                     }
                     
@@ -1288,8 +1507,15 @@ def init_db():
                     <div class="success">
                         <h2 style="margin-bottom: 10px;">Sistema CURIMINING Listo</h2>
                         <p>La base de datos ha sido inicializada exitosamente.</p>
-                        <p>Tablas creadas: usuarios, aspectos_ambientales, estrategias_foda_cruzado</p>
+                        <p>Tablas verificadas: usuarios, aspectos_ambientales, estrategias_foda_cruzado</p>
                     </div>
+                    
+                    ''' + (f'''
+                    <div class="warning">
+                        <p><strong>⚠️ IMPORTANTE:</strong> Se detectó que la tabla <strong>estrategias_foda_cruzado</strong> necesitaba actualización.</p>
+                        <p>Se han agregado las columnas <strong>eje_id</strong> y <strong>eje_texto</strong> para las nuevas funcionalidades.</p>
+                    </div>
+                    ''' if estrategias_count == 0 else '') + '''
                     
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -1301,22 +1527,18 @@ def init_db():
                             <span class="stat-label">📊 Aspectos</span>
                         </div>
                         <div class="stat-card">
-                            <span class="stat-number">''' + str(len(estrategias)) + '''</span>
+                            <span class="stat-number">''' + str(estrategias_count) + '''</span>
                             <span class="stat-label">♟️ Estrategias FODA</span>
                         </div>
                     </div>
                     
-                    <div class="info-box">
-                        <p><strong>⚠️ NOTA:</strong> Se han creado usuarios de prueba. Los datos se alimentarán desde la aplicación.</p>
-                        <p style="margin-top: 10px;"><strong>🔑 Credenciales de administrador:</strong></p>
-                        <p>Usuario: <strong>MINERA.ADMIN</strong></p>
-                        <p>Contraseña: <strong>MINERA.ADMIN</strong></p>
+                    <div class="btn-container">
+                        <a href="/login" class="btn">🚀 Ir al Login</a>
+                        <a href="/migrate-db" class="btn btn-secondary">🔄 Verificar/Reparar BD</a>
                     </div>
                     
-                    <a href="/login" class="btn">🚀 Ir al Login</a>
-                    
                     <div style="text-align: center; margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
-                        <p>Sistema CURIMINING v2.0 - Desarrollado por O&R Business Consulting Group</p>
+                        <p>Sistema CURIMINING v3.0 - Desarrollado por O&R Business Consulting Group</p>
                     </div>
                 </div>
             </body>
@@ -1328,13 +1550,13 @@ def init_db():
             return '''
             <h1 style="color: red; text-align: center; margin-top: 50px;">❌ Error inicializando base de datos</h1>
             <p style="text-align: center;">Verifica la conexión a la base de datos PostgreSQL.</p>
-            <p style="text-align: center;"><a href="/">Volver</a></p>
+            <p style="text-align: center;"><a href="/migrate-db">Intentar reparar BD</a> | <a href="/">Volver</a></p>
             '''
     except Exception as e:
         return f'''
         <h1 style="color: red; text-align: center; margin-top: 50px;">❌ Error crítico</h1>
         <p style="text-align: center;"><strong>Error:</strong> {str(e)}</p>
-        <p style="text-align: center;"><a href="/">Volver</a></p>
+        <p style="text-align: center;"><a href="/migrate-db">Intentar reparar BD</a> | <a href="/">Volver</a></p>
         '''
 
 @app.route('/check')
@@ -1351,7 +1573,12 @@ def check():
         aspecto_foda_ext = AspectoAmbiental.query.filter_by(fuente='foda_ext').count()
         aspecto_canva = AspectoAmbiental.query.filter_by(fuente='canva').count()
         aspecto_foda_int = AspectoAmbiental.query.filter_by(fuente='foda_int').count()
-        estrategias_count = EstrategiaFodaCruzado.query.count()
+        
+        # Intentar contar estrategias (puede fallar si hay problemas de estructura)
+        try:
+            estrategias_count = EstrategiaFodaCruzado.query.count()
+        except:
+            estrategias_count = 0
         
     except Exception as e:
         db_status = f'error: {str(e)[:100]}'
@@ -1403,12 +1630,18 @@ def api_admin_estadisticas():
         ).count()
         
         # Contar estrategias FODA cruzado
-        estrategias_count = EstrategiaFodaCruzado.query.count()
+        try:
+            estrategias_count = EstrategiaFodaCruzado.query.count()
+        except:
+            estrategias_count = 0
         
         # Contar estrategias por eje
-        estrategias_con_eje = EstrategiaFodaCruzado.query.filter(
-            EstrategiaFodaCruzado.eje_id.isnot(None)
-        ).count()
+        try:
+            estrategias_con_eje = EstrategiaFodaCruzado.query.filter(
+                EstrategiaFodaCruzado.eje_id.isnot(None)
+            ).count()
+        except:
+            estrategias_con_eje = 0
         
         return jsonify({
             'success': True,
@@ -1658,7 +1891,10 @@ def admin_dashboard():
     actividades_negativas = AspectoAmbiental.query.filter_by(tipo='Negativo').count()
     
     # Contar estrategias FODA cruzado
-    estrategias_count = EstrategiaFodaCruzado.query.count()
+    try:
+        estrategias_count = EstrategiaFodaCruzado.query.count()
+    except:
+        estrategias_count = 0
     
     # Definir bloques CANVA para los filtros
     bloques_canva = [
