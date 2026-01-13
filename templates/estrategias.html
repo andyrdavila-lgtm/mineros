@@ -2,15 +2,26 @@
 
 {% block content %}
 <div class="estrategias-main-container">
-    <h1 class="content-title">
-        <i class="fas fa-chess-board"></i> Planificación de Estrategias
-    </h1>
+    <div class="estrategias-header">
+        <h1 class="content-title">
+            <i class="fas fa-chess-queen"></i> Planificación de Estrategias
+        </h1>
+        <p class="content-subtitle">Desglose estratégico: De ejes a tácticas y actividades operativas</p>
+    </div>
 
     <div class="estrategias-container">
         <!-- Panel izquierdo: Tabla de Ejes y Estrategias -->
         <div class="panel-izquierdo">
             <div class="panel-header">
-                <h2><i class="fas fa-layer-group"></i> Ejes y Estrategias</h2>
+                <div class="panel-title-container">
+                    <div class="panel-icon-badge">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div>
+                        <h2>Ejes y Estrategias</h2>
+                        <p class="panel-subtitle">Seleccione una estrategia para desglosarla</p>
+                    </div>
+                </div>
                 <div class="panel-actions">
                     <button class="btn-refresh" onclick="cargarEstrategias()">
                         <i class="fas fa-sync-alt"></i> Actualizar
@@ -19,33 +30,39 @@
             </div>
             
             <div class="filtros-panel">
-                <select id="filtro-eje" class="filtro-select" onchange="filtrarEstrategiasTabla()">
-                    <option value="all">Todos los ejes</option>
-                    <option value="educacion">EDUCACIÓN</option>
-                    <option value="salud">SALUD</option>
-                    <option value="empleabilidad">EMPLEABILIDAD</option>
-                    <option value="desarrollo_economico">DESARROLLO ECONÓMICO</option>
-                    <option value="sostenibilidad_ambiental">SOSTENIBILIDAD AMBIENTAL (AGUA)</option>
-                    <option value="comunicacion">COMUNICACIÓN</option>
-                    <option value="institucional">INSTITUCIONAL</option>
-                </select>
-                <select id="filtro-tipo" class="filtro-select" onchange="filtrarEstrategiasTabla()">
-                    <option value="all">Todos los tipos</option>
-                    <option value="FO">FO - Fortaleza + Oportunidad</option>
-                    <option value="DO">DO - Debilidad + Oportunidad</option>
-                    <option value="FA">FA - Fortaleza + Amenaza</option>
-                    <option value="DA">DA - Debilidad + Amenaza</option>
-                </select>
+                <div class="filtro-group">
+                    <label class="filtro-label"><i class="fas fa-filter"></i> Filtrar por Eje</label>
+                    <select id="filtro-eje" class="filtro-select" onchange="filtrarEstrategiasTabla()">
+                        <option value="all">Todos los ejes</option>
+                        <option value="educacion">🎓 Educación</option>
+                        <option value="salud">🏥 Salud</option>
+                        <option value="empleabilidad">💼 Empleabilidad</option>
+                        <option value="desarrollo_economico">📈 Desarrollo Económico</option>
+                        <option value="sostenibilidad_ambiental">💧 Sostenibilidad Ambiental</option>
+                        <option value="comunicacion">📢 Comunicación</option>
+                        <option value="institucional">🏛️ Institucional</option>
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label class="filtro-label"><i class="fas fa-crosshairs"></i> Tipo de Estrategia</label>
+                    <select id="filtro-tipo" class="filtro-select" onchange="filtrarEstrategiasTabla()">
+                        <option value="all">Todos los tipos</option>
+                        <option value="FO" style="color: #2ecc71;">FO - Fortaleza + Oportunidad</option>
+                        <option value="DO" style="color: #3498db;">DO - Debilidad + Oportunidad</option>
+                        <option value="FA" style="color: #e67e22;">FA - Fortaleza + Amenaza</option>
+                        <option value="DA" style="color: #9b59b6;">DA - Debilidad + Amenaza</option>
+                    </select>
+                </div>
             </div>
 
             <div class="tabla-container">
                 <table class="tabla-estrategias">
                     <thead>
                         <tr>
-                            <th>Eje</th>
-                            <th>Tipo</th>
-                            <th>Estrategia</th>
-                            <th>Acciones</th>
+                            <th width="25%">Eje Estratégico</th>
+                            <th width="15%">Tipo</th>
+                            <th width="45%">Estrategia</th>
+                            <th width="15%">Acción</th>
                         </tr>
                     </thead>
                     <tbody id="cuerpo-tabla-estrategias">
@@ -53,60 +70,138 @@
                     </tbody>
                 </table>
             </div>
+            
+            <div class="panel-footer">
+                <div class="estadisticas">
+                    <span class="estadistica-item">
+                        <i class="fas fa-bullseye"></i>
+                        <span id="total-estrategias">0</span> estrategias
+                    </span>
+                    <span class="estadistica-item">
+                        <i class="fas fa-check-circle"></i>
+                        <span id="estrategias-con-tacticas">0</span> con tácticas
+                    </span>
+                </div>
+            </div>
         </div>
 
-        <!-- Panel derecho: Actividades y Tareas para la estrategia seleccionada -->
+        <!-- Panel derecho: Tácticas y Actividades -->
         <div class="panel-derecho">
             <div class="panel-header">
-                <h2><i class="fas fa-tasks"></i> Actividades y Tareas</h2>
+                <div class="panel-title-container">
+                    <div class="panel-icon-badge bg-blue">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div>
+                        <h2>Tácticas y Actividades</h2>
+                        <p class="panel-subtitle">Desglose operativo de la estrategia</p>
+                    </div>
+                </div>
                 <div class="estrategia-seleccionada-info" id="estrategia-seleccionada-info">
-                    <span id="nombre-eje-seleccionado">Ninguna estrategia seleccionada</span>
-                    <span id="tipo-estrategia-seleccionada"></span>
+                    <div class="estrategia-header">
+                        <div class="estrategia-titulo">
+                            <span id="nombre-eje-seleccionado">Seleccione una estrategia</span>
+                            <span id="tipo-estrategia-seleccionada" class="badge-tipo">--</span>
+                        </div>
+                        <div class="estrategia-metadata">
+                            <span class="metadata-chips">
+                                <span class="chip"><i class="fas fa-tasks"></i> <span id="contador-tacticas">0</span> tácticas</span>
+                                <span class="chip"><i class="fas fa-check-circle"></i> <span id="contador-actividades">0</span> actividades</span>
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="estrategia-detalle" id="estrategia-detalle">
                 <div class="estrategia-vacia" id="estrategia-vacia">
-                    <i class="fas fa-mouse-pointer"></i>
-                    <p>Seleccione una estrategia de la tabla para agregar actividades y tareas.</p>
+                    <div class="vacia-illustration">
+                        <i class="fas fa-chess-board"></i>
+                    </div>
+                    <h3>Estrategia no seleccionada</h3>
+                    <p>Seleccione una estrategia de la tabla para comenzar a planificar tácticas y actividades.</p>
+                    <div class="vacia-tips">
+                        <div class="tip">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>Haga clic en cualquier estrategia para desglosarla</span>
+                        </div>
+                        <div class="tip">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Agregue tácticas específicas para cada estrategia</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="estrategia-contenido" id="estrategia-contenido" style="display: none;">
-                    <div class="estrategia-texto" id="estrategia-texto"></div>
+                    <div class="estrategia-texto-container">
+                        <div class="estrategia-texto-header">
+                            <h3><i class="fas fa-quote-left"></i> Estrategia Seleccionada</h3>
+                            <span class="estrategia-len" id="estrategia-len">0 caracteres</span>
+                        </div>
+                        <div class="estrategia-texto" id="estrategia-texto"></div>
+                    </div>
                     
-                    <!-- Formulario para agregar actividad -->
-                    <div class="formulario-actividad">
-                        <h3><i class="fas fa-plus-circle"></i> Agregar Actividad</h3>
-                        <div class="form-group">
-                            <label for="actividad-nombre">Nombre de la Actividad</label>
-                            <input type="text" id="actividad-nombre" class="form-input" placeholder="Ej: Realizar talleres de capacitación">
+                    <!-- Formulario para agregar táctica -->
+                    <div class="formulario-tactica">
+                        <div class="form-header">
+                            <h3><i class="fas fa-plus-circle"></i> Agregar Nueva Táctica</h3>
+                            <p class="form-subtitle">Desglose operativo de la estrategia en acciones concretas</p>
                         </div>
-                        <div class="form-group">
-                            <label for="actividad-descripcion">Descripción</label>
-                            <textarea id="actividad-descripcion" class="form-textarea" rows="3" placeholder="Describa la actividad en detalle..."></textarea>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="tactica-nombre" class="form-label">
+                                    <i class="fas fa-heading"></i> Nombre de la Táctica
+                                </label>
+                                <input type="text" id="tactica-nombre" class="form-input" 
+                                       placeholder="Ej: Implementar programa de capacitación continua">
+                                <div class="form-hint">Describa la táctica de forma clara y concisa</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="tactica-descripcion" class="form-label">
+                                    <i class="fas fa-align-left"></i> Descripción Detallada
+                                </label>
+                                <textarea id="tactica-descripcion" class="form-textarea" rows="3" 
+                                          placeholder="Describa los alcances, metodología y objetivos específicos de esta táctica..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="tactica-responsable" class="form-label">
+                                    <i class="fas fa-user-tie"></i> Responsable Principal
+                                </label>
+                                <input type="text" id="tactica-responsable" class="form-input" 
+                                       placeholder="Nombre del líder responsable">
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="tactica-fecha-inicio" class="form-label">
+                                        <i class="fas fa-calendar-plus"></i> Fecha de Inicio
+                                    </label>
+                                    <input type="date" id="tactica-fecha-inicio" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="tactica-fecha-fin" class="form-label">
+                                        <i class="fas fa-calendar-check"></i> Fecha de Finalización
+                                    </label>
+                                    <input type="date" id="tactica-fecha-fin" class="form-input">
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="actividad-responsable">Responsable</label>
-                            <input type="text" id="actividad-responsable" class="form-input" placeholder="Nombre del responsable">
-                        </div>
-                        <div class="form-group">
-                            <label for="actividad-fecha-inicio">Fecha Inicio</label>
-                            <input type="date" id="actividad-fecha-inicio" class="form-input">
-                        </div>
-                        <div class="form-group">
-                            <label for="actividad-fecha-fin">Fecha Fin</label>
-                            <input type="date" id="actividad-fecha-fin" class="form-input">
-                        </div>
-                        <button class="btn-agregar-actividad" onclick="agregarActividad()">
-                            <i class="fas fa-plus"></i> Agregar Actividad
+                        <button class="btn-agregar-tactica" onclick="agregarTactica()">
+                            <i class="fas fa-plus"></i> Agregar Táctica
                         </button>
                     </div>
 
-                    <!-- Lista de actividades -->
-                    <div class="lista-actividades" id="lista-actividades">
-                        <h3><i class="fas fa-list-ul"></i> Actividades</h3>
-                        <div class="actividades-container" id="actividades-container">
-                            <!-- Las actividades se cargarán aquí -->
+                    <!-- Lista de tácticas -->
+                    <div class="lista-tacticas" id="lista-tacticas">
+                        <div class="lista-header">
+                            <h3><i class="fas fa-list-ul"></i> Tácticas Asignadas</h3>
+                            <div class="lista-filtros">
+                                <button class="btn-filtro activo" data-filtro="todas">Todas</button>
+                                <button class="btn-filtro" data-filtro="vigentes">Vigentes</button>
+                                <button class="btn-filtro" data-filtro="completadas">Completadas</button>
+                            </div>
+                        </div>
+                        <div class="tacticas-container" id="tacticas-container">
+                            <!-- Las tácticas se cargarán aquí -->
                         </div>
                     </div>
                 </div>
@@ -115,79 +210,127 @@
     </div>
 </div>
 
-<!-- Modal para agregar tareas -->
-<div class="modal-tarea" id="modal-tarea">
-    <div class="modal-content">
+<!-- Modal para agregar actividades -->
+<div class="modal" id="modal-actividad">
+    <div class="modal-overlay" onclick="cerrarModalActividad()"></div>
+    <div class="modal-container">
         <div class="modal-header">
-            <h3><i class="fas fa-plus-circle"></i> Agregar Tarea</h3>
-            <button class="modal-close" onclick="cerrarModalTarea()">
+            <div class="modal-icon">
+                <i class="fas fa-tasks"></i>
+            </div>
+            <div class="modal-title">
+                <h3>Agregar Nueva Actividad</h3>
+                <p class="modal-subtitle">Acción específica dentro de la táctica seleccionada</p>
+            </div>
+            <button class="modal-close" onclick="cerrarModalActividad()">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <div class="modal-body">
-            <div class="form-group">
-                <label for="tarea-nombre">Nombre de la Tarea</label>
-                <input type="text" id="tarea-nombre" class="form-input" placeholder="Ej: Contactar facilitadores">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="actividad-nombre" class="form-label">
+                        <i class="fas fa-heading"></i> Nombre de la Actividad
+                    </label>
+                    <input type="text" id="actividad-nombre" class="form-input" 
+                           placeholder="Ej: Contactar y contratar facilitadores certificados">
+                </div>
+                <div class="form-group">
+                    <label for="actividad-descripcion" class="form-label">
+                        <i class="fas fa-align-left"></i> Descripción Detallada
+                    </label>
+                    <textarea id="actividad-descripcion" class="form-textarea" rows="3" 
+                              placeholder="Describa la actividad paso a paso, incluyendo recursos necesarios..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="actividad-responsable" class="form-label">
+                        <i class="fas fa-user-check"></i> Responsable
+                    </label>
+                    <input type="text" id="actividad-responsable" class="form-input" 
+                           placeholder="Nombre del ejecutor principal">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="actividad-fecha-inicio" class="form-label">
+                            <i class="fas fa-play-circle"></i> Inicio Planificado
+                        </label>
+                        <input type="date" id="actividad-fecha-inicio" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="actividad-fecha-fin" class="form-label">
+                            <i class="fas fa-flag-checkered"></i> Finalización Estimada
+                        </label>
+                        <input type="date" id="actividad-fecha-fin" class="form-input">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="actividad-estado" class="form-label">
+                        <i class="fas fa-chart-line"></i> Estado de Avance
+                    </label>
+                    <select id="actividad-estado" class="form-select">
+                        <option value="pendiente">🟡 Pendiente - Por iniciar</option>
+                        <option value="en_progreso">🔵 En Progreso - En ejecución</option>
+                        <option value="completada">🟢 Completada - Finalizada</option>
+                        <option value="atrasada">🔴 Atrasada - Requiere atención</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="actividad-recursos" class="form-label">
+                        <i class="fas fa-toolbox"></i> Recursos Requeridos
+                    </label>
+                    <textarea id="actividad-recursos" class="form-textarea" rows="2" 
+                              placeholder="Liste los recursos necesarios (humanos, materiales, financieros)..."></textarea>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="tarea-descripcion">Descripción</label>
-                <textarea id="tarea-descripcion" class="form-textarea" rows="3" placeholder="Describa la tarea en detalle..."></textarea>
-            </div>
-            <div class="form-group">
-                <label for="tarea-responsable">Responsable</label>
-                <input type="text" id="tarea-responsable" class="form-input" placeholder="Nombre del responsable">
-            </div>
-            <div class="form-group">
-                <label for="tarea-fecha-inicio">Fecha Inicio</label>
-                <input type="date" id="tarea-fecha-inicio" class="form-input">
-            </div>
-            <div class="form-group">
-                <label for="tarea-fecha-fin">Fecha Fin</label>
-                <input type="date" id="tarea-fecha-fin" class="form-input">
-            </div>
-            <div class="form-group">
-                <label for="tarea-estado">Estado</label>
-                <select id="tarea-estado" class="form-select">
-                    <option value="pendiente">Pendiente</option>
-                    <option value="en_progreso">En Progreso</option>
-                    <option value="completada">Completada</option>
-                </select>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-guardar" onclick="guardarTarea()">
-                    <i class="fas fa-save"></i> Guardar Tarea
-                </button>
-                <button class="btn-cancelar" onclick="cerrarModalTarea()">
-                    Cancelar
-                </button>
-            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="cerrarModalActividad()">
+                Cancelar
+            </button>
+            <button class="btn btn-primary" onclick="guardarActividad()">
+                <i class="fas fa-save"></i> Guardar Actividad
+            </button>
         </div>
     </div>
 </div>
 
 <style>
     .estrategias-main-container {
-        padding: 20px;
-        background: #f5f7fa;
+        padding: 25px 30px;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
         min-height: 100vh;
+    }
+
+    .estrategias-header {
+        margin-bottom: 30px;
     }
 
     .content-title {
         color: #0c2461;
-        margin-bottom: 30px;
-        padding-bottom: 15px;
-        border-bottom: 3px solid #4a69bd;
-        font-size: 28px;
+        margin-bottom: 8px;
+        font-size: 32px;
+        font-weight: 700;
         display: flex;
         align-items: center;
         gap: 15px;
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .content-subtitle {
+        color: #64748b;
+        font-size: 16px;
+        margin-left: 50px;
+        font-weight: 500;
     }
 
     .estrategias-container {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 30px;
-        height: calc(100vh - 150px);
+        height: calc(100vh - 180px);
     }
 
     @media (max-width: 1200px) {
@@ -197,72 +340,134 @@
         }
     }
 
-    .panel-izquierdo, .panel-derecho {
+    /* Panel izquierdo - Estrategias */
+    .panel-izquierdo {
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(12, 36, 97, 0.08);
         display: flex;
         flex-direction: column;
         overflow: hidden;
+        border: 1px solid #e2e8f0;
     }
 
     .panel-header {
-        padding: 20px;
-        border-bottom: 1px solid #e9ecef;
+        padding: 25px;
+        border-bottom: 1px solid #f1f5f9;
         display: flex;
         justify-content: space-between;
-        align-items: center;
+        align-items: flex-start;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     }
 
-    .panel-header h2 {
-        margin: 0;
-        font-size: 18px;
-        color: #0c2461;
+    .panel-title-container {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 15px;
+    }
+
+    .panel-icon-badge {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+
+    .panel-icon-badge.bg-blue {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+
+    .panel-title-container h2 {
+        margin: 0;
+        font-size: 20px;
+        color: #0c2461;
+        font-weight: 700;
+    }
+
+    .panel-subtitle {
+        margin: 5px 0 0 0;
+        font-size: 14px;
+        color: #64748b;
     }
 
     .panel-actions {
         display: flex;
-        gap: 10px;
+        gap: 12px;
     }
 
     .btn-refresh {
-        padding: 8px 15px;
+        padding: 10px 18px;
         background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
         color: white;
         border: none;
-        border-radius: 6px;
+        border-radius: 10px;
         cursor: pointer;
         display: flex;
         align-items: center;
         gap: 8px;
         font-size: 14px;
         font-weight: 600;
-        transition: all 0.3s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.15);
     }
 
     .btn-refresh:hover {
         background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
-        transform: scale(1.05);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(12, 36, 97, 0.2);
+    }
+
+    .btn-refresh:active {
+        transform: translateY(0);
     }
 
     .filtros-panel {
-        padding: 15px 20px;
-        border-bottom: 1px solid #e9ecef;
+        padding: 20px 25px;
+        border-bottom: 1px solid #f1f5f9;
         display: flex;
-        gap: 10px;
+        gap: 20px;
+        background: white;
+    }
+
+    .filtro-group {
+        flex: 1;
+    }
+
+    .filtro-label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #475569;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .filtro-select {
-        flex: 1;
-        padding: 10px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e2e8f0;
+        border-radius: 10px;
         font-size: 14px;
         background: white;
         cursor: pointer;
+        transition: all 0.3s;
+        color: #334155;
+        font-weight: 500;
+    }
+
+    .filtro-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        outline: none;
     }
 
     .tabla-container {
@@ -273,7 +478,8 @@
 
     .tabla-estrategias {
         width: 100%;
-        border-collapse: collapse;
+        border-collapse: separate;
+        border-spacing: 0;
         font-size: 14px;
     }
 
@@ -286,57 +492,201 @@
     }
 
     .tabla-estrategias th {
-        padding: 15px;
+        padding: 18px 20px;
         text-align: left;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: none;
     }
 
     .tabla-estrategias tbody tr {
-        border-bottom: 1px solid #e9ecef;
-        transition: all 0.3s ease;
+        border-bottom: 1px solid #f1f5f9;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         cursor: pointer;
     }
 
     .tabla-estrategias tbody tr:hover {
-        background: #f8f9fa;
+        background: linear-gradient(90deg, rgba(12, 36, 97, 0.03) 0%, rgba(12, 36, 97, 0.01) 100%);
+        transform: translateX(4px);
     }
 
     .tabla-estrategias tbody tr.selected {
-        background: linear-gradient(135deg, rgba(12, 36, 97, 0.1) 0%, rgba(30, 55, 153, 0.1) 100%);
+        background: linear-gradient(90deg, rgba(12, 36, 97, 0.08) 0%, rgba(12, 36, 97, 0.04) 100%);
         border-left: 4px solid #0c2461;
+        position: relative;
     }
 
     .tabla-estrategias td {
-        padding: 15px;
+        padding: 20px;
         vertical-align: top;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .tabla-estrategias td:first-child {
+        border-top-left-radius: 8px;
+        border-bottom-left-radius: 8px;
+    }
+
+    .tabla-estrategias td:last-child {
+        border-top-right-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+    .eje-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+    }
+
+    .estrategia-tipo {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: white;
+        min-width: 45px;
+        text-align: center;
+    }
+
+    .btn-seleccionar {
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s;
+    }
+
+    .btn-seleccionar:hover {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        transform: scale(1.05);
     }
 
     .estrategia-seleccionada-info {
+        margin-left: auto;
+        text-align: right;
+    }
+
+    .estrategia-header {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 5px;
+        gap: 8px;
+    }
+
+    .estrategia-titulo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
     }
 
     #nombre-eje-seleccionado {
+        font-size: 18px;
+        font-weight: 700;
+        color: #0c2461;
+        max-width: 300px;
+        text-align: right;
+        line-height: 1.4;
+    }
+
+    .badge-tipo {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: white;
+        letter-spacing: 0.5px;
+    }
+
+    .estrategia-metadata {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .metadata-chips {
+        display: flex;
+        gap: 10px;
+    }
+
+    .chip {
+        padding: 6px 12px;
+        background: #f1f5f9;
+        border-radius: 20px;
+        font-size: 12px;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 500;
+    }
+
+    .chip i {
+        color: #64748b;
+    }
+
+    .panel-footer {
+        padding: 20px 25px;
+        border-top: 1px solid #f1f5f9;
+        background: #f8fafc;
+    }
+
+    .estadisticas {
+        display: flex;
+        gap: 25px;
+    }
+
+    .estadistica-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: #475569;
+        font-weight: 500;
+    }
+
+    .estadistica-item i {
+        color: #0c2461;
         font-size: 16px;
-        font-weight: 600;
+    }
+
+    #total-estrategias, #estrategias-con-tacticas {
+        font-weight: 700;
         color: #0c2461;
     }
 
-    #tipo-estrategia-seleccionada {
-        font-size: 12px;
-        padding: 4px 8px;
-        border-radius: 20px;
-        background: #4CAF50;
-        color: white;
-        font-weight: 600;
+    /* Panel derecho - Tácticas y Actividades */
+    .panel-derecho {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(12, 36, 97, 0.08);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
     }
 
     .estrategia-detalle {
         flex: 1;
-        padding: 20px;
         overflow-y: auto;
     }
 
@@ -346,314 +696,577 @@
         align-items: center;
         justify-content: center;
         height: 100%;
-        color: #666;
+        padding: 60px 40px;
         text-align: center;
-        padding: 40px;
     }
 
-    .estrategia-vacia i {
+    .vacia-illustration {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+
+    .vacia-illustration i {
         font-size: 48px;
-        margin-bottom: 20px;
-        color: #dee2e6;
+        color: #94a3b8;
+    }
+
+    .estrategia-vacia h3 {
+        color: #0c2461;
+        font-size: 22px;
+        margin-bottom: 15px;
+        font-weight: 700;
+    }
+
+    .estrategia-vacia p {
+        color: #64748b;
+        font-size: 16px;
+        line-height: 1.6;
+        max-width: 400px;
+        margin-bottom: 30px;
+    }
+
+    .vacia-tips {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        max-width: 400px;
+        width: 100%;
+    }
+
+    .tip {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .tip i {
+        color: #3b82f6;
+        font-size: 18px;
+    }
+
+    .tip span {
+        color: #475569;
+        font-size: 14px;
+        font-weight: 500;
     }
 
     .estrategia-contenido {
         height: 100%;
+        padding: 25px;
     }
 
-    .estrategia-texto {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        border-left: 4px solid #4a69bd;
-        font-size: 14px;
-        line-height: 1.6;
+    .estrategia-texto-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 1px solid #e2e8f0;
     }
 
-    .formulario-actividad {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .formulario-actividad h3 {
-        margin-top: 0;
-        margin-bottom: 20px;
-        color: #0c2461;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #0c2461;
-        font-size: 14px;
-    }
-
-    .form-input, .form-textarea, .form-select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ced4da;
-        border-radius: 6px;
-        font-size: 14px;
-        transition: all 0.3s;
-    }
-
-    .form-input:focus, .form-textarea:focus, .form-select:focus {
-        border-color: #4a69bd;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
-    }
-
-    .btn-agregar-actividad {
-        padding: 12px 24px;
-        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        transition: all 0.3s;
-        width: 100%;
-        justify-content: center;
-    }
-
-    .btn-agregar-actividad:hover {
-        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
-        transform: translateY(-2px);
-    }
-
-    .lista-actividades h3 {
-        margin-top: 0;
-        margin-bottom: 20px;
-        color: #0c2461;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .actividades-container {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .actividad-item {
-        background: white;
-        border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border-left: 4px solid #4CAF50;
-    }
-
-    .actividad-header {
+    .estrategia-texto-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
 
-    .actividad-titulo {
+    .estrategia-texto-header h3 {
+        margin: 0;
         font-size: 16px;
-        font-weight: 600;
         color: #0c2461;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .estrategia-len {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+        padding: 4px 10px;
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .estrategia-texto {
+        color: #334155;
+        font-size: 15px;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        font-weight: 500;
+    }
+
+    /* Formulario Táctica */
+    .formulario-tactica {
+        background: linear-gradient(135deg, #ffffff 0%, #fdfdfe 100%);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s;
+    }
+
+    .formulario-tactica:hover {
+        border-color: #dbeafe;
+        box-shadow: 0 8px 25px rgba(12, 36, 97, 0.05);
+    }
+
+    .form-header {
+        margin-bottom: 25px;
+    }
+
+    .form-header h3 {
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        color: #0c2461;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-subtitle {
+        color: #64748b;
+        font-size: 14px;
         margin: 0;
     }
 
-    .actividad-acciones {
+    .form-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #475569;
+        font-size: 14px;
+    }
+
+    .form-label i {
+        color: #3b82f6;
+    }
+
+    .form-input, .form-textarea, .form-select {
+        padding: 14px;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 14px;
+        transition: all 0.3s;
+        background: white;
+        font-family: inherit;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        outline: none;
+    }
+
+    .form-textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-hint {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 5px;
+        font-style: italic;
+    }
+
+    .btn-agregar-tactica {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-agregar-tactica:hover {
+        background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-agregar-tactica:active {
+        transform: translateY(0);
+    }
+
+    /* Lista de Tácticas */
+    .lista-tacticas {
+        background: white;
+        border-radius: 16px;
+    }
+
+    .lista-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .lista-header h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #0c2461;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .lista-filtros {
         display: flex;
         gap: 10px;
     }
 
-    .btn-agregar-tarea, .btn-eliminar-actividad {
-        padding: 6px 12px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 12px;
+    .btn-filtro {
+        padding: 8px 16px;
+        background: #f1f5f9;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        color: #64748b;
+        font-size: 13px;
         font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 5px;
+        cursor: pointer;
         transition: all 0.3s;
     }
 
-    .btn-agregar-tarea {
-        background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%);
+    .btn-filtro:hover {
+        background: #e2e8f0;
+    }
+
+    .btn-filtro.activo {
+        background: #0c2461;
+        border-color: #0c2461;
         color: white;
     }
 
-    .btn-agregar-tarea:hover {
-        background: linear-gradient(135deg, #1565c0 0%, #2196F3 100%);
+    .tacticas-container {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
     }
 
-    .btn-eliminar-actividad {
-        background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
-        color: white;
+    .tactica-item {
+        background: white;
+        border-radius: 16px;
+        padding: 25px;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s;
     }
 
-    .btn-eliminar-actividad:hover {
-        background: linear-gradient(135deg, #c62828 0%, #ff6b6b 100%);
+    .tactica-item:hover {
+        border-color: #dbeafe;
+        box-shadow: 0 8px 25px rgba(12, 36, 97, 0.08);
     }
 
-    .actividad-detalle {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 15px;
+    .tactica-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .tactica-titulo {
+        font-size: 17px;
+        font-weight: 700;
+        color: #0c2461;
+        margin: 0;
+        flex: 1;
         line-height: 1.5;
     }
 
-    .actividad-metadata {
+    .tactica-acciones {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-agregar-actividad, .btn-eliminar-tactica {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s;
+    }
+
+    .btn-agregar-actividad {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+    }
+
+    .btn-agregar-actividad:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%);
+        transform: scale(1.05);
+    }
+
+    .btn-eliminar-tactica {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+    }
+
+    .btn-eliminar-tactica:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+        transform: scale(1.05);
+    }
+
+    .tactica-detalle {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        padding: 20px;
+        background: #f8fafc;
+        border-radius: 12px;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .tactica-metadata {
         display: flex;
         flex-wrap: wrap;
-        gap: 15px;
-        margin-bottom: 15px;
-        font-size: 12px;
-        color: #666;
+        gap: 20px;
+        margin-bottom: 25px;
     }
 
     .metadata-item {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 8px;
+        font-size: 13px;
+        color: #475569;
+        padding: 8px 14px;
+        background: #f1f5f9;
+        border-radius: 20px;
     }
 
     .metadata-item i {
-        color: #4a69bd;
+        color: #64748b;
     }
 
-    .lista-tareas {
-        margin-top: 15px;
+    .lista-actividades {
+        margin-top: 20px;
     }
 
-    .tarea-item {
-        background: #f8f9fa;
-        border-radius: 6px;
-        padding: 12px;
-        margin-bottom: 10px;
-        border-left: 3px solid #2196F3;
+    .actividad-item {
+        background: white;
+        border-radius: 12px;
+        padding: 18px;
+        margin-bottom: 12px;
+        border-left: 4px solid #10b981;
+        border: 1px solid #e2e8f0;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        transition: all 0.3s;
     }
 
-    .tarea-info h4 {
-        margin: 0 0 5px 0;
-        font-size: 14px;
-        color: #333;
+    .actividad-item:hover {
+        transform: translateX(4px);
+        border-color: #d1fae5;
     }
 
-    .tarea-info p {
-        margin: 0;
-        font-size: 12px;
-        color: #666;
+    .actividad-info {
+        flex: 1;
     }
 
-    .tarea-estado {
-        padding: 4px 8px;
-        border-radius: 20px;
-        font-size: 10px;
+    .actividad-info h4 {
+        margin: 0 0 8px 0;
+        font-size: 15px;
+        color: #334155;
         font-weight: 600;
+    }
+
+    .actividad-info p {
+        margin: 0 0 10px 0;
+        color: #64748b;
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .actividad-detalles {
+        display: flex;
+        gap: 20px;
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    .actividad-estado {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
         text-transform: uppercase;
+        letter-spacing: 0.3px;
+        min-width: 100px;
+        text-align: center;
     }
 
-    .tarea-estado.pendiente {
-        background: #FFC107;
-        color: #856404;
+    .actividad-estado.pendiente {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #78350f;
     }
 
-    .tarea-estado.en_progreso {
-        background: #2196F3;
+    .actividad-estado.en_progreso {
+        background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
         color: white;
     }
 
-    .tarea-estado.completada {
-        background: #4CAF50;
+    .actividad-estado.completada {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         color: white;
     }
 
-    /* Modal para tareas */
-    .modal-tarea {
+    .actividad-estado.atrasada {
+        background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+        color: white;
+    }
+
+    /* Modal de Actividades */
+    .modal {
         display: none;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
         z-index: 2000;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        opacity: 0;
-        transition: opacity 0.3s ease;
     }
 
-    .modal-tarea.active {
-        display: flex;
-        opacity: 1;
+    .modal.active {
+        display: block;
     }
 
-    .modal-content {
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(12, 36, 97, 0.7);
+        backdrop-filter: blur(8px);
+    }
+
+    .modal-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         background: white;
-        border-radius: 12px;
-        max-width: 600px;
-        width: 100%;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 700px;
         max-height: 90vh;
         overflow: hidden;
-        transform: translateY(20px);
-        transition: transform 0.3s ease;
+        box-shadow: 0 25px 50px rgba(12, 36, 97, 0.2);
+        animation: modalSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .modal-tarea.active .modal-content {
-        transform: translateY(0);
+    @keyframes modalSlideIn {
+        from {
+            opacity: 0;
+            transform: translate(-50%, -60%);
+        }
+        to {
+            opacity: 1;
+            transform: translate(-50%, -50%);
+        }
     }
 
     .modal-header {
+        padding: 25px 30px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 20px;
         background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
         color: white;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
     }
 
-    .modal-header h3 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 600;
+    .modal-icon {
+        width: 56px;
+        height: 56px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 16px;
         display: flex;
         align-items: center;
-        gap: 10px;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .modal-title h3 {
+        margin: 0 0 5px 0;
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .modal-subtitle {
+        margin: 0;
+        font-size: 14px;
+        opacity: 0.9;
     }
 
     .modal-close {
+        margin-left: auto;
         background: rgba(255, 255, 255, 0.2);
         border: none;
         color: white;
-        width: 36px;
-        height: 36px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s ease;
+        font-size: 20px;
+        transition: all 0.3s;
     }
 
     .modal-close:hover {
@@ -663,88 +1276,167 @@
 
     .modal-body {
         padding: 30px;
-        max-height: calc(90vh - 80px);
+        max-height: calc(90vh - 200px);
         overflow-y: auto;
     }
 
-    .modal-actions {
+    .modal-footer {
+        padding: 25px 30px;
+        border-top: 1px solid #f1f5f9;
         display: flex;
-        gap: 10px;
-        margin-top: 20px;
+        gap: 15px;
+        justify-content: flex-end;
     }
 
-    .btn-guardar, .btn-cancelar {
-        padding: 12px 24px;
+    .btn {
+        padding: 14px 28px;
         border: none;
-        border-radius: 6px;
-        cursor: pointer;
+        border-radius: 12px;
+        font-size: 15px;
         font-weight: 600;
-        flex: 1;
-        transition: all 0.3s ease;
+        cursor: pointer;
+        transition: all 0.3s;
     }
 
-    .btn-guardar {
+    .btn-primary {
         background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
         color: white;
     }
 
-    .btn-guardar:hover {
+    .btn-primary:hover {
         background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(12, 36, 97, 0.2);
     }
 
-    .btn-cancelar {
-        background: #6c757d;
-        color: white;
+    .btn-secondary {
+        background: #f1f5f9;
+        color: #475569;
+        border: 2px solid #e2e8f0;
     }
 
-    .btn-cancelar:hover {
-        background: #495057;
+    .btn-secondary:hover {
+        background: #e2e8f0;
     }
 
-    /* Scrollbars */
-    .tabla-container::-webkit-scrollbar,
-    .estrategia-detalle::-webkit-scrollbar,
-    .modal-body::-webkit-scrollbar {
-        width: 6px;
+    /* Scrollbars personalizados */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
     }
 
-    .tabla-container::-webkit-scrollbar-track,
-    .estrategia-detalle::-webkit-scrollbar-track,
-    .modal-body::-webkit-scrollbar-track {
-        background: #f1f1f1;
+    ::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 10px;
     }
 
-    .tabla-container::-webkit-scrollbar-thumb,
-    .estrategia-detalle::-webkit-scrollbar-thumb,
-    .modal-body::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 3px;
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%);
+        border-radius: 10px;
     }
 
-    .tabla-container::-webkit-scrollbar-thumb:hover,
-    .estrategia-detalle::-webkit-scrollbar-thumb:hover,
-    .modal-body::-webkit-scrollbar-thumb:hover {
-        background: #a1a1a1;
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #64748b 0%, #475569 100%);
     }
 
-    @media (max-width: 768px) {
+    /* Responsive Design */
+    @media (max-width: 1400px) {
         .estrategias-container {
             gap: 20px;
         }
+    }
 
-        .panel-header {
-            flex-direction: column;
-            align-items: flex-start;
+    @media (max-width: 768px) {
+        .estrategias-main-container {
+            padding: 15px;
+        }
+        
+        .estrategias-container {
+            grid-template-columns: 1fr;
             gap: 15px;
         }
-
+        
+        .panel-header {
+            flex-direction: column;
+            gap: 20px;
+            padding: 20px;
+        }
+        
         .estrategia-seleccionada-info {
+            width: 100%;
             align-items: flex-start;
         }
-
+        
         .filtros-panel {
             flex-direction: column;
+            gap: 15px;
+            padding: 15px;
         }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .modal-container {
+            width: 95%;
+            border-radius: 12px;
+        }
+        
+        .modal-header {
+            flex-direction: column;
+            text-align: center;
+            gap: 15px;
+            padding: 20px;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+    }
+
+    /* Animaciones */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .tactica-item {
+        animation: fadeIn 0.5s ease forwards;
+    }
+
+    .actividad-item {
+        animation: fadeIn 0.3s ease forwards;
+    }
+
+    /* Estados de progreso */
+    .progreso-bar {
+        height: 6px;
+        background: #e2e8f0;
+        border-radius: 3px;
+        margin-top: 15px;
+        overflow: hidden;
+    }
+
+    .progreso-fill {
+        height: 100%;
+        border-radius: 3px;
+        background: linear-gradient(90deg, #10b981 0%, #3b82f6 100%);
+        transition: width 0.6s ease;
+    }
+
+    .progreso-text {
+        font-size: 12px;
+        color: #64748b;
+        margin-top: 5px;
+        text-align: right;
     }
 </style>
 
@@ -752,28 +1444,48 @@
     // Variables globales
     let estrategias = [];
     let estrategiaSeleccionadaId = null;
-    let actividadActualParaTarea = null;
-    let actividades = {};
+    let tacticaActualParaActividad = null;
+    let tacticas = {};
+    let actividadesCache = {};
 
-    // Mapeo de ejes
+    // Mapeo de ejes con emojis
     const mapEjes = {
-        'educacion': 'EDUCACIÓN',
-        'salud': 'SALUD',
-        'empleabilidad': 'EMPLEABILIDAD',
-        'desarrollo_economico': 'DESARROLLO ECONÓMICO',
-        'sostenibilidad_ambiental': 'SOSTENIBILIDAD AMBIENTAL (AGUA)',
-        'comunicacion': 'COMUNICACIÓN',
-        'institucional': 'INSTITUCIONAL'
+        'educacion': '🎓 Educación',
+        'salud': '🏥 Salud', 
+        'empleabilidad': '💼 Empleabilidad',
+        'desarrollo_economico': '📈 Desarrollo Económico',
+        'sostenibilidad_ambiental': '💧 Sostenibilidad Ambiental',
+        'comunicacion': '📢 Comunicación',
+        'institucional': '🏛️ Institucional'
+    };
+
+    // Colores para tipos de estrategia
+    const tipoColors = {
+        'FO': '#2ecc71',
+        'DO': '#3498db', 
+        'FA': '#e67e22',
+        'DA': '#9b59b6'
     };
 
     // Inicializar al cargar
     document.addEventListener('DOMContentLoaded', function() {
         cargarEstrategias();
+        configurarFiltrosTacticas();
     });
+
+    // Configurar filtros de tácticas
+    function configurarFiltrosTacticas() {
+        document.querySelectorAll('.btn-filtro').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.btn-filtro').forEach(b => b.classList.remove('activo'));
+                this.classList.add('activo');
+                filtrarTacticas(this.dataset.filtro);
+            });
+        });
+    }
 
     // Cargar estrategias desde la base de datos
     function cargarEstrategias() {
-        // Mostrar indicador de carga
         const btnRefresh = document.querySelector('.btn-refresh');
         const originalHTML = btnRefresh.innerHTML;
         btnRefresh.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
@@ -785,6 +1497,7 @@
                 if (data.success) {
                     estrategias = data.estrategias;
                     actualizarTablaEstrategias();
+                    actualizarEstadisticas();
                 } else {
                     mostrarNotificacion('❌ Error al cargar estrategias', 'error');
                 }
@@ -800,6 +1513,18 @@
             });
     }
 
+    // Actualizar estadísticas
+    function actualizarEstadisticas() {
+        document.getElementById('total-estrategias').textContent = estrategias.length;
+        
+        // Contar estrategias con tácticas
+        let conTacticas = 0;
+        Object.values(tacticas).forEach(t => {
+            if (t && t.length > 0) conTacticas++;
+        });
+        document.getElementById('estrategias-con-tacticas').textContent = conTacticas;
+    }
+
     // Actualizar la tabla de estrategias
     function actualizarTablaEstrategias() {
         const cuerpoTabla = document.getElementById('cuerpo-tabla-estrategias');
@@ -808,9 +1533,12 @@
         if (estrategias.length === 0) {
             cuerpoTabla.innerHTML = `
                 <tr>
-                    <td colspan="4" style="text-align: center; padding: 40px; color: #666;">
-                        <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
-                        No hay estrategias guardadas todavía.
+                    <td colspan="4" style="text-align: center; padding: 50px;">
+                        <div style="text-align: center; color: #94a3b8;">
+                            <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                            <p style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">No hay estrategias disponibles</p>
+                            <p style="font-size: 14px;">Configure primero la matriz FODA para generar estrategias</p>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -822,19 +1550,13 @@
             fila.dataset.id = estrategia.id;
             fila.onclick = () => seleccionarEstrategia(estrategia.id);
 
-            // Determinar color del tipo de estrategia
-            let tipoColor = '';
-            switch(estrategia.tipo_cruce) {
-                case 'FO': tipoColor = '#4CAF50'; break;
-                case 'DO': tipoColor = '#2196F3'; break;
-                case 'FA': tipoColor = '#FF9800'; break;
-                case 'DA': tipoColor = '#9C27B0'; break;
-            }
+            const tipoColor = tipoColors[estrategia.tipo_cruce] || '#0c2461';
+            const ejeTexto = mapEjes[estrategia.eje_id] || estrategia.eje_id;
 
             fila.innerHTML = `
                 <td>
-                    <div class="eje-badge" style="background: ${tipoColor}20; color: ${tipoColor}; border: 1px solid ${tipoColor}40;">
-                        ${mapEjes[estrategia.eje_id] || estrategia.eje_id}
+                    <div class="eje-badge" style="background: ${tipoColor}15; border-color: ${tipoColor}30; color: ${tipoColor};">
+                        ${ejeTexto}
                     </div>
                 </td>
                 <td>
@@ -842,10 +1564,14 @@
                         ${estrategia.tipo_cruce}
                     </span>
                 </td>
-                <td>${estrategia.estrategia.substring(0, 100)}${estrategia.estrategia.length > 100 ? '...' : ''}</td>
                 <td>
-                    <button class="btn-seleccionar" onclick="seleccionarEstrategia(${estrategia.id})">
-                        <i class="fas fa-arrow-right"></i> Ver
+                    <div style="font-weight: 500; line-height: 1.5; color: #334155;">
+                        ${estrategia.estrategia.substring(0, 120)}${estrategia.estrategia.length > 120 ? '...' : ''}
+                    </div>
+                </td>
+                <td>
+                    <button class="btn-seleccionar" onclick="seleccionarEstrategia(${estrategia.id}); event.stopPropagation();">
+                        <i class="fas fa-arrow-right"></i> Detalles
                     </button>
                 </td>
             `;
@@ -853,7 +1579,6 @@
             cuerpoTabla.appendChild(fila);
         });
 
-        // Si hay una estrategia seleccionada previamente, mantenerla seleccionada
         if (estrategiaSeleccionadaId) {
             const filaSeleccionada = document.querySelector(`tr[data-id="${estrategiaSeleccionadaId}"]`);
             if (filaSeleccionada) {
@@ -898,10 +1623,9 @@
         }
 
         // Mostrar información de la estrategia seleccionada
+        const tipoColor = tipoColors[estrategia.tipo_cruce] || '#0c2461';
         document.getElementById('nombre-eje-seleccionado').textContent = 
             mapEjes[estrategia.eje_id] || estrategia.eje_id;
-        
-        const tipoColor = getTipoColor(estrategia.tipo_cruce);
         document.getElementById('tipo-estrategia-seleccionada').textContent = estrategia.tipo_cruce;
         document.getElementById('tipo-estrategia-seleccionada').style.background = tipoColor;
 
@@ -909,121 +1633,151 @@
         document.getElementById('estrategia-vacia').style.display = 'none';
         document.getElementById('estrategia-contenido').style.display = 'block';
         document.getElementById('estrategia-texto').textContent = estrategia.estrategia;
+        document.getElementById('estrategia-len').textContent = `${estrategia.estrategia.length} caracteres`;
 
-        // Cargar actividades de esta estrategia
-        cargarActividades(id);
+        // Cargar tácticas de esta estrategia
+        cargarTacticas(id);
     }
 
-    function getTipoColor(tipo) {
-        switch(tipo) {
-            case 'FO': return '#4CAF50';
-            case 'DO': return '#2196F3';
-            case 'FA': return '#FF9800';
-            case 'DA': return '#9C27B0';
-            default: return '#0c2461';
-        }
-    }
-
-    // Cargar actividades para una estrategia
-    function cargarActividades(estrategiaId) {
+    // Cargar tácticas para una estrategia
+    function cargarTacticas(estrategiaId) {
         fetch(`/api/actividades_estrategia/${estrategiaId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    actividades[estrategiaId] = data.actividades;
-                    actualizarListaActividades(estrategiaId);
+                    tacticas[estrategiaId] = data.actividades;
+                    actualizarListaTacticas(estrategiaId);
+                    actualizarContadores(estrategiaId);
                 } else {
-                    actividades[estrategiaId] = [];
-                    actualizarListaActividades(estrategiaId);
+                    tacticas[estrategiaId] = [];
+                    actualizarListaTacticas(estrategiaId);
+                    actualizarContadores(estrategiaId);
                 }
             })
             .catch(error => {
-                console.error('Error al cargar actividades:', error);
-                actividades[estrategiaId] = [];
-                actualizarListaActividades(estrategiaId);
+                console.error('Error al cargar tácticas:', error);
+                tacticas[estrategiaId] = [];
+                actualizarListaTacticas(estrategiaId);
+                actualizarContadores(estrategiaId);
             });
     }
 
-    // Actualizar lista de actividades
-    function actualizarListaActividades(estrategiaId) {
-        const container = document.getElementById('actividades-container');
+    // Actualizar contadores
+    function actualizarContadores(estrategiaId) {
+        const tacticasCount = tacticas[estrategiaId] ? tacticas[estrategiaId].length : 0;
+        document.getElementById('contador-tacticas').textContent = tacticasCount;
+        
+        // Calcular total de actividades
+        let actividadesCount = 0;
+        if (tacticas[estrategiaId]) {
+            tacticas[estrategiaId].forEach(t => {
+                if (actividadesCache[t.id]) {
+                    actividadesCount += actividadesCache[t.id].length;
+                }
+            });
+        }
+        document.getElementById('contador-actividades').textContent = actividadesCount;
+    }
+
+    // Actualizar lista de tácticas
+    function actualizarListaTacticas(estrategiaId) {
+        const container = document.getElementById('tacticas-container');
         container.innerHTML = '';
 
-        if (!actividades[estrategiaId] || actividades[estrategiaId].length === 0) {
+        if (!tacticas[estrategiaId] || tacticas[estrategiaId].length === 0) {
             container.innerHTML = `
-                <div class="actividad-vacia">
-                    <i class="fas fa-tasks"></i>
-                    <p>No hay actividades para esta estrategia. Agregue la primera actividad.</p>
+                <div class="tactica-vacia" style="text-align: center; padding: 40px; color: #94a3b8;">
+                    <i class="fas fa-project-diagram" style="font-size: 48px; margin-bottom: 20px; opacity: 0.5;"></i>
+                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">No hay tácticas definidas</h4>
+                    <p style="font-size: 14px; max-width: 400px; margin: 0 auto;">Agregue la primera táctica para comenzar el desglose operativo de esta estrategia.</p>
                 </div>
             `;
             return;
         }
 
-        actividades[estrategiaId].forEach(actividad => {
-            const actividadDiv = document.createElement('div');
-            actividadDiv.className = 'actividad-item';
-            actividadDiv.dataset.id = actividad.id;
+        tacticas[estrategiaId].forEach(tactica => {
+            const tacticaDiv = document.createElement('div');
+            tacticaDiv.className = 'tactica-item';
+            tacticaDiv.dataset.id = tactica.id;
 
             // Formatear fechas
-            const fechaInicio = actividad.fecha_inicio ? new Date(actividad.fecha_inicio).toLocaleDateString('es-ES') : 'No definida';
-            const fechaFin = actividad.fecha_fin ? new Date(actividad.fecha_fin).toLocaleDateString('es-ES') : 'No definida';
+            const fechaInicio = tactica.fecha_inicio ? 
+                new Date(tactica.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+                'No definida';
+            const fechaFin = tactica.fecha_fin ? 
+                new Date(tactica.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 
+                'No definida';
 
-            actividadDiv.innerHTML = `
-                <div class="actividad-header">
-                    <h3 class="actividad-titulo">${actividad.nombre}</h3>
-                    <div class="actividad-acciones">
-                        <button class="btn-agregar-tarea" onclick="abrirModalTarea(${actividad.id})">
-                            <i class="fas fa-plus"></i> Tarea
+            tacticaDiv.innerHTML = `
+                <div class="tactica-header">
+                    <h3 class="tactica-titulo">${tactica.nombre}</h3>
+                    <div class="tactica-acciones">
+                        <button class="btn-agregar-actividad" onclick="abrirModalActividad(${tactica.id})">
+                            <i class="fas fa-plus"></i> Actividad
                         </button>
-                        <button class="btn-eliminar-actividad" onclick="eliminarActividad(${actividad.id})">
+                        <button class="btn-eliminar-tactica" onclick="eliminarTactica(${tactica.id})">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
                 </div>
-                <div class="actividad-detalle">
-                    ${actividad.descripcion || 'Sin descripción'}
+                <div class="tactica-detalle">
+                    ${tactica.descripcion || '<em>Sin descripción detallada</em>'}
                 </div>
-                <div class="actividad-metadata">
+                <div class="tactica-metadata">
                     <div class="metadata-item">
-                        <i class="fas fa-user"></i>
-                        <span>${actividad.responsable || 'Sin responsable'}</span>
+                        <i class="fas fa-user-tie"></i>
+                        <span>${tactica.responsable || 'Sin responsable'}</span>
                     </div>
                     <div class="metadata-item">
                         <i class="fas fa-calendar-alt"></i>
-                        <span>${fechaInicio} - ${fechaFin}</span>
+                        <span>${fechaInicio} → ${fechaFin}</span>
                     </div>
                 </div>
-                <div class="lista-tareas" id="tareas-actividad-${actividad.id}">
-                    <!-- Las tareas se cargarán aquí dinámicamente -->
+                <div class="lista-actividades" id="actividades-tactica-${tactica.id}">
+                    <!-- Las actividades se cargarán aquí dinámicamente -->
                 </div>
             `;
 
-            container.appendChild(actividadDiv);
+            container.appendChild(tacticaDiv);
             
-            // Cargar tareas para esta actividad
-            cargarTareas(actividad.id);
+            // Cargar actividades para esta táctica
+            cargarActividades(tactica.id);
         });
     }
 
-    // Agregar nueva actividad
-    function agregarActividad() {
+    // Filtrar tácticas
+    function filtrarTacticas(filtro) {
+        const tacticasItems = document.querySelectorAll('.tactica-item');
+        
+        tacticasItems.forEach(item => {
+            if (filtro === 'todas') {
+                item.style.display = 'block';
+            } else {
+                // Implementar lógica de filtrado según estado
+                item.style.display = 'block'; // Placeholder
+            }
+        });
+    }
+
+    // Agregar nueva táctica
+    function agregarTactica() {
         if (!estrategiaSeleccionadaId) {
             mostrarNotificacion('❌ Primero seleccione una estrategia', 'error');
             return;
         }
 
-        const nombre = document.getElementById('actividad-nombre').value.trim();
-        const descripcion = document.getElementById('actividad-descripcion').value.trim();
-        const responsable = document.getElementById('actividad-responsable').value.trim();
-        const fechaInicio = document.getElementById('actividad-fecha-inicio').value;
-        const fechaFin = document.getElementById('actividad-fecha-fin').value;
+        const nombre = document.getElementById('tactica-nombre').value.trim();
+        const descripcion = document.getElementById('tactica-descripcion').value.trim();
+        const responsable = document.getElementById('tactica-responsable').value.trim();
+        const fechaInicio = document.getElementById('tactica-fecha-inicio').value;
+        const fechaFin = document.getElementById('tactica-fecha-fin').value;
 
         if (!nombre) {
-            mostrarNotificacion('❌ El nombre de la actividad es obligatorio', 'error');
+            mostrarNotificacion('❌ El nombre de la táctica es obligatorio', 'error');
             return;
         }
 
-        const actividad = {
+        const tactica = {
             estrategia_id: estrategiaSeleccionadaId,
             nombre: nombre,
             descripcion: descripcion,
@@ -1038,22 +1792,23 @@
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify(actividad)
+            body: JSON.stringify(tactica)
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                mostrarNotificacion('✅ Actividad agregada correctamente', 'success');
+                mostrarNotificacion('✅ Táctica agregada correctamente', 'success');
                 
                 // Limpiar formulario
-                document.getElementById('actividad-nombre').value = '';
-                document.getElementById('actividad-descripcion').value = '';
-                document.getElementById('actividad-responsable').value = '';
-                document.getElementById('actividad-fecha-inicio').value = '';
-                document.getElementById('actividad-fecha-fin').value = '';
+                document.getElementById('tactica-nombre').value = '';
+                document.getElementById('tactica-descripcion').value = '';
+                document.getElementById('tactica-responsable').value = '';
+                document.getElementById('tactica-fecha-inicio').value = '';
+                document.getElementById('tactica-fecha-fin').value = '';
                 
-                // Recargar actividades
-                cargarActividades(estrategiaSeleccionadaId);
+                // Recargar tácticas
+                cargarTacticas(estrategiaSeleccionadaId);
+                actualizarEstadisticas();
             } else {
                 mostrarNotificacion('❌ Error: ' + data.message, 'error');
             }
@@ -1064,13 +1819,13 @@
         });
     }
 
-    // Eliminar actividad
-    function eliminarActividad(actividadId) {
-        if (!confirm('¿Está seguro de eliminar esta actividad y todas sus tareas?')) {
+    // Eliminar táctica
+    function eliminarTactica(tacticaId) {
+        if (!confirm('¿Está seguro de eliminar esta táctica y todas sus actividades?')) {
             return;
         }
 
-        fetch(`/api/eliminar_actividad/${actividadId}`, {
+        fetch(`/api/eliminar_actividad/${tacticaId}`, {
             method: 'DELETE',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -1079,8 +1834,9 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                mostrarNotificacion('✅ Actividad eliminada correctamente', 'success');
-                cargarActividades(estrategiaSeleccionadaId);
+                mostrarNotificacion('✅ Táctica eliminada correctamente', 'success');
+                cargarTacticas(estrategiaSeleccionadaId);
+                actualizarEstadisticas();
             } else {
                 mostrarNotificacion('❌ Error: ' + data.message, 'error');
             }
@@ -1091,53 +1847,56 @@
         });
     }
 
-    // Abrir modal para agregar tarea
-    function abrirModalTarea(actividadId) {
-        actividadActualParaTarea = actividadId;
-        document.getElementById('modal-tarea').classList.add('active');
+    // Abrir modal para agregar actividad
+    function abrirModalActividad(tacticaId) {
+        tacticaActualParaActividad = tacticaId;
+        document.getElementById('modal-actividad').classList.add('active');
         document.body.style.overflow = 'hidden';
     }
 
-    function cerrarModalTarea() {
-        document.getElementById('modal-tarea').classList.remove('active');
+    function cerrarModalActividad() {
+        document.getElementById('modal-actividad').classList.remove('active');
         document.body.style.overflow = 'auto';
         
         // Limpiar formulario
-        document.getElementById('tarea-nombre').value = '';
-        document.getElementById('tarea-descripcion').value = '';
-        document.getElementById('tarea-responsable').value = '';
-        document.getElementById('tarea-fecha-inicio').value = '';
-        document.getElementById('tarea-fecha-fin').value = '';
-        document.getElementById('tarea-estado').value = 'pendiente';
+        document.getElementById('actividad-nombre').value = '';
+        document.getElementById('actividad-descripcion').value = '';
+        document.getElementById('actividad-responsable').value = '';
+        document.getElementById('actividad-fecha-inicio').value = '';
+        document.getElementById('actividad-fecha-fin').value = '';
+        document.getElementById('actividad-estado').value = 'pendiente';
+        document.getElementById('actividad-recursos').value = '';
     }
 
-    // Guardar tarea
-    function guardarTarea() {
-        if (!actividadActualParaTarea) {
-            mostrarNotificacion('❌ No hay actividad seleccionada', 'error');
+    // Guardar actividad
+    function guardarActividad() {
+        if (!tacticaActualParaActividad) {
+            mostrarNotificacion('❌ No hay táctica seleccionada', 'error');
             return;
         }
 
-        const nombre = document.getElementById('tarea-nombre').value.trim();
-        const descripcion = document.getElementById('tarea-descripcion').value.trim();
-        const responsable = document.getElementById('tarea-responsable').value.trim();
-        const fechaInicio = document.getElementById('tarea-fecha-inicio').value;
-        const fechaFin = document.getElementById('tarea-fecha-fin').value;
-        const estado = document.getElementById('tarea-estado').value;
+        const nombre = document.getElementById('actividad-nombre').value.trim();
+        const descripcion = document.getElementById('actividad-descripcion').value.trim();
+        const responsable = document.getElementById('actividad-responsable').value.trim();
+        const fechaInicio = document.getElementById('actividad-fecha-inicio').value;
+        const fechaFin = document.getElementById('actividad-fecha-fin').value;
+        const estado = document.getElementById('actividad-estado').value.split(' ')[0]; // Tomar solo el valor
+        const recursos = document.getElementById('actividad-recursos').value.trim();
 
         if (!nombre) {
-            mostrarNotificacion('❌ El nombre de la tarea es obligatorio', 'error');
+            mostrarNotificacion('❌ El nombre de la actividad es obligatorio', 'error');
             return;
         }
 
-        const tarea = {
-            actividad_id: actividadActualParaTarea,
+        const actividad = {
+            actividad_id: tacticaActualParaActividad,
             nombre: nombre,
             descripcion: descripcion,
             responsable: responsable,
             fecha_inicio: fechaInicio,
             fecha_fin: fechaFin,
-            estado: estado
+            estado: estado,
+            recursos: recursos
         };
 
         fetch('/api/agregar_tarea', {
@@ -1146,14 +1905,15 @@
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
             },
-            body: JSON.stringify(tarea)
+            body: JSON.stringify(actividad)
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                mostrarNotificacion('✅ Tarea agregada correctamente', 'success');
-                cerrarModalTarea();
-                cargarTareas(actividadActualParaTarea);
+                mostrarNotificacion('✅ Actividad agregada correctamente', 'success');
+                cerrarModalActividad();
+                cargarActividades(tacticaActualParaActividad);
+                actualizarContadores(estrategiaSeleccionadaId);
             } else {
                 mostrarNotificacion('❌ Error: ' + data.message, 'error');
             }
@@ -1164,79 +1924,80 @@
         });
     }
 
-    // Cargar tareas para una actividad
-    function cargarTareas(actividadId) {
-        fetch(`/api/tareas_actividad/${actividadId}`)
+    // Cargar actividades para una táctica
+    function cargarActividades(tacticaId) {
+        fetch(`/api/tareas_actividad/${tacticaId}`)
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    actualizarListaTareas(actividadId, data.tareas);
+                    actividadesCache[tacticaId] = data.tareas;
+                    actualizarListaActividades(tacticaId);
+                    actualizarContadores(estrategiaSeleccionadaId);
                 }
             })
             .catch(error => {
-                console.error('Error al cargar tareas:', error);
+                console.error('Error al cargar actividades:', error);
+                actividadesCache[tacticaId] = [];
+                actualizarListaActividades(tacticaId);
             });
     }
 
-    // Actualizar lista de tareas
-    function actualizarListaTareas(actividadId, tareas) {
-        const container = document.getElementById(`tareas-actividad-${actividadId}`);
+    // Actualizar lista de actividades
+    function actualizarListaActividades(tacticaId) {
+        const container = document.getElementById(`actividades-tactica-${tacticaId}`);
         if (!container) return;
 
         container.innerHTML = '';
 
-        if (!tareas || tareas.length === 0) {
+        if (!actividadesCache[tacticaId] || actividadesCache[tacticaId].length === 0) {
             container.innerHTML = `
-                <div class="tarea-vacia" style="text-align: center; padding: 10px; color: #666; font-size: 12px;">
-                    <i class="fas fa-tasks"></i> No hay tareas para esta actividad
+                <div class="actividad-vacia" style="text-align: center; padding: 20px; color: #94a3b8; font-size: 14px;">
+                    <i class="fas fa-tasks" style="margin-right: 8px;"></i> No hay actividades registradas
                 </div>
             `;
             return;
         }
 
-        tareas.forEach(tarea => {
-            const tareaDiv = document.createElement('div');
-            tareaDiv.className = 'tarea-item';
+        actividadesCache[tacticaId].forEach(actividad => {
+            const actividadDiv = document.createElement('div');
+            actividadDiv.className = 'actividad-item';
 
             // Formatear fechas
-            const fechaInicio = tarea.fecha_inicio ? new Date(tarea.fecha_inicio).toLocaleDateString('es-ES') : 'No definida';
-            const fechaFin = tarea.fecha_fin ? new Date(tarea.fecha_fin).toLocaleDateString('es-ES') : 'No definida';
+            const fechaInicio = actividad.fecha_inicio ? 
+                new Date(actividad.fecha_inicio).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 
+                'No def.';
+            const fechaFin = actividad.fecha_fin ? 
+                new Date(actividad.fecha_fin).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }) : 
+                'No def.';
 
-            // Determinar color del estado
-            let estadoColor = '';
+            // Texto del estado
             let estadoTexto = '';
-            switch(tarea.estado) {
-                case 'pendiente':
-                    estadoColor = 'pendiente';
-                    estadoTexto = 'Pendiente';
-                    break;
-                case 'en_progreso':
-                    estadoColor = 'en_progreso';
-                    estadoTexto = 'En Progreso';
-                    break;
-                case 'completada':
-                    estadoColor = 'completada';
-                    estadoTexto = 'Completada';
-                    break;
+            switch(actividad.estado) {
+                case 'pendiente': estadoTexto = '🟡 Pendiente'; break;
+                case 'en_progreso': estadoTexto = '🔵 En Progreso'; break;
+                case 'completada': estadoTexto = '🟢 Completada'; break;
+                case 'atrasada': estadoTexto = '🔴 Atrasada'; break;
+                default: estadoTexto = '🟡 Pendiente';
             }
 
-            tareaDiv.innerHTML = `
-                <div class="tarea-info">
-                    <h4>${tarea.nombre}</h4>
-                    <p>${tarea.descripcion || 'Sin descripción'}</p>
-                    <div style="display: flex; gap: 15px; margin-top: 5px; font-size: 11px; color: #666;">
-                        <span><i class="fas fa-user"></i> ${tarea.responsable || 'Sin responsable'}</span>
-                        <span><i class="fas fa-calendar-alt"></i> ${fechaInicio} - ${fechaFin}</span>
+            actividadDiv.innerHTML = `
+                <div class="actividad-info">
+                    <h4>${actividad.nombre}</h4>
+                    <p>${actividad.descripcion || 'Sin descripción detallada'}</p>
+                    <div class="actividad-detalles">
+                        <span><i class="fas fa-user-check"></i> ${actividad.responsable || 'Sin responsable'}</span>
+                        <span><i class="fas fa-calendar"></i> ${fechaInicio} - ${fechaFin}</span>
+                        ${actividad.recursos ? `<span><i class="fas fa-toolbox"></i> Recursos</span>` : ''}
                     </div>
                 </div>
-                <div class="tarea-estado ${estadoColor}">${estadoTexto}</div>
+                <div class="actividad-estado ${actividad.estado}">${estadoTexto}</div>
             `;
 
-            container.appendChild(tareaDiv);
+            container.appendChild(actividadDiv);
         });
     }
 
-    // Función para mostrar notificaciones
+    // Función para mostrar notificaciones mejoradas
     function mostrarNotificacion(mensaje, tipo) {
         let alerta = document.getElementById('alerta-flotante');
         
@@ -1245,38 +2006,58 @@
             alerta.id = 'alerta-flotante';
             alerta.style.cssText = `
                 position: fixed;
-                top: 100px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 8px;
+                top: 30px;
+                right: 30px;
+                padding: 18px 24px;
+                border-radius: 14px;
                 color: white;
                 font-weight: 600;
                 z-index: 10000;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                transition: all 0.3s ease;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
                 transform: translateX(100%);
                 opacity: 0;
                 max-width: 400px;
                 backdrop-filter: blur(10px);
+                border-left: 6px solid;
+                display: flex;
+                align-items: center;
+                gap: 15px;
             `;
             document.body.appendChild(alerta);
         }
         
         let background = '';
+        let borderColor = '';
+        
         if (tipo === 'success') {
-            background = 'linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%)';
+            background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%)';
+            borderColor = '#059669';
         } else if (tipo === 'error') {
-            background = 'linear-gradient(135deg, #ff6b6b 0%, #c62828 100%)';
+            background = 'linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%)';
+            borderColor = '#dc2626';
         } else if (tipo === 'warning') {
-            background = 'linear-gradient(135deg, #FF9800 0%, #f57c00 100%)';
+            background = 'linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%)';
+            borderColor = '#d97706';
         } else if (tipo === 'info') {
-            background = 'linear-gradient(135deg, #2196F3 0%, #1565c0 100%)';
+            background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(29, 78, 216, 0.95) 100%)';
+            borderColor = '#1d4ed8';
         } else {
-            background = 'linear-gradient(135deg, #0c2461 0%, #1e3799 100%)';
+            background = 'linear-gradient(135deg, rgba(12, 36, 97, 0.95) 0%, rgba(30, 55, 153, 0.95) 100%)';
+            borderColor = '#0c2461';
         }
         
         alerta.style.background = background;
-        alerta.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${mensaje}`;
+        alerta.style.borderLeftColor = borderColor;
+        
+        const icon = tipo === 'success' ? 'check-circle' : 
+                    tipo === 'error' ? 'exclamation-circle' : 
+                    tipo === 'warning' ? 'exclamation-triangle' : 'info-circle';
+        
+        alerta.innerHTML = `
+            <i class="fas fa-${icon}" style="font-size: 24px;"></i>
+            <div style="flex: 1;">${mensaje}</div>
+        `;
         
         setTimeout(() => {
             alerta.style.transform = 'translateX(0)';
