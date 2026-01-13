@@ -1,0 +1,1292 @@
+{% extends "inicio.html" %}
+
+{% block content %}
+<div class="estrategias-main-container">
+    <h1 class="content-title">
+        <i class="fas fa-chess-board"></i> Planificación de Estrategias
+    </h1>
+
+    <div class="estrategias-container">
+        <!-- Panel izquierdo: Tabla de Ejes y Estrategias -->
+        <div class="panel-izquierdo">
+            <div class="panel-header">
+                <h2><i class="fas fa-layer-group"></i> Ejes y Estrategias</h2>
+                <div class="panel-actions">
+                    <button class="btn-refresh" onclick="cargarEstrategias()">
+                        <i class="fas fa-sync-alt"></i> Actualizar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="filtros-panel">
+                <select id="filtro-eje" class="filtro-select" onchange="filtrarEstrategiasTabla()">
+                    <option value="all">Todos los ejes</option>
+                    <option value="educacion">EDUCACIÓN</option>
+                    <option value="salud">SALUD</option>
+                    <option value="empleabilidad">EMPLEABILIDAD</option>
+                    <option value="desarrollo_economico">DESARROLLO ECONÓMICO</option>
+                    <option value="sostenibilidad_ambiental">SOSTENIBILIDAD AMBIENTAL (AGUA)</option>
+                    <option value="comunicacion">COMUNICACIÓN</option>
+                    <option value="institucional">INSTITUCIONAL</option>
+                </select>
+                <select id="filtro-tipo" class="filtro-select" onchange="filtrarEstrategiasTabla()">
+                    <option value="all">Todos los tipos</option>
+                    <option value="FO">FO - Fortaleza + Oportunidad</option>
+                    <option value="DO">DO - Debilidad + Oportunidad</option>
+                    <option value="FA">FA - Fortaleza + Amenaza</option>
+                    <option value="DA">DA - Debilidad + Amenaza</option>
+                </select>
+            </div>
+
+            <div class="tabla-container">
+                <table class="tabla-estrategias">
+                    <thead>
+                        <tr>
+                            <th>Eje</th>
+                            <th>Tipo</th>
+                            <th>Estrategia</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla-estrategias">
+                        <!-- Las estrategias se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Panel derecho: Actividades y Tareas para la estrategia seleccionada -->
+        <div class="panel-derecho">
+            <div class="panel-header">
+                <h2><i class="fas fa-tasks"></i> Actividades y Tareas</h2>
+                <div class="estrategia-seleccionada-info" id="estrategia-seleccionada-info">
+                    <span id="nombre-eje-seleccionado">Ninguna estrategia seleccionada</span>
+                    <span id="tipo-estrategia-seleccionada"></span>
+                </div>
+            </div>
+
+            <div class="estrategia-detalle" id="estrategia-detalle">
+                <div class="estrategia-vacia" id="estrategia-vacia">
+                    <i class="fas fa-mouse-pointer"></i>
+                    <p>Seleccione una estrategia de la tabla para agregar actividades y tareas.</p>
+                </div>
+
+                <div class="estrategia-contenido" id="estrategia-contenido" style="display: none;">
+                    <div class="estrategia-texto" id="estrategia-texto"></div>
+                    
+                    <!-- Formulario para agregar actividad -->
+                    <div class="formulario-actividad">
+                        <h3><i class="fas fa-plus-circle"></i> Agregar Actividad</h3>
+                        <div class="form-group">
+                            <label for="actividad-nombre">Nombre de la Actividad</label>
+                            <input type="text" id="actividad-nombre" class="form-input" placeholder="Ej: Realizar talleres de capacitación">
+                        </div>
+                        <div class="form-group">
+                            <label for="actividad-descripcion">Descripción</label>
+                            <textarea id="actividad-descripcion" class="form-textarea" rows="3" placeholder="Describa la actividad en detalle..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="actividad-responsable">Responsable</label>
+                            <input type="text" id="actividad-responsable" class="form-input" placeholder="Nombre del responsable">
+                        </div>
+                        <div class="form-group">
+                            <label for="actividad-fecha-inicio">Fecha Inicio</label>
+                            <input type="date" id="actividad-fecha-inicio" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="actividad-fecha-fin">Fecha Fin</label>
+                            <input type="date" id="actividad-fecha-fin" class="form-input">
+                        </div>
+                        <button class="btn-agregar-actividad" onclick="agregarActividad()">
+                            <i class="fas fa-plus"></i> Agregar Actividad
+                        </button>
+                    </div>
+
+                    <!-- Lista de actividades -->
+                    <div class="lista-actividades" id="lista-actividades">
+                        <h3><i class="fas fa-list-ul"></i> Actividades</h3>
+                        <div class="actividades-container" id="actividades-container">
+                            <!-- Las actividades se cargarán aquí -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para agregar tareas -->
+<div class="modal-tarea" id="modal-tarea">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-plus-circle"></i> Agregar Tarea</h3>
+            <button class="modal-close" onclick="cerrarModalTarea()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="tarea-nombre">Nombre de la Tarea</label>
+                <input type="text" id="tarea-nombre" class="form-input" placeholder="Ej: Contactar facilitadores">
+            </div>
+            <div class="form-group">
+                <label for="tarea-descripcion">Descripción</label>
+                <textarea id="tarea-descripcion" class="form-textarea" rows="3" placeholder="Describa la tarea en detalle..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="tarea-responsable">Responsable</label>
+                <input type="text" id="tarea-responsable" class="form-input" placeholder="Nombre del responsable">
+            </div>
+            <div class="form-group">
+                <label for="tarea-fecha-inicio">Fecha Inicio</label>
+                <input type="date" id="tarea-fecha-inicio" class="form-input">
+            </div>
+            <div class="form-group">
+                <label for="tarea-fecha-fin">Fecha Fin</label>
+                <input type="date" id="tarea-fecha-fin" class="form-input">
+            </div>
+            <div class="form-group">
+                <label for="tarea-estado">Estado</label>
+                <select id="tarea-estado" class="form-select">
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_progreso">En Progreso</option>
+                    <option value="completada">Completada</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-guardar" onclick="guardarTarea()">
+                    <i class="fas fa-save"></i> Guardar Tarea
+                </button>
+                <button class="btn-cancelar" onclick="cerrarModalTarea()">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .estrategias-main-container {
+        padding: 20px;
+        background: #f5f7fa;
+        min-height: 100vh;
+    }
+
+    .content-title {
+        color: #0c2461;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #4a69bd;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .estrategias-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        height: calc(100vh - 150px);
+    }
+
+    @media (max-width: 1200px) {
+        .estrategias-container {
+            grid-template-columns: 1fr;
+            height: auto;
+        }
+    }
+
+    .panel-izquierdo, .panel-derecho {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(12, 36, 97, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    .panel-header {
+        padding: 20px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .panel-header h2 {
+        margin: 0;
+        font-size: 18px;
+        color: #0c2461;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .panel-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-refresh {
+        padding: 8px 15px;
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-refresh:hover {
+        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
+        transform: scale(1.05);
+    }
+
+    .filtros-panel {
+        padding: 15px 20px;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        gap: 10px;
+    }
+
+    .filtro-select {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 14px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .tabla-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0;
+    }
+
+    .tabla-estrategias {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .tabla-estrategias thead {
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        color: white;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .tabla-estrategias th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .tabla-estrategias tbody tr {
+        border-bottom: 1px solid #e9ecef;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .tabla-estrategias tbody tr:hover {
+        background: #f8f9fa;
+    }
+
+    .tabla-estrategias tbody tr.selected {
+        background: linear-gradient(135deg, rgba(12, 36, 97, 0.1) 0%, rgba(30, 55, 153, 0.1) 100%);
+        border-left: 4px solid #0c2461;
+    }
+
+    .tabla-estrategias td {
+        padding: 15px;
+        vertical-align: top;
+    }
+
+    .estrategia-seleccionada-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 5px;
+    }
+
+    #nombre-eje-seleccionado {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0c2461;
+    }
+
+    #tipo-estrategia-seleccionada {
+        font-size: 12px;
+        padding: 4px 8px;
+        border-radius: 20px;
+        background: #4CAF50;
+        color: white;
+        font-weight: 600;
+    }
+
+    .estrategia-detalle {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .estrategia-vacia {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #666;
+        text-align: center;
+        padding: 40px;
+    }
+
+    .estrategia-vacia i {
+        font-size: 48px;
+        margin-bottom: 20px;
+        color: #dee2e6;
+    }
+
+    .estrategia-contenido {
+        height: 100%;
+    }
+
+    .estrategia-texto {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #4a69bd;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .formulario-actividad {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .formulario-actividad h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #0c2461;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #0c2461;
+        font-size: 14px;
+    }
+
+    .form-input, .form-textarea, .form-select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+        border-color: #4a69bd;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(74, 105, 189, 0.1);
+    }
+
+    .btn-agregar-actividad {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .btn-agregar-actividad:hover {
+        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
+        transform: translateY(-2px);
+    }
+
+    .lista-actividades h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #0c2461;
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .actividades-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .actividad-item {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-left: 4px solid #4CAF50;
+    }
+
+    .actividad-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .actividad-titulo {
+        font-size: 16px;
+        font-weight: 600;
+        color: #0c2461;
+        margin: 0;
+    }
+
+    .actividad-acciones {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-agregar-tarea, .btn-eliminar-actividad {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s;
+    }
+
+    .btn-agregar-tarea {
+        background: linear-gradient(135deg, #2196F3 0%, #1565c0 100%);
+        color: white;
+    }
+
+    .btn-agregar-tarea:hover {
+        background: linear-gradient(135deg, #1565c0 0%, #2196F3 100%);
+    }
+
+    .btn-eliminar-actividad {
+        background: linear-gradient(135deg, #ff6b6b 0%, #c62828 100%);
+        color: white;
+    }
+
+    .btn-eliminar-actividad:hover {
+        background: linear-gradient(135deg, #c62828 0%, #ff6b6b 100%);
+    }
+
+    .actividad-detalle {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 15px;
+        line-height: 1.5;
+    }
+
+    .actividad-metadata {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .metadata-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .metadata-item i {
+        color: #4a69bd;
+    }
+
+    .lista-tareas {
+        margin-top: 15px;
+    }
+
+    .tarea-item {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 12px;
+        margin-bottom: 10px;
+        border-left: 3px solid #2196F3;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .tarea-info h4 {
+        margin: 0 0 5px 0;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .tarea-info p {
+        margin: 0;
+        font-size: 12px;
+        color: #666;
+    }
+
+    .tarea-estado {
+        padding: 4px 8px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .tarea-estado.pendiente {
+        background: #FFC107;
+        color: #856404;
+    }
+
+    .tarea-estado.en_progreso {
+        background: #2196F3;
+        color: white;
+    }
+
+    .tarea-estado.completada {
+        background: #4CAF50;
+        color: white;
+    }
+
+    /* Modal para tareas */
+    .modal-tarea {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-tarea.active {
+        display: flex;
+        opacity: 1;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 90vh;
+        overflow: hidden;
+        transform: translateY(20px);
+        transition: transform 0.3s ease;
+    }
+
+    .modal-tarea.active .modal-content {
+        transform: translateY(0);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-close {
+        background: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .modal-close:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: 30px;
+        max-height: calc(90vh - 80px);
+        overflow-y: auto;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-guardar, .btn-cancelar {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        flex: 1;
+        transition: all 0.3s ease;
+    }
+
+    .btn-guardar {
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        color: white;
+    }
+
+    .btn-guardar:hover {
+        background: linear-gradient(135deg, #1e3799 0%, #0c2461 100%);
+    }
+
+    .btn-cancelar {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-cancelar:hover {
+        background: #495057;
+    }
+
+    /* Scrollbars */
+    .tabla-container::-webkit-scrollbar,
+    .estrategia-detalle::-webkit-scrollbar,
+    .modal-body::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .tabla-container::-webkit-scrollbar-track,
+    .estrategia-detalle::-webkit-scrollbar-track,
+    .modal-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    .tabla-container::-webkit-scrollbar-thumb,
+    .estrategia-detalle::-webkit-scrollbar-thumb,
+    .modal-body::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+
+    .tabla-container::-webkit-scrollbar-thumb:hover,
+    .estrategia-detalle::-webkit-scrollbar-thumb:hover,
+    .modal-body::-webkit-scrollbar-thumb:hover {
+        background: #a1a1a1;
+    }
+
+    @media (max-width: 768px) {
+        .estrategias-container {
+            gap: 20px;
+        }
+
+        .panel-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .estrategia-seleccionada-info {
+            align-items: flex-start;
+        }
+
+        .filtros-panel {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<script>
+    // Variables globales
+    let estrategias = [];
+    let estrategiaSeleccionadaId = null;
+    let actividadActualParaTarea = null;
+    let actividades = {};
+
+    // Mapeo de ejes
+    const mapEjes = {
+        'educacion': 'EDUCACIÓN',
+        'salud': 'SALUD',
+        'empleabilidad': 'EMPLEABILIDAD',
+        'desarrollo_economico': 'DESARROLLO ECONÓMICO',
+        'sostenibilidad_ambiental': 'SOSTENIBILIDAD AMBIENTAL (AGUA)',
+        'comunicacion': 'COMUNICACIÓN',
+        'institucional': 'INSTITUCIONAL'
+    };
+
+    // Inicializar al cargar
+    document.addEventListener('DOMContentLoaded', function() {
+        cargarEstrategias();
+    });
+
+    // Cargar estrategias desde la base de datos
+    function cargarEstrategias() {
+        // Mostrar indicador de carga
+        const btnRefresh = document.querySelector('.btn-refresh');
+        const originalHTML = btnRefresh.innerHTML;
+        btnRefresh.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+        btnRefresh.disabled = true;
+
+        fetch('/api/estrategias_foda_con_eje')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    estrategias = data.estrategias;
+                    actualizarTablaEstrategias();
+                } else {
+                    mostrarNotificacion('❌ Error al cargar estrategias', 'error');
+                }
+                
+                btnRefresh.innerHTML = originalHTML;
+                btnRefresh.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                mostrarNotificacion('❌ Error de conexión al servidor', 'error');
+                btnRefresh.innerHTML = originalHTML;
+                btnRefresh.disabled = false;
+            });
+    }
+
+    // Actualizar la tabla de estrategias
+    function actualizarTablaEstrategias() {
+        const cuerpoTabla = document.getElementById('cuerpo-tabla-estrategias');
+        cuerpoTabla.innerHTML = '';
+
+        if (estrategias.length === 0) {
+            cuerpoTabla.innerHTML = `
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: #666;">
+                        <i class="fas fa-inbox" style="font-size: 24px; margin-bottom: 10px; display: block;"></i>
+                        No hay estrategias guardadas todavía.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        estrategias.forEach(estrategia => {
+            const fila = document.createElement('tr');
+            fila.dataset.id = estrategia.id;
+            fila.onclick = () => seleccionarEstrategia(estrategia.id);
+
+            // Determinar color del tipo de estrategia
+            let tipoColor = '';
+            switch(estrategia.tipo_cruce) {
+                case 'FO': tipoColor = '#4CAF50'; break;
+                case 'DO': tipoColor = '#2196F3'; break;
+                case 'FA': tipoColor = '#FF9800'; break;
+                case 'DA': tipoColor = '#9C27B0'; break;
+            }
+
+            fila.innerHTML = `
+                <td>
+                    <div class="eje-badge" style="background: ${tipoColor}20; color: ${tipoColor}; border: 1px solid ${tipoColor}40;">
+                        ${mapEjes[estrategia.eje_id] || estrategia.eje_id}
+                    </div>
+                </td>
+                <td>
+                    <span class="estrategia-tipo" style="background: ${tipoColor}">
+                        ${estrategia.tipo_cruce}
+                    </span>
+                </td>
+                <td>${estrategia.estrategia.substring(0, 100)}${estrategia.estrategia.length > 100 ? '...' : ''}</td>
+                <td>
+                    <button class="btn-seleccionar" onclick="seleccionarEstrategia(${estrategia.id})">
+                        <i class="fas fa-arrow-right"></i> Ver
+                    </button>
+                </td>
+            `;
+
+            cuerpoTabla.appendChild(fila);
+        });
+
+        // Si hay una estrategia seleccionada previamente, mantenerla seleccionada
+        if (estrategiaSeleccionadaId) {
+            const filaSeleccionada = document.querySelector(`tr[data-id="${estrategiaSeleccionadaId}"]`);
+            if (filaSeleccionada) {
+                seleccionarEstrategia(estrategiaSeleccionadaId);
+            }
+        }
+    }
+
+    // Filtrar estrategias en la tabla
+    function filtrarEstrategiasTabla() {
+        const filtroEje = document.getElementById('filtro-eje').value;
+        const filtroTipo = document.getElementById('filtro-tipo').value;
+        const filas = document.querySelectorAll('#cuerpo-tabla-estrategias tr');
+
+        filas.forEach(fila => {
+            if (fila.dataset.id) {
+                const estrategia = estrategias.find(e => e.id == fila.dataset.id);
+                if (!estrategia) return;
+
+                const pasaEje = filtroEje === 'all' || estrategia.eje_id === filtroEje;
+                const pasaTipo = filtroTipo === 'all' || estrategia.tipo_cruce === filtroTipo;
+
+                fila.style.display = (pasaEje && pasaTipo) ? '' : 'none';
+            }
+        });
+    }
+
+    // Seleccionar una estrategia
+    function seleccionarEstrategia(id) {
+        estrategiaSeleccionadaId = id;
+        const estrategia = estrategias.find(e => e.id == id);
+
+        if (!estrategia) return;
+
+        // Actualizar UI de selección
+        document.querySelectorAll('#cuerpo-tabla-estrategias tr').forEach(fila => {
+            fila.classList.remove('selected');
+        });
+        const filaSeleccionada = document.querySelector(`tr[data-id="${id}"]`);
+        if (filaSeleccionada) {
+            filaSeleccionada.classList.add('selected');
+        }
+
+        // Mostrar información de la estrategia seleccionada
+        document.getElementById('nombre-eje-seleccionado').textContent = 
+            mapEjes[estrategia.eje_id] || estrategia.eje_id;
+        
+        const tipoColor = getTipoColor(estrategia.tipo_cruce);
+        document.getElementById('tipo-estrategia-seleccionada').textContent = estrategia.tipo_cruce;
+        document.getElementById('tipo-estrategia-seleccionada').style.background = tipoColor;
+
+        // Mostrar contenido de la estrategia
+        document.getElementById('estrategia-vacia').style.display = 'none';
+        document.getElementById('estrategia-contenido').style.display = 'block';
+        document.getElementById('estrategia-texto').textContent = estrategia.estrategia;
+
+        // Cargar actividades de esta estrategia
+        cargarActividades(id);
+    }
+
+    function getTipoColor(tipo) {
+        switch(tipo) {
+            case 'FO': return '#4CAF50';
+            case 'DO': return '#2196F3';
+            case 'FA': return '#FF9800';
+            case 'DA': return '#9C27B0';
+            default: return '#0c2461';
+        }
+    }
+
+    // Cargar actividades para una estrategia
+    function cargarActividades(estrategiaId) {
+        fetch(`/api/actividades_estrategia/${estrategiaId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    actividades[estrategiaId] = data.actividades;
+                    actualizarListaActividades(estrategiaId);
+                } else {
+                    actividades[estrategiaId] = [];
+                    actualizarListaActividades(estrategiaId);
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar actividades:', error);
+                actividades[estrategiaId] = [];
+                actualizarListaActividades(estrategiaId);
+            });
+    }
+
+    // Actualizar lista de actividades
+    function actualizarListaActividades(estrategiaId) {
+        const container = document.getElementById('actividades-container');
+        container.innerHTML = '';
+
+        if (!actividades[estrategiaId] || actividades[estrategiaId].length === 0) {
+            container.innerHTML = `
+                <div class="actividad-vacia">
+                    <i class="fas fa-tasks"></i>
+                    <p>No hay actividades para esta estrategia. Agregue la primera actividad.</p>
+                </div>
+            `;
+            return;
+        }
+
+        actividades[estrategiaId].forEach(actividad => {
+            const actividadDiv = document.createElement('div');
+            actividadDiv.className = 'actividad-item';
+            actividadDiv.dataset.id = actividad.id;
+
+            // Formatear fechas
+            const fechaInicio = actividad.fecha_inicio ? new Date(actividad.fecha_inicio).toLocaleDateString('es-ES') : 'No definida';
+            const fechaFin = actividad.fecha_fin ? new Date(actividad.fecha_fin).toLocaleDateString('es-ES') : 'No definida';
+
+            actividadDiv.innerHTML = `
+                <div class="actividad-header">
+                    <h3 class="actividad-titulo">${actividad.nombre}</h3>
+                    <div class="actividad-acciones">
+                        <button class="btn-agregar-tarea" onclick="abrirModalTarea(${actividad.id})">
+                            <i class="fas fa-plus"></i> Tarea
+                        </button>
+                        <button class="btn-eliminar-actividad" onclick="eliminarActividad(${actividad.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="actividad-detalle">
+                    ${actividad.descripcion || 'Sin descripción'}
+                </div>
+                <div class="actividad-metadata">
+                    <div class="metadata-item">
+                        <i class="fas fa-user"></i>
+                        <span>${actividad.responsable || 'Sin responsable'}</span>
+                    </div>
+                    <div class="metadata-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>${fechaInicio} - ${fechaFin}</span>
+                    </div>
+                </div>
+                <div class="lista-tareas" id="tareas-actividad-${actividad.id}">
+                    <!-- Las tareas se cargarán aquí dinámicamente -->
+                </div>
+            `;
+
+            container.appendChild(actividadDiv);
+            
+            // Cargar tareas para esta actividad
+            cargarTareas(actividad.id);
+        });
+    }
+
+    // Agregar nueva actividad
+    function agregarActividad() {
+        if (!estrategiaSeleccionadaId) {
+            mostrarNotificacion('❌ Primero seleccione una estrategia', 'error');
+            return;
+        }
+
+        const nombre = document.getElementById('actividad-nombre').value.trim();
+        const descripcion = document.getElementById('actividad-descripcion').value.trim();
+        const responsable = document.getElementById('actividad-responsable').value.trim();
+        const fechaInicio = document.getElementById('actividad-fecha-inicio').value;
+        const fechaFin = document.getElementById('actividad-fecha-fin').value;
+
+        if (!nombre) {
+            mostrarNotificacion('❌ El nombre de la actividad es obligatorio', 'error');
+            return;
+        }
+
+        const actividad = {
+            estrategia_id: estrategiaSeleccionadaId,
+            nombre: nombre,
+            descripcion: descripcion,
+            responsable: responsable,
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin
+        };
+
+        fetch('/api/agregar_actividad', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(actividad)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarNotificacion('✅ Actividad agregada correctamente', 'success');
+                
+                // Limpiar formulario
+                document.getElementById('actividad-nombre').value = '';
+                document.getElementById('actividad-descripcion').value = '';
+                document.getElementById('actividad-responsable').value = '';
+                document.getElementById('actividad-fecha-inicio').value = '';
+                document.getElementById('actividad-fecha-fin').value = '';
+                
+                // Recargar actividades
+                cargarActividades(estrategiaSeleccionadaId);
+            } else {
+                mostrarNotificacion('❌ Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarNotificacion('❌ Error de conexión al servidor', 'error');
+        });
+    }
+
+    // Eliminar actividad
+    function eliminarActividad(actividadId) {
+        if (!confirm('¿Está seguro de eliminar esta actividad y todas sus tareas?')) {
+            return;
+        }
+
+        fetch(`/api/eliminar_actividad/${actividadId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarNotificacion('✅ Actividad eliminada correctamente', 'success');
+                cargarActividades(estrategiaSeleccionadaId);
+            } else {
+                mostrarNotificacion('❌ Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarNotificacion('❌ Error de conexión al servidor', 'error');
+        });
+    }
+
+    // Abrir modal para agregar tarea
+    function abrirModalTarea(actividadId) {
+        actividadActualParaTarea = actividadId;
+        document.getElementById('modal-tarea').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModalTarea() {
+        document.getElementById('modal-tarea').classList.remove('active');
+        document.body.style.overflow = 'auto';
+        
+        // Limpiar formulario
+        document.getElementById('tarea-nombre').value = '';
+        document.getElementById('tarea-descripcion').value = '';
+        document.getElementById('tarea-responsable').value = '';
+        document.getElementById('tarea-fecha-inicio').value = '';
+        document.getElementById('tarea-fecha-fin').value = '';
+        document.getElementById('tarea-estado').value = 'pendiente';
+    }
+
+    // Guardar tarea
+    function guardarTarea() {
+        if (!actividadActualParaTarea) {
+            mostrarNotificacion('❌ No hay actividad seleccionada', 'error');
+            return;
+        }
+
+        const nombre = document.getElementById('tarea-nombre').value.trim();
+        const descripcion = document.getElementById('tarea-descripcion').value.trim();
+        const responsable = document.getElementById('tarea-responsable').value.trim();
+        const fechaInicio = document.getElementById('tarea-fecha-inicio').value;
+        const fechaFin = document.getElementById('tarea-fecha-fin').value;
+        const estado = document.getElementById('tarea-estado').value;
+
+        if (!nombre) {
+            mostrarNotificacion('❌ El nombre de la tarea es obligatorio', 'error');
+            return;
+        }
+
+        const tarea = {
+            actividad_id: actividadActualParaTarea,
+            nombre: nombre,
+            descripcion: descripcion,
+            responsable: responsable,
+            fecha_inicio: fechaInicio,
+            fecha_fin: fechaFin,
+            estado: estado
+        };
+
+        fetch('/api/agregar_tarea', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(tarea)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarNotificacion('✅ Tarea agregada correctamente', 'success');
+                cerrarModalTarea();
+                cargarTareas(actividadActualParaTarea);
+            } else {
+                mostrarNotificacion('❌ Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarNotificacion('❌ Error de conexión al servidor', 'error');
+        });
+    }
+
+    // Cargar tareas para una actividad
+    function cargarTareas(actividadId) {
+        fetch(`/api/tareas_actividad/${actividadId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    actualizarListaTareas(actividadId, data.tareas);
+                }
+            })
+            .catch(error => {
+                console.error('Error al cargar tareas:', error);
+            });
+    }
+
+    // Actualizar lista de tareas
+    function actualizarListaTareas(actividadId, tareas) {
+        const container = document.getElementById(`tareas-actividad-${actividadId}`);
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (!tareas || tareas.length === 0) {
+            container.innerHTML = `
+                <div class="tarea-vacia" style="text-align: center; padding: 10px; color: #666; font-size: 12px;">
+                    <i class="fas fa-tasks"></i> No hay tareas para esta actividad
+                </div>
+            `;
+            return;
+        }
+
+        tareas.forEach(tarea => {
+            const tareaDiv = document.createElement('div');
+            tareaDiv.className = 'tarea-item';
+
+            // Formatear fechas
+            const fechaInicio = tarea.fecha_inicio ? new Date(tarea.fecha_inicio).toLocaleDateString('es-ES') : 'No definida';
+            const fechaFin = tarea.fecha_fin ? new Date(tarea.fecha_fin).toLocaleDateString('es-ES') : 'No definida';
+
+            // Determinar color del estado
+            let estadoColor = '';
+            let estadoTexto = '';
+            switch(tarea.estado) {
+                case 'pendiente':
+                    estadoColor = 'pendiente';
+                    estadoTexto = 'Pendiente';
+                    break;
+                case 'en_progreso':
+                    estadoColor = 'en_progreso';
+                    estadoTexto = 'En Progreso';
+                    break;
+                case 'completada':
+                    estadoColor = 'completada';
+                    estadoTexto = 'Completada';
+                    break;
+            }
+
+            tareaDiv.innerHTML = `
+                <div class="tarea-info">
+                    <h4>${tarea.nombre}</h4>
+                    <p>${tarea.descripcion || 'Sin descripción'}</p>
+                    <div style="display: flex; gap: 15px; margin-top: 5px; font-size: 11px; color: #666;">
+                        <span><i class="fas fa-user"></i> ${tarea.responsable || 'Sin responsable'}</span>
+                        <span><i class="fas fa-calendar-alt"></i> ${fechaInicio} - ${fechaFin}</span>
+                    </div>
+                </div>
+                <div class="tarea-estado ${estadoColor}">${estadoTexto}</div>
+            `;
+
+            container.appendChild(tareaDiv);
+        });
+    }
+
+    // Función para mostrar notificaciones
+    function mostrarNotificacion(mensaje, tipo) {
+        let alerta = document.getElementById('alerta-flotante');
+        
+        if (!alerta) {
+            alerta = document.createElement('div');
+            alerta.id = 'alerta-flotante';
+            alerta.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transition: all 0.3s ease;
+                transform: translateX(100%);
+                opacity: 0;
+                max-width: 400px;
+                backdrop-filter: blur(10px);
+            `;
+            document.body.appendChild(alerta);
+        }
+        
+        let background = '';
+        if (tipo === 'success') {
+            background = 'linear-gradient(135deg, #4CAF50 0%, #2e7d32 100%)';
+        } else if (tipo === 'error') {
+            background = 'linear-gradient(135deg, #ff6b6b 0%, #c62828 100%)';
+        } else if (tipo === 'warning') {
+            background = 'linear-gradient(135deg, #FF9800 0%, #f57c00 100%)';
+        } else if (tipo === 'info') {
+            background = 'linear-gradient(135deg, #2196F3 0%, #1565c0 100%)';
+        } else {
+            background = 'linear-gradient(135deg, #0c2461 0%, #1e3799 100%)';
+        }
+        
+        alerta.style.background = background;
+        alerta.innerHTML = `<i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : 'info-circle'}"></i> ${mensaje}`;
+        
+        setTimeout(() => {
+            alerta.style.transform = 'translateX(0)';
+            alerta.style.opacity = '1';
+        }, 10);
+        
+        setTimeout(() => {
+            alerta.style.transform = 'translateX(100%)';
+            alerta.style.opacity = '0';
+        }, 4000);
+    }
+</script>
+{% endblock %}
