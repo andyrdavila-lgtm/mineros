@@ -66,7 +66,7 @@ class AspectoAmbiental(db.Model):
     # Relación
     creador = db.relationship('User', backref=db.backref('aspectos', lazy=True))
 
-# Tabla: Estrategias FODA Cruzado
+# Tabla: Estrategias FODA Cruzado (actualizada con campos de eje)
 class EstrategiaFodaCruzado(db.Model):
     __tablename__ = 'estrategias_foda_cruzado'
     
@@ -79,6 +79,8 @@ class EstrategiaFodaCruzado(db.Model):
     elemento_externo_tipo = db.Column(db.String(20), nullable=False)  # oportunidad, amenaza
     elemento_externo_texto = db.Column(db.String(500), nullable=False)
     estrategia = db.Column(db.Text, nullable=False)
+    eje_id = db.Column(db.String(50), nullable=True)  # Nuevo campo: ID del eje estratégico
+    eje_texto = db.Column(db.String(200), nullable=True)  # Nuevo campo: texto del eje
     fecha_creacion = db.Column(db.DateTime, default=datetime.utcnow)
     creador_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'))
     
@@ -240,6 +242,118 @@ def inicio():
                          aspectos_recientes=aspectos_recientes,
                          aspectos_canva=aspectos_canva,
                          aspectos_foda=aspectos_foda)
+
+# ==================== NUEVAS RUTAS PARA LAS PESTAÑAS ADICIONALES ====================
+
+@app.route('/estrategias')
+@login_required
+def estrategias():
+    """Página de Estrategias"""
+    # Obtener todas las estrategias con ejes
+    estrategias = EstrategiaFodaCruzado.query.order_by(
+        EstrategiaFodaCruzado.fecha_creacion.desc()
+    ).all()
+    
+    # Obtener estadísticas por eje
+    ejes = {
+        'educacion': {'nombre': 'EDUCACIÓN', 'icono': 'fas fa-graduation-cap', 'count': 0},
+        'salud': {'nombre': 'SALUD', 'icono': 'fas fa-heartbeat', 'count': 0},
+        'empleabilidad': {'nombre': 'EMPLEABILIDAD', 'icono': 'fas fa-briefcase', 'count': 0},
+        'desarrollo_economico': {'nombre': 'DESARROLLO ECONÓMICO', 'icono': 'fas fa-chart-line', 'count': 0},
+        'sostenibilidad_ambiental': {'nombre': 'SOSTENIBILIDAD AMBIENTAL (AGUA)', 'icono': 'fas fa-tint', 'count': 0},
+        'comunicacion': {'nombre': 'COMUNICACIÓN', 'icono': 'fas fa-bullhorn', 'count': 0},
+        'institucional': {'nombre': 'INSTITUCIONAL', 'icono': 'fas fa-landmark', 'count': 0}
+    }
+    
+    # Contar estrategias por eje
+    for estrategia in estrategias:
+        if estrategia.eje_id and estrategia.eje_id in ejes:
+            ejes[estrategia.eje_id]['count'] += 1
+    
+    # Convertir a lista para template
+    ejes_lista = [ejes[key] for key in ejes]
+    
+    return render_template('estrategias.html', 
+                         estrategias=estrategias,
+                         ejes=ejes_lista,
+                         total_estrategias=len(estrategias))
+
+@app.route('/red')
+@login_required
+def red():
+    """Página de Mapa de Red"""
+    # Obtener datos para el mapa de red
+    estrategias = EstrategiaFodaCruzado.query.all()
+    
+    # Preparar datos para visualización de red
+    nodos = []
+    enlaces = []
+    
+    # Agregar nodos por eje
+    ejes_unicos = set()
+    for estrategia in estrategias:
+        if estrategia.eje_id:
+            ejes_unicos.add((estrategia.eje_id, estrategia.eje_texto))
+    
+    # Crear nodos de ejes
+    eje_ids = {}
+    for i, (eje_id, eje_texto) in enumerate(ejes_unicos):
+        eje_ids[eje_id] = i
+        nodos.append({
+            'id': i,
+            'name': eje_texto,
+            'group': 'eje',
+            'size': 20,
+            'color': get_eje_color(eje_id)
+        })
+    
+    # Agregar nodos de estrategias y enlaces
+    for i, estrategia in enumerate(estrategias):
+        nodo_id = i + len(ejes_unicos)
+        nodos.append({
+            'id': nodo_id,
+            'name': f"{estrategia.tipo_cruce} - {estrategia.estrategia[:30]}...",
+            'group': 'estrategia',
+            'size': 10,
+            'color': get_tipo_cruce_color(estrategia.tipo_cruce)
+        })
+        
+        # Crear enlace con eje si existe
+        if estrategia.eje_id and estrategia.eje_id in eje_ids:
+            enlaces.append({
+                'source': eje_ids[estrategia.eje_id],
+                'target': nodo_id,
+                'value': 2
+            })
+    
+    return render_template('red.html',
+                         total_nodos=len(nodos),
+                         total_enlaces=len(enlaces),
+                         total_estrategias=len(estrategias),
+                         nodos_json=jsonify(nodos).get_data(as_text=True),
+                         enlaces_json=jsonify(enlaces).get_data(as_text=True))
+
+# Funciones auxiliares para colores
+def get_eje_color(eje_id):
+    colores = {
+        'educacion': '#4CAF50',
+        'salud': '#FF6B6B',
+        'empleabilidad': '#2196F3',
+        'desarrollo_economico': '#FF9800',
+        'sostenibilidad_ambiental': '#00BCD4',
+        'comunicacion': '#9C27B0',
+        'institucional': '#795548'
+    }
+    return colores.get(eje_id, '#607D8B')
+
+def get_tipo_cruce_color(tipo_cruce):
+    colores = {
+        'FO': '#4CAF50',
+        'DO': '#2196F3',
+        'FA': '#FF9800',
+        'DA': '#9C27B0'
+    }
+    return colores.get(tipo_cruce, '#607D8B')
 
 # ==================== RUTAS PARA ASPECTOS AMBIENTALES ====================
 
@@ -646,19 +760,19 @@ def eliminar_foda_ext(id):
         print(f"Error al eliminar fodaext: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
-# ==================== RUTAS PARA ESTRATEGIAS FODA CRUZADO ====================
+# ==================== RUTAS PARA ESTRATEGIAS FODA CRUZADO CON EJES ====================
 
 @app.route('/guardar_estrategia_foda', methods=['POST'])
 @login_required
 def guardar_estrategia_foda():
-    """Guardar una estrategia FODA cruzado"""
+    """Guardar una estrategia FODA cruzado (versión original, sin eje obligatorio)"""
     try:
         if not request.is_json:
             return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
         
         data = request.get_json()
         
-        # Validar campos requeridos
+        # Validar campos requeridos (los originales, sin eje)
         campos_requeridos = [
             'tipo_cruce', 'elemento_interno_id', 'elemento_interno_tipo',
             'elemento_interno_texto', 'elemento_externo_id', 'elemento_externo_tipo',
@@ -673,7 +787,7 @@ def guardar_estrategia_foda():
         if data.get('tipo_cruce') not in ['FO', 'DO', 'FA', 'DA']:
             return jsonify({'success': False, 'message': 'Tipo de cruce inválido'}), 400
         
-        # Crear nueva estrategia
+        # Crear nueva estrategia (los ejes pueden ser None)
         nueva_estrategia = EstrategiaFodaCruzado(
             tipo_cruce=data['tipo_cruce'],
             elemento_interno_id=data['elemento_interno_id'],
@@ -683,6 +797,8 @@ def guardar_estrategia_foda():
             elemento_externo_tipo=data['elemento_externo_tipo'],
             elemento_externo_texto=data['elemento_externo_texto'],
             estrategia=data['estrategia'],
+            eje_id=data.get('eje_id'),  # Opcional
+            eje_texto=data.get('eje_texto'),  # Opcional
             creador_id=session['user_id']
         )
         
@@ -705,10 +821,77 @@ def guardar_estrategia_foda():
         print(f"Error al guardar estrategia FODA cruzado: {e}")
         return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
 
+@app.route('/guardar_estrategia_foda_con_eje', methods=['POST'])
+@login_required
+def guardar_estrategia_foda_con_eje():
+    """Guardar una estrategia FODA cruzado con eje estratégico"""
+    try:
+        if not request.is_json:
+            return jsonify({'success': False, 'message': 'Formato no soportado'}), 400
+        
+        data = request.get_json()
+        
+        # Validar campos requeridos
+        campos_requeridos = [
+            'tipo_cruce', 'elemento_interno_id', 'elemento_interno_tipo',
+            'elemento_interno_texto', 'elemento_externo_id', 'elemento_externo_tipo',
+            'elemento_externo_texto', 'estrategia', 'eje_id', 'eje_texto'
+        ]
+        
+        for campo in campos_requeridos:
+            if not data.get(campo):
+                return jsonify({'success': False, 'message': f'Campo {campo} es obligatorio'}), 400
+        
+        # Validar tipo de cruce
+        if data.get('tipo_cruce') not in ['FO', 'DO', 'FA', 'DA']:
+            return jsonify({'success': False, 'message': 'Tipo de cruce inválido'}), 400
+        
+        # Validar eje
+        ejes_validos = ['educacion', 'salud', 'empleabilidad', 'desarrollo_economico', 
+                       'sostenibilidad_ambiental', 'comunicacion', 'institucional']
+        if data.get('eje_id') not in ejes_validos:
+            return jsonify({'success': False, 'message': 'Eje estratégico inválido'}), 400
+        
+        # Crear nueva estrategia
+        nueva_estrategia = EstrategiaFodaCruzado(
+            tipo_cruce=data['tipo_cruce'],
+            elemento_interno_id=data['elemento_interno_id'],
+            elemento_interno_tipo=data['elemento_interno_tipo'],
+            elemento_interno_texto=data['elemento_interno_texto'],
+            elemento_externo_id=data['elemento_externo_id'],
+            elemento_externo_tipo=data['elemento_externo_tipo'],
+            elemento_externo_texto=data['elemento_externo_texto'],
+            estrategia=data['estrategia'],
+            eje_id=data['eje_id'],
+            eje_texto=data['eje_texto'],
+            creador_id=session['user_id']
+        )
+        
+        db.session.add(nueva_estrategia)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '✅ Estrategia FODA cruzado guardada correctamente con eje',
+            'data': {
+                'id': nueva_estrategia.id,
+                'tipo_cruce': nueva_estrategia.tipo_cruce,
+                'estrategia': nueva_estrategia.estrategia,
+                'eje_id': nueva_estrategia.eje_id,
+                'eje_texto': nueva_estrategia.eje_texto,
+                'fecha_creacion': nueva_estrategia.fecha_creacion.strftime('%d/%m/%Y %H:%M')
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error al guardar estrategia FODA cruzado: {e}")
+        return jsonify({'success': False, 'message': f'Error del servidor: {str(e)}'}), 500
+
 @app.route('/api/estrategias_foda')
 @login_required
 def api_estrategias_foda():
-    """API para obtener estrategias FODA cruzado"""
+    """API para obtener estrategias FODA cruzado (incluye ejes si existen)"""
     try:
         estrategias = EstrategiaFodaCruzado.query.order_by(
             EstrategiaFodaCruzado.fecha_creacion.desc()
@@ -725,6 +908,8 @@ def api_estrategias_foda():
                 'elemento_externo_tipo': e.elemento_externo_tipo,
                 'elemento_externo_texto': e.elemento_externo_texto,
                 'estrategia': e.estrategia,
+                'eje_id': e.eje_id,
+                'eje_texto': e.eje_texto,
                 'fecha': e.fecha_creacion.isoformat() if e.fecha_creacion else None,
                 'creador': e.creador.username if e.creador else None
             })
@@ -733,6 +918,40 @@ def api_estrategias_foda():
         
     except Exception as e:
         print(f"Error en api_estrategias_foda: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/estrategias_foda_con_eje')
+@login_required
+def api_estrategias_foda_con_eje():
+    """API para obtener estrategias FODA cruzado con eje"""
+    try:
+        estrategias = EstrategiaFodaCruzado.query.filter(
+            EstrategiaFodaCruzado.eje_id.isnot(None)
+        ).order_by(
+            EstrategiaFodaCruzado.fecha_creacion.desc()
+        ).all()
+        
+        estrategias_data = []
+        for e in estrategias:
+            estrategias_data.append({
+                'tipo_cruce': e.tipo_cruce,
+                'elemento_interno_id': e.elemento_interno_id,
+                'elemento_interno_tipo': e.elemento_interno_tipo,
+                'elemento_interno_texto': e.elemento_interno_texto,
+                'elemento_externo_id': e.elemento_externo_id,
+                'elemento_externo_tipo': e.elemento_externo_tipo,
+                'elemento_externo_texto': e.elemento_externo_texto,
+                'estrategia': e.estrategia,
+                'eje_id': e.eje_id,
+                'eje_texto': e.eje_texto,
+                'fecha': e.fecha_creacion.isoformat() if e.fecha_creacion else None,
+                'creador': e.creador.username if e.creador else None
+            })
+        
+        return jsonify({'success': True, 'estrategias': estrategias_data})
+        
+    except Exception as e:
+        print(f"Error en api_estrategias_foda_con_eje: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
 @app.route('/eliminar_estrategia_foda/<int:id>', methods=['POST'])
@@ -1186,6 +1405,11 @@ def api_admin_estadisticas():
         # Contar estrategias FODA cruzado
         estrategias_count = EstrategiaFodaCruzado.query.count()
         
+        # Contar estrategias por eje
+        estrategias_con_eje = EstrategiaFodaCruzado.query.filter(
+            EstrategiaFodaCruzado.eje_id.isnot(None)
+        ).count()
+        
         return jsonify({
             'success': True,
             'estadisticas': {
@@ -1194,6 +1418,7 @@ def api_admin_estadisticas():
                 'actividades_foda_ext': total_actividades_foda_ext,
                 'actividades_foda_int': total_actividades_foda_int,
                 'estrategias_foda_cruzado': estrategias_count,
+                'estrategias_con_eje': estrategias_con_eje,
                 'positivas_canva': AspectoAmbiental.query.filter_by(fuente='canva', tipo='Positivo').count(),
                 'negativas_canva': AspectoAmbiental.query.filter_by(fuente='canva', tipo='Negativo').count(),
                 'positivas_foda_ext': AspectoAmbiental.query.filter_by(fuente='foda_ext', tipo='Positivo').count(),
@@ -1608,14 +1833,15 @@ def favicon():
 print("=" * 60)
 print("🚀 INICIANDO SISTEMA DE GESTIÓN AMBIENTAL MINERA - CURIMINING")
 print("=" * 60)
-print("📊 Versión: 2.2 (FODA Cruzado Completo)")
+print("📊 Versión: 3.0 (FODA Cruzado con Ejes y Nuevas Pestañas)")
 print("📅 Fecha: " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 print("=" * 60)
 print("📱 Características:")
-print("  ✅ FODA Cruzado completo con base de datos")
-print("  ✅ 4 tipos de cruces: FO, DO, FA, DA")
-print("  ✅ Persistencia de estrategias")
-print("  ✅ Tabla automática de estrategias_foda_cruzado")
+print("  ✅ FODA Cruzado completo con sistema de ejes")
+print("  ✅ 2 nuevas páginas: Estrategias y Mapa de Red")
+print("  ✅ 7 ejes estratégicos integrados")
+print("  ✅ Persistencia de estrategias con ejes")
+print("  ✅ Visualización de red interactiva")
 print("  ✅ Responsive total (mobile, tablet, desktop)")
 print("  ✅ 9 usuarios pre-creados")
 print("=" * 60)
@@ -1627,6 +1853,7 @@ with app.app_context():
         if initialize_database():
             print("✅ Base de datos inicializada correctamente")
             print("✅ Tablas creadas: usuarios, aspectos_ambientales, estrategias_foda_cruzado")
+            print("✅ Campos de eje añadidos a estrategias_foda_cruzado")
         else:
             print("⚠️  Advertencia: Problemas con la inicialización de BD")
         print("✅ Sistema listo para recibir conexiones")
@@ -1640,7 +1867,7 @@ print("=" * 60)
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 3000))
     print(f"🌐 Servidor ejecutándose en: http://0.0.0.0:{port}")
-    print(f"📱 Modo: FODA Cruzado Completo")
+    print(f"📱 Modo: FODA Cruzado con Ejes y Nuevas Pestañas")
     print("=" * 60)
     
     # Configurar para producción
