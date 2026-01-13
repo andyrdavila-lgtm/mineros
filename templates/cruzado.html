@@ -1,6 +1,68 @@
 {% extends "inicio.html" %}
 
 {% block content %}
+<!-- Barra de Ejes Fija -->
+<div class="ejes-sticky-bar">
+    <div class="ejes-header">
+        <div class="ejes-titulo">
+            <i class="fas fa-bullseye"></i>
+            <h2>EJES ESTRATÉGICOS</h2>
+        </div>
+        <div class="ejes-lista">
+            <div class="eje-item">
+                <i class="fas fa-graduation-cap"></i>
+                <span>EDUCACIÓN</span>
+            </div>
+            <div class="eje-item">
+                <i class="fas fa-heartbeat"></i>
+                <span>SALUD</span>
+            </div>
+            <div class="eje-item">
+                <i class="fas fa-briefcase"></i>
+                <span>EMPLEABILIDAD</span>
+            </div>
+            <div class="eje-item">
+                <i class="fas fa-chart-line"></i>
+                <span>DESARROLLO ECONÓMICO</span>
+            </div>
+            <div class="eje-item">
+                <i class="fas fa-tint"></i>
+                <span>SOSTENIBILIDAD AMBIENTAL (AGUA)</span>
+            </div>
+            <div class="eje-item">
+                <i class="fas fa-bullhorn"></i>
+                <span>COMUNICACIÓN</span>
+            </div>
+            <div class="eje-item">
+                <i class="fas fa-landmark"></i>
+                <span>INSTITUCIONAL</span>
+            </div>
+        </div>
+        <button class="ejes-toggle" onclick="toggleEjesBar()">
+            <i class="fas fa-chevron-up"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Panel de Objetivo Estratégico Fijo -->
+<div class="objetivo-sticky-panel">
+    <div class="objetivo-header">
+        <div class="objetivo-titulo">
+            <i class="fas fa-flag-checkered"></i>
+            <h3>OBJETIVO ESTRATÉGICO</h3>
+            <button class="objetivo-toggle" onclick="toggleObjetivoPanel()">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </div>
+        <div class="objetivo-contenido">
+            <div class="objetivo-texto">
+                Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras, a través de la repotenciación de sistemas comunitarios y el monitoreo estricto de su calidad; este compromiso se complementa con la mejora de equipamiento en salud, la intervención en infraestructura sanitaria y lúdica de 4 unidades educativas, la reubicación estratégica de al menos el 60% del personal local hacia nuevos departamentos, y una cooperación técnica con los GADs y niveles distritales, todo dinamizado por un sistema de comunicación comunitaria que transparente la propuesta de valor y los beneficios del proyecto en el AID y AII.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contenido principal existente -->
 <div class="foda-cruzado-main-container">
     <h1 class="content-title">
         <i class="fas fa-crosshairs"></i> Análisis FODA Cruzado
@@ -300,11 +362,269 @@
 </div>
 
 <style>
-    /* Estilos principales */
+    /* Estilos para la barra de ejes fija */
+    .ejes-sticky-bar {
+        position: fixed;
+        top: 60px; /* Ajusta según la altura de tu menú */
+        left: 0;
+        right: 0;
+        background: linear-gradient(135deg, #0c2461 0%, #1e3799 100%);
+        color: white;
+        z-index: 1000;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        transition: all 0.3s ease;
+        transform: translateY(0);
+        border-bottom: 3px solid #4a69bd;
+    }
+    
+    .ejes-sticky-bar.collapsed {
+        transform: translateY(-100%);
+    }
+    
+    .ejes-header {
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        position: relative;
+    }
+    
+    .ejes-titulo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 180px;
+    }
+    
+    .ejes-titulo h2 {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+        white-space: nowrap;
+    }
+    
+    .ejes-titulo i {
+        font-size: 20px;
+        color: #4a69bd;
+        background: white;
+        padding: 8px;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .ejes-lista {
+        display: flex;
+        flex: 1;
+        justify-content: space-between;
+        gap: 15px;
+        overflow-x: auto;
+        padding: 5px 0;
+    }
+    
+    .eje-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        min-width: 120px;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .eje-item:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .eje-item i {
+        font-size: 18px;
+        color: #6a89cc;
+    }
+    
+    .eje-item span {
+        font-size: 12px;
+        font-weight: 600;
+        text-align: center;
+        line-height: 1.2;
+    }
+    
+    .ejes-toggle {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-left: 10px;
+    }
+    
+    .ejes-toggle:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+    
+    /* Estilos para el panel de objetivo fijo */
+    .objetivo-sticky-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(135deg, #1a5276 0%, #2c3e50 100%);
+        color: white;
+        z-index: 1000;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+        transition: all 0.3s ease;
+        transform: translateY(0);
+        border-top: 3px solid #3498db;
+    }
+    
+    .objetivo-sticky-panel.collapsed {
+        transform: translateY(100%);
+    }
+    
+    .objetivo-header {
+        padding: 15px 20px;
+    }
+    
+    .objetivo-titulo {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+    }
+    
+    .objetivo-titulo h3 {
+        font-size: 16px;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .objetivo-titulo i {
+        font-size: 18px;
+        color: #3498db;
+        background: white;
+        padding: 6px;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .objetivo-contenido {
+        max-height: 200px;
+        overflow-y: auto;
+        padding-right: 10px;
+    }
+    
+    .objetivo-texto {
+        font-size: 13px;
+        line-height: 1.6;
+        color: #ecf0f1;
+        text-align: justify;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border-left: 3px solid #3498db;
+    }
+    
+    .objetivo-toggle {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .objetivo-toggle:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+    
+    /* Estilos principales del contenido FODA */
     .foda-cruzado-main-container {
         padding: 20px;
         background: #f5f7fa;
         min-height: 100vh;
+        margin-top: 140px; /* Ajusta según la altura de la barra de ejes */
+        margin-bottom: 260px; /* Ajusta según la altura del panel de objetivo */
+        transition: margin 0.3s ease;
+    }
+    
+    /* Scrollbar personalizada para el objetivo */
+    .objetivo-contenido::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .objetivo-contenido::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+    
+    .objetivo-contenido::-webkit-scrollbar-thumb {
+        background: rgba(52, 152, 219, 0.6);
+        border-radius: 3px;
+    }
+    
+    .objetivo-contenido::-webkit-scrollbar-thumb:hover {
+        background: rgba(52, 152, 219, 0.8);
+    }
+    
+    /* Scrollbar para la barra de ejes */
+    .ejes-lista::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .ejes-lista::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+    }
+    
+    .ejes-lista::-webkit-scrollbar-thumb {
+        background: rgba(106, 137, 204, 0.6);
+        border-radius: 2px;
+    }
+    
+    .ejes-lista::-webkit-scrollbar-thumb:hover {
+        background: rgba(106, 137, 204, 0.8);
+    }
+    
+    /* Efectos de resaltado para ejes */
+    .eje-item.active {
+        background: rgba(52, 152, 219, 0.3);
+        border-color: #3498db;
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+    }
+    
+    .eje-item.active i {
+        color: white;
     }
     
     .content-title {
@@ -1053,6 +1373,73 @@
     .estadistica-card.cruces .estadistica-valor {
         color: #FF9800;
     }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .ejes-lista {
+            gap: 10px;
+        }
+        
+        .eje-item {
+            min-width: 110px;
+            padding: 6px 8px;
+        }
+        
+        .eje-item span {
+            font-size: 11px;
+        }
+        
+        .objetivo-texto {
+            font-size: 12px;
+        }
+    }
+    
+    @media (max-width: 992px) {
+        .ejes-header {
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 15px;
+        }
+        
+        .ejes-titulo {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .ejes-lista {
+            width: 100%;
+            justify-content: flex-start;
+        }
+        
+        .foda-cruzado-main-container {
+            margin-top: 200px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .ejes-sticky-bar {
+            top: 56px; /* Ajusta para móviles */
+        }
+        
+        .eje-item {
+            min-width: 100px;
+            padding: 5px 6px;
+        }
+        
+        .eje-item span {
+            font-size: 10px;
+        }
+        
+        .objetivo-texto {
+            font-size: 11px;
+            line-height: 1.5;
+        }
+        
+        .foda-cruzado-main-container {
+            margin-top: 220px;
+            margin-bottom: 280px;
+        }
+    }
 </style>
 
 <script>
@@ -1061,12 +1448,112 @@
     let elementoInternoId = null;
     let elementoExternoId = null;
     let estrategiasGuardadas = [];
+    let ejesBarCollapsed = false;
+    let objetivoPanelCollapsed = false;
     
     // Inicializar al cargar
     document.addEventListener('DOMContentLoaded', function() {
         cargarEstrategias();
         actualizarContadorCruces();
+        ajustarMargenes();
+        
+        // Añadir interactividad a los ejes
+        document.querySelectorAll('.eje-item').forEach(item => {
+            item.addEventListener('click', function() {
+                // Remover clase active de todos
+                document.querySelectorAll('.eje-item').forEach(el => {
+                    el.classList.remove('active');
+                });
+                // Añadir clase active al clickeado
+                this.classList.add('active');
+                
+                // Mostrar alerta con el eje seleccionado
+                const ejeNombre = this.querySelector('span').textContent;
+                mostrarAlerta(`✅ Eje seleccionado: ${ejeNombre}`, 'info');
+            });
+        });
+        
+        // Ocultar/mostrar con teclas
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+E para barra de ejes
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                toggleEjesBar();
+            }
+            // Ctrl+O para panel objetivo
+            if (e.ctrlKey && e.key === 'o') {
+                e.preventDefault();
+                toggleObjetivoPanel();
+            }
+        });
     });
+    
+    // Alternar visibilidad de la barra de ejes
+    function toggleEjesBar() {
+        const bar = document.querySelector('.ejes-sticky-bar');
+        const toggleBtn = document.querySelector('.ejes-toggle i');
+        
+        ejesBarCollapsed = !ejesBarCollapsed;
+        
+        if (ejesBarCollapsed) {
+            bar.classList.add('collapsed');
+            toggleBtn.classList.remove('fa-chevron-up');
+            toggleBtn.classList.add('fa-chevron-down');
+            mostrarAlerta('📌 Barra de ejes ocultada', 'info');
+        } else {
+            bar.classList.remove('collapsed');
+            toggleBtn.classList.remove('fa-chevron-down');
+            toggleBtn.classList.add('fa-chevron-up');
+            mostrarAlerta('📌 Barra de ejes visible', 'info');
+        }
+        
+        ajustarMargenes();
+    }
+    
+    // Alternar visibilidad del panel objetivo
+    function toggleObjetivoPanel() {
+        const panel = document.querySelector('.objetivo-sticky-panel');
+        const toggleBtn = document.querySelector('.objetivo-toggle i');
+        
+        objetivoPanelCollapsed = !objetivoPanelCollapsed;
+        
+        if (objetivoPanelCollapsed) {
+            panel.classList.add('collapsed');
+            toggleBtn.classList.remove('fa-chevron-down');
+            toggleBtn.classList.add('fa-chevron-up');
+            mostrarAlerta('🎯 Panel objetivo ocultado', 'info');
+        } else {
+            panel.classList.remove('collapsed');
+            toggleBtn.classList.remove('fa-chevron-up');
+            toggleBtn.classList.add('fa-chevron-down');
+            mostrarAlerta('🎯 Panel objetivo visible', 'info');
+        }
+        
+        ajustarMargenes();
+    }
+    
+    // Ajustar márgenes del contenido principal
+    function ajustarMargenes() {
+        const mainContainer = document.querySelector('.foda-cruzado-main-container');
+        
+        let marginTop = 20;
+        let marginBottom = 20;
+        
+        // Calcular margen superior basado en la barra de ejes
+        if (!ejesBarCollapsed) {
+            const ejesBar = document.querySelector('.ejes-sticky-bar');
+            marginTop += ejesBar.offsetHeight;
+        }
+        
+        // Calcular margen inferior basado en el panel objetivo
+        if (!objetivoPanelCollapsed) {
+            const objetivoPanel = document.querySelector('.objetivo-sticky-panel');
+            marginBottom += objetivoPanel.offsetHeight;
+        }
+        
+        mainContainer.style.marginTop = marginTop + 'px';
+        mainContainer.style.marginBottom = marginBottom + 'px';
+    }
     
     // Seleccionar tipo de cruce
     function seleccionarTipoCruce(tipo) {
@@ -1452,7 +1939,7 @@
             alerta.id = 'alerta-flotante';
             alerta.style.cssText = `
                 position: fixed;
-                top: 20px;
+                top: 120px;
                 right: 20px;
                 padding: 15px 20px;
                 border-radius: 8px;
@@ -1476,8 +1963,10 @@
             background = 'linear-gradient(135deg, #ff6b6b 0%, #c62828 100%)';
         } else if (tipo === 'warning') {
             background = 'linear-gradient(135deg, #FF9800 0%, #f57c00 100%)';
-        } else {
+        } else if (tipo === 'info') {
             background = 'linear-gradient(135deg, #2196F3 0%, #1565c0 100%)';
+        } else {
+            background = 'linear-gradient(135deg, #0c2461 0%, #1e3799 100%)';
         }
         
         alerta.style.background = background;
@@ -1493,5 +1982,8 @@
             alerta.style.opacity = '0';
         }, 4000);
     }
+    
+    // Ajustar en redimensionamiento de ventana
+    window.addEventListener('resize', ajustarMargenes);
 </script>
 {% endblock %}
