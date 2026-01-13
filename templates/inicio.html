@@ -284,6 +284,24 @@
                 width: 100%;
             }
         }
+        
+        /* Estilos para pantallas muy pequeñas */
+        @media (max-width: 480px) {
+            .tabs-container {
+                flex-direction: column;
+            }
+            
+            .tab {
+                width: 100%;
+                min-width: 100%;
+                justify-content: flex-start;
+                padding: 12px 20px;
+            }
+            
+            .content-container {
+                padding: 15px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -314,6 +332,13 @@
             <a href="{{ url_for('cruzado') }}" class="tab {% if request.endpoint == 'cruzado' %}active{% endif %}">
                 <i class="fas fa-th"></i> FODA Cruzado
             </a>
+            <!-- NUEVAS PESTAÑAS -->
+            <a href="{{ url_for('estrategias') }}" class="tab {% if request.endpoint == 'estrategias' %}active{% endif %}">
+                <i class="fas fa-chess-board"></i> ESTRATEGIAS
+            </a>
+            <a href="{{ url_for('red') }}" class="tab {% if request.endpoint == 'red' %}active{% endif %}">
+                <i class="fas fa-map"></i> MAPA
+            </a>
         </div>
         
         <div class="content-container">
@@ -330,10 +355,13 @@
                         <li><strong>FODA Externo:</strong> Análisis de oportunidades y amenazas del entorno.</li>
                         <li><strong>FODA Interno:</strong> Evaluación de fortalezas y debilidades internas.</li>
                         <li><strong>FODA Cruzado:</strong> Matriz cruzada para estrategias derivadas del FODA.</li>
+                        <li><strong>ESTRATEGIAS:</strong> Visualización y gestión de estrategias organizadas por ejes.</li>
+                        <li><strong>MAPA:</strong> Visualización gráfica de relaciones entre estrategias y ejes.</li>
                     </ul>
                     
                     <div class="login-info">
                         <p><strong>Usuario actual:</strong> {{ session.username }} ({{ session.rol }})</p>
+                        <p><strong>Versión del sistema:</strong> 3.0 - FODA con Ejes Estratégicos</p>
                     </div>
                 {% endblock %}
             </div>
@@ -372,5 +400,3 @@
     {% endif %}
 </body>
 </html>
-
-
