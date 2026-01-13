@@ -1,7 +1,7 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Mapa Neuronal Estratégico - Sistema Solar con Órbitas Reales -->
+<!-- Mapa Neuronal Estratégico - Sistema Solar con Órbitas Concéntricas -->
 <div class="mapa-neuronal-container" id="mapaFullscreen">
     <!-- Cabecera principal -->
     <div class="mapa-header-glass">
@@ -62,7 +62,7 @@
         <!-- Fondo estrellado -->
         <div class="estrellas-container" id="estrellasContainer"></div>
         
-        <!-- Anillos orbitales -->
+        <!-- Anillos orbitales (círculos concéntricos) -->
         <div class="anillos-orbitales" id="anillosOrbitales"></div>
         
         <!-- Contenedor del sistema solar -->
@@ -83,16 +83,16 @@
                 </div>
             </div>
             
-            <!-- Contenedor de ejes (planetas) -->
+            <!-- Planetas (ejes) orbitando alrededor del sol -->
             <div class="ejes-orbitales" id="ejesOrbitales"></div>
             
-            <!-- Contenedor de estrategias (lunas) -->
+            <!-- Estrategias (lunas) orbitando alrededor de los planetas -->
             <div class="estrategias-orbitales" id="estrategiasOrbitales"></div>
             
-            <!-- Contenedor de tácticas (satélites) -->
+            <!-- Tácticas (satélites) orbitando alrededor de las lunas -->
             <div class="tacticas-orbitales" id="tacticasOrbitales"></div>
             
-            <!-- Contenedor de actividades (asteroides) -->
+            <!-- Actividades (asteroides) orbitando alrededor de los satélites -->
             <div class="actividades-orbitales" id="actividadesOrbitales"></div>
         </div>
     </div>
@@ -302,7 +302,7 @@
         50% { opacity: 1; }
     }
     
-    /* Anillos orbitales */
+    /* Anillos orbitales concéntricos */
     .anillos-orbitales {
         position: absolute;
         width: 100%;
@@ -311,11 +311,13 @@
         z-index: 2;
     }
     
-    .anillo {
+    .anillo-orbital {
         position: absolute;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
+        top: 50%;
+        left: 50%;
         transform: translate(-50%, -50%);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 50%;
     }
     
     /* Sistema solar */
@@ -421,7 +423,7 @@
         box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
     }
     
-    /* Órbitas de ejes (planetas) */
+    /* Contenedor de planetas (ejes) */
     .ejes-orbitales {
         position: absolute;
         top: 50%;
@@ -432,18 +434,18 @@
         z-index: 90;
     }
     
-    .orbita-eje {
+    /* Planetas individuales */
+    .planeta-orbita {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform-origin: 0 0;
+        transform-origin: center center;
         z-index: 90;
     }
     
     .nodo-eje {
         position: absolute;
         border-radius: 50%;
-        transform: translate(-50%, -50%);
         cursor: pointer;
         transition: all 0.3s ease;
         z-index: 90;
@@ -507,14 +509,13 @@
     
     .orbita-estrategia {
         position: absolute;
-        transform-origin: 0 0;
+        transform-origin: center center;
         z-index: 80;
     }
     
     .nodo-estrategia {
         position: absolute;
         border-radius: 50%;
-        transform: translate(-50%, -50%);
         cursor: pointer;
         z-index: 80;
     }
@@ -545,14 +546,13 @@
     
     .orbita-tactica {
         position: absolute;
-        transform-origin: 0 0;
+        transform-origin: center center;
         z-index: 70;
     }
     
     .nodo-tactica {
         position: absolute;
         border-radius: 50%;
-        transform: translate(-50%, -50%);
         cursor: pointer;
         z-index: 70;
     }
@@ -583,14 +583,13 @@
     
     .orbita-actividad {
         position: absolute;
-        transform-origin: 0 0;
+        transform-origin: center center;
         z-index: 60;
     }
     
     .nodo-actividad {
         position: absolute;
         border-radius: 50%;
-        transform: translate(-50%, -50%);
         cursor: pointer;
         z-index: 60;
     }
@@ -681,6 +680,11 @@
         50% { box-shadow: 0 0 60px rgba(255, 215, 0, 1); }
     }
     
+    @keyframes orbitar {
+        from { transform: rotate(0deg) translateX(var(--distancia)) rotate(0deg); }
+        to { transform: rotate(360deg) translateX(var(--distancia)) rotate(-360deg); }
+    }
+    
     /* Colores específicos para cada eje */
     .eje-educacion .nodo-content { background: radial-gradient(circle, #3498db, #2980b9) !important; }
     .eje-salud .nodo-content { background: radial-gradient(circle, #e74c3c, #c0392b) !important; }
@@ -701,7 +705,7 @@
 
 <script>
 // ================================
-// SISTEMA SOLAR CON ÓRBITAS REALES
+// SISTEMA SOLAR CON ÓRBITAS CONCÉNTRICAS
 // ================================
 
 const SISTEMA_SOLAR = {
@@ -712,21 +716,21 @@ const SISTEMA_SOLAR = {
     animacionesActivas: true
 };
 
-// Configuración de órbitas
+// Configuración orbital - radios concéntricos
 const CONFIG_ORBITAS = {
-    // Radios orbitales para ejes (planetas) - cada uno más alejado
-    radiosEjes: [400, 500, 600, 700, 800, 900, 1000],
+    // Radios orbitales para cada planeta (distancias desde el sol)
+    radiosPlanetas: [400, 500, 600, 700, 800, 900, 1000],
     
-    // Velocidades angulares (grados por segundo)
-    velocidadPlanetas: 0.5,
-    velocidadLunas: 1,
-    velocidadSatelites: 1.5,
-    velocidadAsteroides: 2,
+    // Velocidades orbitales (más lento para planetas más lejanos)
+    velocidadesPlanetas: [0.8, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25],
+    
+    // Tamaños de planetas (más pequeños los más lejanos)
+    tamanosPlanetas: [120, 110, 100, 90, 85, 80, 75],
     
     // Radios para órbitas secundarias
-    radioLuna: 80,      // Distancia de la luna al planeta
-    radioSatelite: 50,  // Distancia del satélite a la luna
-    radioAsteroide: 30  // Distancia del asteroide al satélite
+    radioLuna: 80,
+    radioSatelite: 50,
+    radioAsteroide: 30
 };
 
 // ================================
@@ -736,12 +740,12 @@ const CONFIG_ORBITAS = {
 document.addEventListener('DOMContentLoaded', function() {
     inicializarSistema();
     crearEstrellas();
+    crearAnillosOrbitales();
     crearEjes();
     cargarDatosEjemplo();
 });
 
 function inicializarSistema() {
-    // Posicionar el sol en el centro
     const sistemaSolar = document.getElementById('sistemaSolar');
     const canvas = document.getElementById('mapaCanvas');
     const canvasRect = canvas.getBoundingClientRect();
@@ -775,6 +779,34 @@ function crearEstrellas() {
     }
 }
 
+function crearAnillosOrbitales() {
+    const container = document.getElementById('anillosOrbitales');
+    container.innerHTML = '';
+    
+    const sistemaSolar = document.getElementById('sistemaSolar');
+    const sistemaRect = sistemaSolar.getBoundingClientRect();
+    const centroX = sistemaRect.width / 2;
+    const centroY = sistemaRect.height / 2;
+    
+    // Crear anillos concéntricos para cada órbita de planeta
+    CONFIG_ORBITAS.radiosPlanetas.forEach((radio, index) => {
+        const anillo = document.createElement('div');
+        anillo.className = 'anillo-orbital';
+        
+        anillo.style.cssText = `
+            width: ${radio * 2}px;
+            height: ${radio * 2}px;
+            top: ${centroY}px;
+            left: ${centroX}px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+            z-index: 2;
+        `;
+        
+        container.appendChild(anillo);
+    });
+}
+
 function crearEjes() {
     const container = document.getElementById('ejesOrbitales');
     container.innerHTML = '';
@@ -784,7 +816,7 @@ function crearEjes() {
     const centroX = sistemaRect.width / 2;
     const centroY = sistemaRect.height / 2;
     
-    // Definir ejes estratégicos con parámetros orbitales únicos
+    // Definir ejes estratégicos (planetas)
     SISTEMA_SOLAR.ejes = [
         {
             id: 'educacion',
@@ -792,12 +824,10 @@ function crearEjes() {
             icono: 'graduation-cap',
             color: '#3498db',
             descripcion: 'Mejora de infraestructura educativa y capacitación docente',
-            // Parámetros orbitales únicos para cada planeta
-            radioOrbital: 400, // Distancia al sol
-            excentricidad: 0.1, // Forma de la órbita (0 = círculo, 1 = elipse)
-            velocidadOrbital: 0.8, // Velocidad angular
-            inclinacion: 5, // Inclinación orbital en grados
-            periodo: 20 // Tiempo para completar una órbita (segundos)
+            distancia: CONFIG_ORBITAS.radiosPlanetas[0],
+            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[0],
+            tamano: CONFIG_ORBITAS.tamanosPlanetas[0],
+            anguloInicial: 0
         },
         {
             id: 'salud',
@@ -805,11 +835,10 @@ function crearEjes() {
             icono: 'heartbeat',
             color: '#e74c3c',
             descripcion: 'Equipamiento médico y mejoras en servicios de salud',
-            radioOrbital: 500,
-            excentricidad: 0.15,
-            velocidadOrbital: 0.6,
-            inclinacion: 10,
-            periodo: 30
+            distancia: CONFIG_ORBITAS.radiosPlanetas[1],
+            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[1],
+            tamano: CONFIG_ORBITAS.tamanosPlanetas[1],
+            anguloInicial: 51.4
         },
         {
             id: 'empleabilidad',
@@ -817,11 +846,10 @@ function crearEjes() {
             icono: 'briefcase',
             color: '#2ecc71',
             descripcion: 'Formación técnica y oportunidades de empleo local',
-            radioOrbital: 600,
-            excentricidad: 0.08,
-            velocidadOrbital: 0.5,
-            inclinacion: -3,
-            periodo: 40
+            distancia: CONFIG_ORBITAS.radiosPlanetas[2],
+            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[2],
+            tamano: CONFIG_ORBITAS.tamanosPlanetas[2],
+            anguloInicial: 102.8
         },
         {
             id: 'desarrollo_economico',
@@ -829,11 +857,10 @@ function crearEjes() {
             icono: 'chart-line',
             color: '#9b59b6',
             descripcion: 'Impulso al desarrollo económico comunitario',
-            radioOrbital: 700,
-            excentricidad: 0.12,
-            velocidadOrbital: 0.4,
-            inclinacion: 15,
-            periodo: 50
+            distancia: CONFIG_ORBITAS.radiosPlanetas[3],
+            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[3],
+            tamano: CONFIG_ORBITAS.tamanosPlanetas[3],
+            anguloInicial: 154.2
         },
         {
             id: 'sostenibilidad_ambiental',
@@ -841,11 +868,10 @@ function crearEjes() {
             icono: 'tint',
             color: '#1abc9c',
             descripcion: 'Gestión sostenible del recurso hídrico y monitoreo ambiental',
-            radioOrbital: 800,
-            excentricidad: 0.05,
-            velocidadOrbital: 0.35,
-            inclinacion: -8,
-            periodo: 60
+            distancia: CONFIG_ORBITAS.radiosPlanetas[4],
+            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[4],
+            tamano: CONFIG_ORBITAS.tamanosPlanetas[4],
+            anguloInicial: 205.6
         },
         {
             id: 'comunicacion',
@@ -853,11 +879,10 @@ function crearEjes() {
             icono: 'bullhorn',
             color: '#f1c40f',
             descripcion: 'Sistema de comunicación comunitaria y transparencia',
-            radioOrbital: 900,
-            excentricidad: 0.18,
-            velocidadOrbital: 0.3,
-            inclinacion: 12,
-            periodo: 70
+            distancia: CONFIG_ORBITAS.radiosPlanetas[5],
+            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[5],
+            tamano: CONFIG_ORBITAS.tamanosPlanetas[5],
+            anguloInicial: 257
         },
         {
             id: 'institucional',
@@ -865,43 +890,29 @@ function crearEjes() {
             icono: 'landmark',
             color: '#e67e22',
             descripcion: 'Cooperación técnica con GADs y niveles distritales',
-            radioOrbital: 1000,
-            excentricidad: 0.07,
-            velocidadOrbital: 0.25,
-            inclinacion: -5,
-            periodo: 80
+            distancia: CONFIG_ORBITAS.radiosPlanetas[6],
+            velocidad: CONFIG_ORBITAS.velocidadesPlanetas[6],
+            tamano: CONFIG_ORBITAS.tamanosPlanetas[6],
+            anguloInicial: 308.4
         }
     ];
     
-    // Actualizar radios orbitales en CONFIG_ORBITAS
-    CONFIG_ORBITAS.radiosEjes = SISTEMA_SOLAR.ejes.map(eje => eje.radioOrbital);
-    
-    // Crear cada eje (planeta) con su órbita única
+    // Crear cada planeta en su órbita concéntrica
     SISTEMA_SOLAR.ejes.forEach((eje, index) => {
-        const radioOrbita = eje.radioOrbital;
-        const anguloInicial = (360 / SISTEMA_SOLAR.ejes.length) * index;
-        
-        // Calcular el radio actual basado en la excentricidad (para órbitas elípticas)
-        const radioActual = radioOrbita * (1 - eje.excentricidad);
-        
-        // Crear contenedor de órbita
+        // Crear contenedor de órbita para el planeta
         const orbitaDiv = document.createElement('div');
-        orbitaDiv.className = 'orbita-eje';
+        orbitaDiv.className = 'planeta-orbita';
         orbitaDiv.id = `orbita-${eje.id}`;
         orbitaDiv.dataset.ejeId = eje.id;
-        orbitaDiv.dataset.radio = radioOrbita;
-        orbitaDiv.dataset.angulo = anguloInicial;
-        orbitaDiv.dataset.excentricidad = eje.excentricidad;
-        orbitaDiv.dataset.velocidad = eje.velocidadOrbital;
+        orbitaDiv.dataset.distancia = eje.distancia;
         
-        // Posicionar la órbita con inclinación
+        // Posicionar la órbita
         orbitaDiv.style.cssText = `
             top: ${centroY}px;
             left: ${centroX}px;
-            width: ${radioOrbita * 2}px;
-            height: ${radioOrbita * 2}px;
-            transform-origin: center center;
-            transform: rotate(${eje.inclinacion}deg);
+            width: ${eje.distancia * 2}px;
+            height: ${eje.distancia * 2}px;
+            transform: rotate(${eje.anguloInicial}deg);
             z-index: ${90 + index};
         `;
         
@@ -911,21 +922,17 @@ function crearEjes() {
         planetaDiv.id = `eje-${eje.id}`;
         planetaDiv.dataset.ejeId = eje.id;
         planetaDiv.dataset.tipo = 'eje';
-        planetaDiv.dataset.velocidad = eje.velocidadOrbital;
-        planetaDiv.dataset.angulo = anguloInicial;
+        planetaDiv.dataset.velocidad = eje.velocidad;
+        planetaDiv.dataset.angulo = eje.anguloInicial;
         
-        // Tamaños diferentes para cada planeta
-        const tamanoPlaneta = 120 - (index * 5);
-        
-        // Posicionar el planeta en la órbita
+        // Tamaño y posición del planeta
         planetaDiv.style.cssText = `
             position: absolute;
             top: 0;
-            left: ${radioActual}px;
-            width: ${tamanoPlaneta}px;
-            height: ${tamanoPlaneta}px;
+            left: ${eje.distancia}px;
+            width: ${eje.tamano}px;
+            height: ${eje.tamano}px;
             transform: translate(-50%, -50%);
-            transition: transform 0.1s linear;
             z-index: ${91 + index};
         `;
         
@@ -944,60 +951,46 @@ function crearEjes() {
             mostrarDetallesEje(eje.id);
         });
         
-        // Añadir a la órbita
+        // Añadir planeta a la órbita
         orbitaDiv.appendChild(planetaDiv);
         container.appendChild(orbitaDiv);
         
-        // Iniciar animación de órbita para este planeta
-        iniciarAnimacionPlaneta(planetaDiv, eje);
+        // Iniciar animación de órbita
+        if (SISTEMA_SOLAR.animacionesActivas) {
+            animarPlaneta(planetaDiv, orbitaDiv, eje);
+        }
     });
     
     // Actualizar contador
     document.getElementById('total-ejes').textContent = `${SISTEMA_SOLAR.ejes.length} Ejes`;
 }
 
-// Nueva función para animar cada planeta individualmente
-function iniciarAnimacionPlaneta(planetaDiv, eje) {
+function animarPlaneta(planetaDiv, orbitaDiv, eje) {
     let angulo = parseFloat(planetaDiv.dataset.angulo) || 0;
     const velocidad = parseFloat(planetaDiv.dataset.velocidad) || 0.5;
-    const radioBase = eje.radioOrbital;
-    const excentricidad = eje.excentricidad || 0;
+    const distancia = eje.distancia;
     
-    function animarPlaneta() {
+    function actualizarPosicion() {
         if (!SISTEMA_SOLAR.animacionesActivas) return;
         
         // Incrementar ángulo
-        angulo += velocidad * 0.5; // Control de velocidad
+        angulo += velocidad * 0.1;
         if (angulo >= 360) angulo = 0;
         
-        // Calcular posición en órbita elíptica
-        // Fórmula: r = a(1 - e²)/(1 + e·cos(θ))
-        const a = radioBase; // Semieje mayor
-        const e = excentricidad;
-        const theta = angulo * (Math.PI / 180); // Convertir a radianes
-        
-        // Para simplificar, usamos una aproximación elíptica
-        const radioActual = radioBase * (1 - e * Math.cos(theta));
-        
-        // Calcular posición X, Y
-        const x = radioActual * Math.cos(theta);
-        const y = radioActual * Math.sin(theta) * (1 - e); // Aplanar la elipse
-        
-        // Actualizar posición del planeta
-        planetaDiv.style.transform = `translate(${x}px, ${y}px)`;
+        // Actualizar rotación de la órbita
+        orbitaDiv.style.transform = `rotate(${angulo}deg)`;
         
         // Guardar ángulo actual
         planetaDiv.dataset.angulo = angulo;
         
-        // Solicitar siguiente frame
-        requestAnimationFrame(animarPlaneta);
+        // Continuar animación
+        requestAnimationFrame(actualizarPosicion);
     }
     
     // Iniciar animación
-    requestAnimationFrame(animarPlaneta);
+    requestAnimationFrame(actualizarPosicion);
 }
 
-// Nueva función para iniciar todas las órbitas
 function iniciarOrbitasPlanetas() {
     SISTEMA_SOLAR.animacionesActivas = true;
     
@@ -1005,127 +998,108 @@ function iniciarOrbitasPlanetas() {
     document.querySelectorAll('.nodo-eje').forEach(planeta => {
         const ejeId = planeta.dataset.ejeId;
         const eje = SISTEMA_SOLAR.ejes.find(e => e.id === ejeId);
-        if (eje) {
-            iniciarAnimacionPlaneta(planeta, eje);
+        const orbitaDiv = document.getElementById(`orbita-${ejeId}`);
+        
+        if (eje && orbitaDiv) {
+            animarPlaneta(planeta, orbitaDiv, eje);
         }
     });
     
-    // También iniciar lunas, satélites y asteroides
+    // Iniciar órbitas secundarias
     iniciarOrbitasSecundarias();
 }
 
-// Función para animar órbitas secundarias (lunas alrededor de planetas)
 function iniciarOrbitasSecundarias() {
+    // Iniciar animación para lunas
     document.querySelectorAll('.nodo-estrategia').forEach(luna => {
         const estrategiaId = luna.dataset.estrategiaId;
         const estrategia = SISTEMA_SOLAR.estrategias.find(e => e.id == estrategiaId);
         if (estrategia) {
-            iniciarAnimacionLuna(luna, estrategia);
+            animarLuna(luna, estrategia);
         }
     });
     
+    // Iniciar animación para satélites
     document.querySelectorAll('.nodo-tactica').forEach(satelite => {
         const tacticaId = satelite.dataset.tacticaId;
         const tactica = SISTEMA_SOLAR.tacticas.find(t => t.id == tacticaId);
         if (tactica) {
-            iniciarAnimacionSatelite(satelite, tactica);
+            animarSatelite(satelite, tactica);
         }
     });
     
+    // Iniciar animación para asteroides
     document.querySelectorAll('.nodo-actividad').forEach(asteroide => {
         const actividadId = asteroide.dataset.actividadId;
         const actividad = SISTEMA_SOLAR.actividades.find(a => a.id == actividadId);
         if (actividad) {
-            iniciarAnimacionAsteroide(asteroide, actividad);
+            animarAsteroide(asteroide, actividad);
         }
     });
 }
 
-// Funciones de animación para lunas, satélites y asteroides
-function iniciarAnimacionLuna(lunaDiv, estrategia) {
+function animarLuna(lunaDiv, estrategia) {
     let angulo = 0;
-    const velocidad = 1.2; // Más rápido que los planetas
-    const radioOrbita = CONFIG_ORBITAS.radioLuna;
+    const velocidad = 1.2;
     
-    // Tamaño de la luna
-    lunaDiv.style.width = '80px';
-    lunaDiv.style.height = '80px';
-    
-    function animarLuna() {
+    function actualizarPosicion() {
         if (!SISTEMA_SOLAR.animacionesActivas) return;
         
-        angulo += velocidad * 0.5;
+        angulo += velocidad * 0.1;
         if (angulo >= 360) angulo = 0;
         
-        const theta = angulo * (Math.PI / 180);
-        const x = radioOrbita * Math.cos(theta);
-        const y = radioOrbita * Math.sin(theta);
+        // Calcular posición en órbita circular
+        const x = CONFIG_ORBITAS.radioLuna * Math.cos(angulo * Math.PI / 180);
+        const y = CONFIG_ORBITAS.radioLuna * Math.sin(angulo * Math.PI / 180);
         
         lunaDiv.style.transform = `translate(${x}px, ${y}px)`;
         
-        requestAnimationFrame(animarLuna);
+        requestAnimationFrame(actualizarPosicion);
     }
     
-    requestAnimationFrame(animarLuna);
+    requestAnimationFrame(actualizarPosicion);
 }
 
-function iniciarAnimacionSatelite(sateliteDiv, tactica) {
+function animarSatelite(sateliteDiv, tactica) {
     let angulo = 0;
-    const velocidad = 1.8; // Más rápido que las lunas
-    const radioOrbita = CONFIG_ORBITAS.radioSatelite;
+    const velocidad = 1.8;
     
-    // Tamaño del satélite
-    sateliteDiv.style.width = '60px';
-    sateliteDiv.style.height = '60px';
-    
-    function animarSatelite() {
+    function actualizarPosicion() {
         if (!SISTEMA_SOLAR.animacionesActivas) return;
         
-        angulo += velocidad * 0.5;
+        angulo += velocidad * 0.1;
         if (angulo >= 360) angulo = 0;
         
-        const theta = angulo * (Math.PI / 180);
-        const x = radioOrbita * Math.cos(theta);
-        const y = radioOrbita * Math.sin(theta);
+        const x = CONFIG_ORBITAS.radioSatelite * Math.cos(angulo * Math.PI / 180);
+        const y = CONFIG_ORBITAS.radioSatelite * Math.sin(angulo * Math.PI / 180);
         
         sateliteDiv.style.transform = `translate(${x}px, ${y}px)`;
         
-        requestAnimationFrame(animarSatelite);
+        requestAnimationFrame(actualizarPosicion);
     }
     
-    requestAnimationFrame(animarSatelite);
+    requestAnimationFrame(actualizarPosicion);
 }
 
-function iniciarAnimacionAsteroide(asteroideDiv, actividad) {
+function animarAsteroide(asteroideDiv, actividad) {
     let angulo = 0;
-    const velocidad = 2.5; // Más rápido que los satélites
-    const radioOrbita = CONFIG_ORBITAS.radioAsteroide;
+    const velocidad = 2.5;
     
-    // Tamaño del asteroide
-    asteroideDiv.style.width = '40px';
-    asteroideDiv.style.height = '40px';
-    
-    function animarAsteroide() {
+    function actualizarPosicion() {
         if (!SISTEMA_SOLAR.animacionesActivas) return;
         
-        angulo += velocidad * 0.5;
+        angulo += velocidad * 0.1;
         if (angulo >= 360) angulo = 0;
         
-        const theta = angulo * (Math.PI / 180);
-        const x = radioOrbita * Math.cos(theta);
-        const y = radioOrbita * Math.sin(theta);
+        const x = CONFIG_ORBITAS.radioAsteroide * Math.cos(angulo * Math.PI / 180);
+        const y = CONFIG_ORBITAS.radioAsteroide * Math.sin(angulo * Math.PI / 180);
         
         asteroideDiv.style.transform = `translate(${x}px, ${y}px)`;
         
-        // Rotación sobre su propio eje
-        const rotacion = (parseFloat(asteroideDiv.dataset.rotacion) || 0) + 2;
-        asteroideDiv.dataset.rotacion = rotacion;
-        asteroideDiv.style.transform += ` rotate(${rotacion}deg)`;
-        
-        requestAnimationFrame(animarAsteroide);
+        requestAnimationFrame(actualizarPosicion);
     }
     
-    requestAnimationFrame(animarAsteroide);
+    requestAnimationFrame(actualizarPosicion);
 }
 
 function cargarDatosEjemplo() {
@@ -1170,9 +1144,6 @@ function crearEstrategias() {
         const ejeElement = document.getElementById(`eje-${eje.id}`);
         if (!ejeElement) return;
         
-        const orbitaEje = document.getElementById(`orbita-${eje.id}`);
-        if (!orbitaEje) return;
-        
         // Obtener posición del planeta
         const planetaRect = ejeElement.getBoundingClientRect();
         const sistemaRect = document.getElementById('sistemaSolar').getBoundingClientRect();
@@ -1185,7 +1156,6 @@ function crearEstrategias() {
         orbitaDiv.className = 'orbita-estrategia';
         orbitaDiv.id = `orbita-estrategia-${estrategia.id}`;
         orbitaDiv.dataset.estrategiaId = estrategia.id;
-        orbitaDiv.dataset.ejeId = estrategia.eje_id;
         
         // Posicionar la órbita de la luna
         orbitaDiv.style.cssText = `
@@ -1193,6 +1163,7 @@ function crearEstrategias() {
             left: ${centroX}px;
             width: ${CONFIG_ORBITAS.radioLuna * 2}px;
             height: ${CONFIG_ORBITAS.radioLuna * 2}px;
+            transform: rotate(${index * 72}deg);
             z-index: 80;
         `;
         
@@ -1201,7 +1172,6 @@ function crearEstrategias() {
         lunaDiv.className = 'nodo nodo-estrategia';
         lunaDiv.id = `estrategia-${estrategia.id}`;
         lunaDiv.dataset.estrategiaId = estrategia.id;
-        lunaDiv.dataset.ejeId = estrategia.eje_id;
         lunaDiv.dataset.tipo = 'estrategia';
         
         // Posicionar la luna en la órbita
@@ -1210,6 +1180,7 @@ function crearEstrategias() {
             left: ${CONFIG_ORBITAS.radioLuna}px;
             width: 80px;
             height: 80px;
+            transform: translate(-50%, -50%);
         `;
         
         lunaDiv.innerHTML = `
@@ -1232,7 +1203,9 @@ function crearEstrategias() {
         container.appendChild(orbitaDiv);
         
         // Iniciar animación de la luna
-        iniciarAnimacionLuna(lunaDiv, estrategia);
+        if (SISTEMA_SOLAR.animacionesActivas) {
+            animarLuna(lunaDiv, estrategia);
+        }
     });
     
     // Actualizar contador
@@ -1264,7 +1237,6 @@ function crearTacticas() {
         orbitaDiv.className = 'orbita-tactica';
         orbitaDiv.id = `orbita-tactica-${tactica.id}`;
         orbitaDiv.dataset.tacticaId = tactica.id;
-        orbitaDiv.dataset.estrategiaId = tactica.estrategia_id;
         
         // Posicionar la órbita del satélite
         orbitaDiv.style.cssText = `
@@ -1272,6 +1244,7 @@ function crearTacticas() {
             left: ${centroX}px;
             width: ${CONFIG_ORBITAS.radioSatelite * 2}px;
             height: ${CONFIG_ORBITAS.radioSatelite * 2}px;
+            transform: rotate(${index * 90}deg);
             z-index: 70;
         `;
         
@@ -1280,7 +1253,6 @@ function crearTacticas() {
         sateliteDiv.className = 'nodo nodo-tactica';
         sateliteDiv.id = `tactica-${tactica.id}`;
         sateliteDiv.dataset.tacticaId = tactica.id;
-        sateliteDiv.dataset.estrategiaId = tactica.estrategia_id;
         sateliteDiv.dataset.tipo = 'tactica';
         
         // Posicionar el satélite en la órbita
@@ -1289,6 +1261,7 @@ function crearTacticas() {
             left: ${CONFIG_ORBITAS.radioSatelite}px;
             width: 60px;
             height: 60px;
+            transform: translate(-50%, -50%);
         `;
         
         sateliteDiv.innerHTML = `
@@ -1311,7 +1284,9 @@ function crearTacticas() {
         container.appendChild(orbitaDiv);
         
         // Iniciar animación del satélite
-        iniciarAnimacionSatelite(sateliteDiv, tactica);
+        if (SISTEMA_SOLAR.animacionesActivas) {
+            animarSatelite(sateliteDiv, tactica);
+        }
     });
     
     // Actualizar contador
@@ -1343,7 +1318,6 @@ function crearActividades() {
         orbitaDiv.className = 'orbita-actividad';
         orbitaDiv.id = `orbita-actividad-${actividad.id}`;
         orbitaDiv.dataset.actividadId = actividad.id;
-        orbitaDiv.dataset.tacticaId = actividad.tactica_id;
         
         // Posicionar la órbita del asteroide
         orbitaDiv.style.cssText = `
@@ -1351,6 +1325,7 @@ function crearActividades() {
             left: ${centroX}px;
             width: ${CONFIG_ORBITAS.radioAsteroide * 2}px;
             height: ${CONFIG_ORBITAS.radioAsteroide * 2}px;
+            transform: rotate(${index * 120}deg);
             z-index: 60;
         `;
         
@@ -1359,7 +1334,6 @@ function crearActividades() {
         asteroideDiv.className = 'nodo nodo-actividad';
         asteroideDiv.id = `actividad-${actividad.id}`;
         asteroideDiv.dataset.actividadId = actividad.id;
-        asteroideDiv.dataset.tacticaId = actividad.tactica_id;
         asteroideDiv.dataset.tipo = 'actividad';
         
         // Determinar color según estado
@@ -1382,6 +1356,7 @@ function crearActividades() {
             left: ${CONFIG_ORBITAS.radioAsteroide}px;
             width: 40px;
             height: 40px;
+            transform: translate(-50%, -50%);
         `;
         
         asteroideDiv.innerHTML = `
@@ -1404,7 +1379,9 @@ function crearActividades() {
         container.appendChild(orbitaDiv);
         
         // Iniciar animación del asteroide
-        iniciarAnimacionAsteroide(asteroideDiv, actividad);
+        if (SISTEMA_SOLAR.animacionesActivas) {
+            animarAsteroide(asteroideDiv, actividad);
+        }
     });
     
     // Actualizar contador
@@ -1431,6 +1408,17 @@ function resetView() {
     // Centrar la vista
     const sistemaSolar = document.getElementById('sistemaSolar');
     sistemaSolar.style.transform = 'translate(-50%, -50%) scale(1)';
+    
+    // Resetear ángulos de planetas
+    SISTEMA_SOLAR.ejes.forEach((eje, index) => {
+        const planeta = document.getElementById(`eje-${eje.id}`);
+        const orbita = document.getElementById(`orbita-${eje.id}`);
+        
+        if (planeta && orbita) {
+            planeta.dataset.angulo = eje.anguloInicial;
+            orbita.style.transform = `rotate(${eje.anguloInicial}deg)`;
+        }
+    });
 }
 
 function toggleAnimaciones() {
@@ -1439,7 +1427,7 @@ function toggleAnimaciones() {
     
     if (SISTEMA_SOLAR.animacionesActivas) {
         icon.className = 'fas fa-pause';
-        iniciarOrbitasPlanetas();
+        iniciarOrbitas();
     } else {
         icon.className = 'fas fa-play';
     }
@@ -1598,20 +1586,20 @@ function mostrarDetallesEje(ejeId) {
                     <h4><i class="fas fa-satellite"></i> Parámetros Orbitales</h4>
                     <div class="parametros-grid">
                         <div class="parametro">
-                            <div class="parametro-label">Radio Orbital</div>
-                            <div class="parametro-valor">${eje.radioOrbital}px</div>
+                            <div class="parametro-label">Distancia al Sol</div>
+                            <div class="parametro-valor">${eje.distancia}px</div>
                         </div>
                         <div class="parametro">
-                            <div class="parametro-label">Velocidad</div>
-                            <div class="parametro-valor">${eje.velocidadOrbital}</div>
+                            <div class="parametro-label">Velocidad Orbital</div>
+                            <div class="parametro-valor">${eje.velocidad}</div>
                         </div>
                         <div class="parametro">
-                            <div class="parametro-label">Excentricidad</div>
-                            <div class="parametro-valor">${eje.excentricidad}</div>
+                            <div class="parametro-label">Tamaño</div>
+                            <div class="parametro-valor">${eje.tamano}px</div>
                         </div>
                         <div class="parametro">
-                            <div class="parametro-label">Inclinación</div>
-                            <div class="parametro-valor">${eje.inclinacion}°</div>
+                            <div class="parametro-label">Posición Inicial</div>
+                            <div class="parametro-valor">${eje.anguloInicial}°</div>
                         </div>
                     </div>
                 </div>
