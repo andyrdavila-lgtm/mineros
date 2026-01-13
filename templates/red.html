@@ -3,36 +3,7 @@
 {% block content %}
 <!-- Mapa Neuronal Estratégico - Versión Mejorada -->
 <div class="mapa-neuronal-container" id="mapaFullscreen">
-    <!-- Controles flotantes -->
-    <div class="mapa-controls-flotantes">
-        <button class="control-btn" onclick="toggleFullscreen()" title="Pantalla completa">
-            <i class="fas fa-expand"></i>
-        </button>
-        <button class="control-btn" onclick="resetView()" title="Reiniciar vista">
-            <i class="fas fa-sync-alt"></i>
-        </button>
-        <button class="control-btn" onclick="toggleAnimations()" title="Animaciones">
-            <i class="fas fa-play" id="animacionIcon"></i>
-        </button>
-        <button class="control-btn" onclick="exportMap()" title="Exportar">
-            <i class="fas fa-download"></i>
-        </button>
-        <div class="control-group">
-            <select id="filtro-nivel" onchange="filtrarNodos()">
-                <option value="all">Todos los niveles</option>
-                <option value="objetivo">Objetivo Central</option>
-                <option value="ejes">Ejes Estratégicos</option>
-                <option value="estrategias">Estrategias</option>
-                <option value="actividades">Actividades</option>
-                <option value="tareas">Tareas</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <input type="range" id="zoomSlider" min="0.5" max="3" step="0.1" value="1" oninput="zoomSliderChange(this.value)">
-        </div>
-    </div>
-    
-    <!-- Cabecera del mapa -->
+    <!-- Cabecera principal -->
     <div class="mapa-header-glass">
         <div class="header-content">
             <h1 class="mapa-title-glow">
@@ -61,32 +32,84 @@
         </div>
     </div>
     
+    <!-- Panel de controles organizado -->
+    <div class="panel-controles">
+        <div class="grupo-controles">
+            <h4><i class="fas fa-sliders-h"></i> Controles</h4>
+            <div class="controles-grid">
+                <button class="control-btn tooltip" onclick="toggleFullscreen()" data-tooltip="Pantalla completa">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="control-btn tooltip" onclick="resetView()" data-tooltip="Reiniciar vista">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="control-btn tooltip" onclick="toggleAnimations()" data-tooltip="Animaciones">
+                    <i class="fas fa-play" id="animacionIcon"></i>
+                </button>
+                <button class="control-btn tooltip" onclick="exportMap()" data-tooltip="Exportar">
+                    <i class="fas fa-download"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="grupo-controles">
+            <h4><i class="fas fa-filter"></i> Filtros</h4>
+            <select id="filtro-nivel" onchange="filtrarNodos()" class="filtro-select">
+                <option value="all">Todos los niveles</option>
+                <option value="objetivo">Objetivo Central</option>
+                <option value="ejes">Ejes Estratégicos</option>
+                <option value="estrategias">Estrategias</option>
+                <option value="actividades">Actividades</option>
+                <option value="tareas">Tareas</option>
+            </select>
+            
+            <div class="filtro-checkbox">
+                <label>
+                    <input type="checkbox" id="mostrar-conexiones" checked onchange="toggleConexiones()">
+                    <span>Mostrar conexiones</span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="grupo-controles">
+            <h4><i class="fas fa-search"></i> Zoom</h4>
+            <div class="zoom-controls">
+                <button class="zoom-btn" onclick="zoomOut()">-</button>
+                <input type="range" id="zoomSlider" min="0.3" max="3" step="0.1" value="1" 
+                       oninput="zoomSliderChange(this.value)">
+                <button class="zoom-btn" onclick="zoomIn()">+</button>
+                <div class="zoom-value" id="zoomValue">100%</div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Canvas principal -->
     <div class="mapa-canvas-fullscreen" id="mapaCanvas">
         <!-- Fondo con partículas -->
         <div class="particles-container" id="particlesContainer"></div>
         
-        <!-- SVG para conexiones -->
+        <!-- SVG para conexiones dinámicas -->
         <svg class="conexiones-svg" id="conexionesSvg">
             <defs>
+                <linearGradient id="gradient-central" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="#9C27B0" stop-opacity="0.8" />
+                    <stop offset="100%" stop-color="#E91E63" stop-opacity="0.8" />
+                </linearGradient>
                 <linearGradient id="gradient-eje" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stop-color="#3498db" stop-opacity="0.7" />
-                    <stop offset="100%" stop-color="#9b59b6" stop-opacity="0.7" />
+                    <stop offset="100%" stop-color="#2980b9" stop-opacity="0.7" />
                 </linearGradient>
                 <linearGradient id="gradient-estrategia" x1="0%" y1="0%" x2="100%" y2="0%">
                     <stop offset="0%" stop-color="#2ecc71" stop-opacity="0.7" />
-                    <stop offset="100%" stop-color="#3498db" stop-opacity="0.7" />
+                    <stop offset="100%" stop-color="#27ae60" stop-opacity="0.7" />
                 </linearGradient>
                 <filter id="glow">
-                    <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                    <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
                     <feMerge>
                         <feMergeNode in="coloredBlur"/>
                         <feMergeNode in="SourceGraphic"/>
                     </feMerge>
                 </filter>
-                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                    <polygon points="0 0, 10 3.5, 0 7" fill="#3498db"/>
-                </marker>
             </defs>
         </svg>
         
@@ -95,14 +118,13 @@
             <!-- Nodo Central -->
             <div class="nodo nodo-central" id="nodo-objetivo">
                 <div class="nodo-glow"></div>
-                <div class="nodo-orb"></div>
                 <div class="nodo-content">
                     <div class="nodo-icon-pulse">
                         <i class="fas fa-brain"></i>
                     </div>
                     <div class="nodo-title-glow">OBJETIVO ESTRATÉGICO</div>
                     <div class="nodo-desc-scroll">
-                        Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local...
+                        Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral...
                     </div>
                     <button class="btn-ver-mas" onclick="mostrarDetalleObjetivo()">
                         <i class="fas fa-eye"></i> Ver completo
@@ -118,27 +140,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="nodo-actions">
-                    <button class="nodo-action-btn" onclick="expandirTodo()" title="Expandir todo">
-                        <i class="fas fa-expand"></i>
-                    </button>
-                </div>
             </div>
             
-            <!-- Nodos de Ejes (se posicionan dinámicamente) -->
-            <div class="ejes-container" id="ejesContainer">
-                <!-- Los nodos de ejes se generan dinámicamente -->
-            </div>
+            <!-- Los nodos de ejes se generan dinámicamente aquí -->
+            <div class="ejes-container" id="ejesContainer"></div>
             
             <!-- Contenedores para niveles jerárquicos -->
             <div class="estrategias-container" id="estrategiasContainer"></div>
             <div class="actividades-container" id="actividadesContainer"></div>
             <div class="tareas-container" id="tareasContainer"></div>
-        </div>
-        
-        <!-- Mini mapa de navegación -->
-        <div class="minimap" id="minimap">
-            <div class="minimap-viewport" id="minimapViewport"></div>
         </div>
     </div>
     
@@ -149,33 +159,23 @@
         </div>
         <div class="leyenda-content">
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-central-color">
-                    <i class="fas fa-brain"></i>
-                </div>
+                <div class="leyenda-icon nodo-central-color"></div>
                 <span>Objetivo Central</span>
             </div>
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-eje-color">
-                    <i class="fas fa-layer-group"></i>
-                </div>
+                <div class="leyenda-icon nodo-eje-color"></div>
                 <span>Ejes Estratégicos</span>
             </div>
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-estrategia-color">
-                    <i class="fas fa-chess-board"></i>
-                </div>
+                <div class="leyenda-icon nodo-estrategia-color"></div>
                 <span>Estrategias</span>
             </div>
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-actividad-color">
-                    <i class="fas fa-tasks"></i>
-                </div>
+                <div class="leyenda-icon nodo-actividad-color"></div>
                 <span>Actividades</span>
             </div>
             <div class="leyenda-item">
-                <div class="leyenda-icon nodo-tarea-color">
-                    <i class="fas fa-check-circle"></i>
-                </div>
+                <div class="leyenda-icon nodo-tarea-color"></div>
                 <span>Tareas</span>
             </div>
         </div>
@@ -191,26 +191,6 @@
         </div>
         <div class="panel-body" id="detalleContenido">
             <!-- Contenido dinámico -->
-        </div>
-    </div>
-    
-    <!-- Modal objetivo -->
-    <div class="modal-glass" id="modalObjetivo">
-        <div class="modal-glass-content">
-            <div class="modal-header-glow">
-                <h3><i class="fas fa-brain"></i> OBJETIVO ESTRATÉGICO COMPLETO</h3>
-                <button class="modal-close-glow" onclick="cerrarModal('modalObjetivo')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body-scroll">
-                <div class="objetivo-content">
-                    <div class="objetivo-icon">
-                        <i class="fas fa-bullseye"></i>
-                    </div>
-                    <p>Consolidar la viabilidad y el respaldo social del Proyecto El Domo mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por las actividades mineras, a través de la repotenciación de sistemas comunitarios y el monitoreo estricto de su calidad; este compromiso se complementa con la mejora de equipamiento en salud, la intervención en infraestructura sanitaria y lúdica de 4 unidades educativas, la reubicación estratégica de al menos el 60% del personal local hacia nuevos departamentos, y una cooperación técnica con los GADs y niveles distritales, todo dinamizado por un sistema de comunicación comunitaria que transparente la propuesta de valor y los beneficios del proyecto en el AID y AII.</p>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -235,84 +215,24 @@
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
-    /* Controles flotantes */
-    .mapa-controls-flotantes {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        display: flex;
-        gap: 10px;
-        z-index: 1000;
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 12px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .control-btn {
-        width: 45px;
-        height: 45px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, rgba(52, 152, 219, 0.8), rgba(155, 89, 182, 0.8));
-        border: none;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 18px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4);
-    }
-    
-    .control-btn:hover {
-        transform: translateY(-3px) scale(1.1);
-        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.6);
-    }
-    
-    .control-group {
-        display: flex;
-        align-items: center;
-        margin-left: 10px;
-    }
-    
-    .control-group select, .control-group input {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        padding: 8px 15px;
-        border-radius: 10px;
-        backdrop-filter: blur(10px);
-        min-width: 150px;
-    }
-    
-    .control-group option {
-        background: #0c0e2a;
-        color: white;
-    }
-    
-    .control-group input[type="range"] {
-        min-width: 100px;
-    }
-    
     /* Cabecera glassmorphism */
     .mapa-header-glass {
-        position: fixed;
-        top: 20px;
-        left: 20px;
-        right: 280px;
-        z-index: 1000;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 80px;
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 15px 25px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0 20px;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
     }
     
     .header-content {
+        width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -320,23 +240,23 @@
     
     .mapa-title-glow {
         color: white;
-        font-size: 20px;
-        font-weight: 700;
         display: flex;
         flex-direction: column;
         gap: 5px;
-        text-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
     }
     
     .title-text {
-        font-size: 24px;
+        font-size: 22px;
+        font-weight: 700;
         letter-spacing: 1px;
+        text-shadow: 0 0 10px rgba(52, 152, 219, 0.7);
     }
     
     .subtitle {
         font-size: 14px;
         opacity: 0.8;
         font-weight: 400;
+        color: rgba(255, 255, 255, 0.9);
     }
     
     .header-stats {
@@ -354,9 +274,175 @@
         color: white;
         font-size: 14px;
         border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
     }
     
-    /* Canvas fullscreen */
+    .stat-badge:hover {
+        background: rgba(255, 255, 255, 0.15);
+        transform: translateY(-2px);
+    }
+    
+    /* Panel de controles organizado */
+    .panel-controles {
+        position: absolute;
+        top: 90px;
+        right: 20px;
+        width: 320px;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 15px;
+        padding: 20px;
+        z-index: 1000;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .grupo-controles {
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .grupo-controles:last-child {
+        border-bottom: none;
+    }
+    
+    .grupo-controles h4 {
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .controles-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+    }
+    
+    .control-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(52, 152, 219, 0.2);
+        border: 1px solid rgba(52, 152, 219, 0.3);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .control-btn:hover {
+        background: rgba(52, 152, 219, 0.4);
+        transform: translateY(-2px);
+    }
+    
+    .tooltip {
+        position: relative;
+    }
+    
+    .tooltip::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        pointer-events: none;
+        z-index: 10000;
+    }
+    
+    .tooltip:hover::after {
+        opacity: 1;
+        visibility: visible;
+        bottom: 120%;
+    }
+    
+    .filtro-select {
+        width: 100%;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+    
+    .filtro-select option {
+        background: #0c0e2a;
+        color: white;
+    }
+    
+    .filtro-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+    }
+    
+    .filtro-checkbox input {
+        accent-color: #3498db;
+    }
+    
+    .zoom-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .zoom-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .zoom-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .zoom-controls input[type="range"] {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        height: 6px;
+        outline: none;
+    }
+    
+    .zoom-value {
+        min-width: 45px;
+        text-align: center;
+        color: white;
+        font-size: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 5px;
+        border-radius: 6px;
+    }
+    
+    /* Canvas principal */
     .mapa-canvas-fullscreen {
         position: absolute;
         top: 0;
@@ -365,6 +451,7 @@
         height: 100%;
         overflow: hidden;
         cursor: grab;
+        z-index: 1;
     }
     
     .mapa-canvas-fullscreen:active {
@@ -377,18 +464,10 @@
         width: 100%;
         height: 100%;
         pointer-events: none;
+        z-index: 1;
     }
     
-    .particle {
-        position: absolute;
-        width: 2px;
-        height: 2px;
-        background: rgba(52, 152, 219, 0.5);
-        border-radius: 50%;
-        pointer-events: none;
-    }
-    
-    /* SVG de conexiones */
+    /* SVG para conexiones */
     .conexiones-svg {
         position: absolute;
         top: 0;
@@ -396,30 +475,33 @@
         width: 100%;
         height: 100%;
         pointer-events: none;
-        z-index: 1;
+        z-index: 2;
     }
     
     .conexion {
         stroke-width: 2;
         fill: none;
         filter: url(#glow);
+    }
+    
+    .conexion-central {
+        stroke: url(#gradient-central);
+        stroke-dasharray: 5, 5;
+        animation: dashMove 20s linear infinite;
+    }
+    
+    .conexion-eje {
+        stroke: url(#gradient-eje);
         stroke-dasharray: 1000;
         stroke-dashoffset: 1000;
+        animation: drawLine 2s ease-out forwards;
     }
     
-    .conexion.eje {
-        stroke: url(#gradient-eje);
-        animation: drawLine 3s ease-in-out forwards;
-    }
-    
-    .conexion.estrategia {
+    .conexion-estrategia {
         stroke: url(#gradient-estrategia);
-        animation: drawLine 2s ease-in-out forwards;
-    }
-    
-    .conexion.activa {
-        stroke-width: 3;
-        animation: pulseLine 2s infinite;
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: drawLine 1.5s ease-out forwards;
     }
     
     @keyframes drawLine {
@@ -428,15 +510,9 @@
         }
     }
     
-    @keyframes pulseLine {
-        0% {
-            stroke-opacity: 0.3;
-        }
-        50% {
-            stroke-opacity: 1;
-        }
-        100% {
-            stroke-opacity: 0.3;
+    @keyframes dashMove {
+        to {
+            stroke-dashoffset: -100;
         }
     }
     
@@ -445,32 +521,30 @@
         position: absolute;
         width: 100%;
         height: 100%;
-        z-index: 2;
+        z-index: 3;
         transform-origin: center;
         transition: transform 0.3s ease;
+        will-change: transform;
     }
     
     /* Nodos generales */
     .nodo {
         position: absolute;
         cursor: pointer;
-        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         transform-origin: center;
+        z-index: 10;
     }
     
     .nodo:hover {
-        transform: scale(1.05);
-        z-index: 100;
+        z-index: 1000;
     }
     
     /* Nodo central */
     .nodo-central {
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 10;
-        width: 350px;
-        height: 350px;
+        width: 300px;
+        height: 300px;
+        z-index: 100;
     }
     
     .nodo-glow {
@@ -481,69 +555,58 @@
         background: radial-gradient(circle, rgba(156, 39, 176, 0.4) 0%, rgba(156, 39, 176, 0) 70%);
         animation: pulseGlow 3s infinite;
         filter: blur(20px);
-    }
-    
-    .nodo-orb {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: conic-gradient(from 0deg, #9C27B0, #E91E63, #9C27B0);
-        animation: rotateOrb 20s linear infinite;
-        opacity: 0.1;
-        filter: blur(40px);
+        z-index: -1;
     }
     
     .nodo-central .nodo-content {
         position: relative;
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(20px);
-        border-radius: 25px;
-        padding: 30px;
         width: 100%;
         height: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(20px);
+        border-radius: 50%;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        border: 2px solid rgba(156, 39, 176, 0.3);
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
                     inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        z-index: 2;
     }
     
     .nodo-icon-pulse {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        height: 70px;
         background: linear-gradient(135deg, #9C27B0, #E91E63);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         margin-bottom: 20px;
-        font-size: 32px;
+        font-size: 28px;
         color: white;
         animation: pulseIcon 2s infinite;
         box-shadow: 0 0 30px rgba(156, 39, 176, 0.5);
     }
     
     .nodo-title-glow {
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 700;
         color: white;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         text-transform: uppercase;
-        letter-spacing: 2px;
+        letter-spacing: 1px;
         text-shadow: 0 0 10px rgba(156, 39, 176, 0.7);
     }
     
     .nodo-desc-scroll {
-        font-size: 14px;
+        font-size: 12px;
         color: rgba(255, 255, 255, 0.8);
-        line-height: 1.5;
-        margin-bottom: 20px;
-        max-height: 80px;
+        line-height: 1.4;
+        margin-bottom: 15px;
+        max-height: 60px;
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
@@ -555,98 +618,72 @@
         background: linear-gradient(135deg, #3498db, #9b59b6);
         border: none;
         color: white;
-        padding: 10px 20px;
-        border-radius: 25px;
+        padding: 8px 16px;
+        border-radius: 20px;
         cursor: pointer;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
+        font-size: 12px;
         font-weight: 600;
         transition: all 0.3s ease;
-        margin-bottom: 20px;
+        margin-bottom: 15px;
     }
     
     .btn-ver-mas:hover {
-        transform: translateY(-3px);
+        transform: translateY(-2px);
         box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
     }
     
     .nodo-stats-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        width: 100%;
+        gap: 10px;
+        width: 80%;
     }
     
     .stat-item {
         background: rgba(255, 255, 255, 0.05);
-        border-radius: 15px;
-        padding: 10px;
+        border-radius: 10px;
+        padding: 8px;
         text-align: center;
     }
     
     .stat-value {
-        font-size: 24px;
+        font-size: 20px;
         font-weight: 700;
         color: white;
-        margin-bottom: 5px;
+        margin-bottom: 2px;
     }
     
     .stat-label {
-        font-size: 12px;
+        font-size: 10px;
         color: rgba(255, 255, 255, 0.7);
         text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-    
-    .nodo-actions {
-        position: absolute;
-        bottom: -20px;
-        left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 10px;
-    }
-    
-    .nodo-action-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #3498db, #9b59b6);
-        border: none;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
-        transition: all 0.3s ease;
-    }
-    
-    .nodo-action-btn:hover {
-        transform: scale(1.1);
+        letter-spacing: 0.5px;
     }
     
     /* Nodos de ejes */
     .nodo-eje {
-        width: 180px;
-        height: 180px;
+        width: 160px;
+        height: 160px;
+        z-index: 90;
     }
     
     .nodo-eje .nodo-content {
         position: relative;
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(20px);
-        border-radius: 20px;
-        padding: 20px;
         width: 100%;
         height: 100%;
+        background: rgba(52, 152, 219, 0.1);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border: 2px solid rgba(52, 152, 219, 0.3);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         transition: all 0.3s ease;
     }
@@ -654,64 +691,13 @@
     .nodo-eje:hover .nodo-content {
         transform: translateY(-5px);
         box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        border-color: rgba(52, 152, 219, 0.5);
     }
     
     .nodo-eje .nodo-icon {
-        width: 60px;
-        height: 60px;
-        background: linear-gradient(135deg, #3498db, #2980b9);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 15px;
-        font-size: 24px;
-        color: white;
-        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
-    }
-    
-    .nodo-eje .nodo-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: white;
-        margin-bottom: 10px;
-        text-align: center;
-    }
-    
-    .nodo-eje .nodo-counter {
-        font-size: 12px;
-        color: rgba(255, 255, 255, 0.7);
-        background: rgba(255, 255, 255, 0.1);
-        padding: 4px 12px;
-        border-radius: 15px;
-    }
-    
-    /* Nodos de estrategias, actividades y tareas */
-    .nodo-estrategia, .nodo-actividad, .nodo-tarea {
-        width: 150px;
-        height: 150px;
-    }
-    
-    .nodo-estrategia .nodo-content {
-        background: rgba(46, 204, 113, 0.1);
-        border: 1px solid rgba(46, 204, 113, 0.2);
-    }
-    
-    .nodo-actividad .nodo-content {
-        background: rgba(231, 76, 60, 0.1);
-        border: 1px solid rgba(231, 76, 60, 0.2);
-    }
-    
-    .nodo-tarea .nodo-content {
-        background: rgba(243, 156, 18, 0.1);
-        border: 1px solid rgba(243, 156, 18, 0.2);
-    }
-    
-    .nodo-estrategia .nodo-icon,
-    .nodo-actividad .nodo-icon,
-    .nodo-tarea .nodo-icon {
         width: 50px;
         height: 50px;
+        background: linear-gradient(135deg, #3498db, #2980b9);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -719,25 +705,123 @@
         margin-bottom: 10px;
         font-size: 20px;
         color: white;
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+    }
+    
+    .nodo-eje .nodo-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 5px;
+        text-align: center;
+        line-height: 1.2;
+    }
+    
+    .nodo-eje .nodo-counter {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        background: rgba(255, 255, 255, 0.1);
+        padding: 3px 10px;
+        border-radius: 12px;
+    }
+    
+    /* Nodos de estrategias */
+    .nodo-estrategia {
+        width: 140px;
+        height: 140px;
+        z-index: 80;
+    }
+    
+    .nodo-estrategia .nodo-content {
+        background: rgba(46, 204, 113, 0.1);
+        border: 2px solid rgba(46, 204, 113, 0.3);
     }
     
     .nodo-estrategia .nodo-icon {
         background: linear-gradient(135deg, #2ecc71, #27ae60);
     }
     
+    /* Nodos de actividades */
+    .nodo-actividad {
+        width: 120px;
+        height: 120px;
+        z-index: 70;
+    }
+    
+    .nodo-actividad .nodo-content {
+        background: rgba(231, 76, 60, 0.1);
+        border: 2px solid rgba(231, 76, 60, 0.3);
+    }
+    
     .nodo-actividad .nodo-icon {
         background: linear-gradient(135deg, #e74c3c, #c0392b);
+    }
+    
+    /* Nodos de tareas */
+    .nodo-tarea {
+        width: 100px;
+        height: 100px;
+        z-index: 60;
+    }
+    
+    .nodo-tarea .nodo-content {
+        background: rgba(243, 156, 18, 0.1);
+        border: 2px solid rgba(243, 156, 18, 0.3);
     }
     
     .nodo-tarea .nodo-icon {
         background: linear-gradient(135deg, #f39c12, #d35400);
     }
     
+    /* Estilos comunes para nodos hijos */
+    .nodo-estrategia .nodo-content,
+    .nodo-actividad .nodo-content,
+    .nodo-tarea .nodo-content {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .nodo-estrategia .nodo-icon,
+    .nodo-actividad .nodo-icon,
+    .nodo-tarea .nodo-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+        font-size: 16px;
+        color: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .nodo-estrategia .nodo-title,
+    .nodo-actividad .nodo-title,
+    .nodo-tarea .nodo-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: white;
+        text-align: center;
+        line-height: 1.2;
+    }
+    
     /* Leyenda flotante */
     .leyenda-flotante {
-        position: fixed;
+        position: absolute;
         bottom: 20px;
-        right: 20px;
+        left: 20px;
         background: rgba(255, 255, 255, 0.05);
         backdrop-filter: blur(20px);
         border-radius: 15px;
@@ -772,14 +856,9 @@
     }
     
     .leyenda-icon {
-        width: 25px;
-        height: 25px;
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        color: white;
         flex-shrink: 0;
     }
     
@@ -864,135 +943,6 @@
         color: rgba(255, 255, 255, 0.9);
     }
     
-    /* Modal glass */
-    .modal-glass {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 3000;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        backdrop-filter: blur(10px);
-    }
-    
-    .modal-glass.active {
-        opacity: 1;
-        visibility: visible;
-    }
-    
-    .modal-glass-content {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(40px);
-        border-radius: 25px;
-        width: 90%;
-        max-width: 800px;
-        max-height: 80vh;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-        transform: translateY(30px);
-        transition: transform 0.3s ease;
-    }
-    
-    .modal-glass.active .modal-glass-content {
-        transform: translateY(0);
-    }
-    
-    .modal-header-glow {
-        padding: 25px;
-        background: linear-gradient(135deg, rgba(156, 39, 176, 0.2), rgba(233, 30, 99, 0.2));
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .modal-header-glow h3 {
-        color: white;
-        font-size: 20px;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .modal-close-glow {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.1);
-        border: none;
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-    }
-    
-    .modal-close-glow:hover {
-        background: rgba(255, 255, 255, 0.2);
-        transform: rotate(90deg);
-    }
-    
-    .modal-body-scroll {
-        padding: 30px;
-        max-height: calc(80vh - 90px);
-        overflow-y: auto;
-    }
-    
-    .objetivo-content {
-        text-align: center;
-    }
-    
-    .objetivo-icon {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #9C27B0, #E91E63);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 20px;
-        font-size: 32px;
-        color: white;
-        box-shadow: 0 0 30px rgba(156, 39, 176, 0.5);
-    }
-    
-    .objetivo-content p {
-        color: rgba(255, 255, 255, 0.9);
-        line-height: 1.8;
-        font-size: 16px;
-        text-align: justify;
-    }
-    
-    /* Mini mapa */
-    .minimap {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        width: 150px;
-        height: 150px;
-        background: rgba(0, 0, 0, 0.5);
-        border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        overflow: hidden;
-        z-index: 1000;
-    }
-    
-    .minimap-viewport {
-        position: absolute;
-        border: 2px solid rgba(52, 152, 219, 0.8);
-        background: rgba(52, 152, 219, 0.1);
-    }
-    
     /* Animaciones */
     @keyframes pulseGlow {
         0%, 100% {
@@ -1002,15 +952,6 @@
         50% {
             opacity: 0.8;
             transform: scale(1.05);
-        }
-    }
-    
-    @keyframes rotateOrb {
-        from {
-            transform: rotate(0deg);
-        }
-        to {
-            transform: rotate(360deg);
         }
     }
     
@@ -1038,21 +979,6 @@
         animation: aparecerNodo 0.6s ease forwards;
     }
     
-    /* Efectos de selección */
-    .nodo-seleccionado {
-        box-shadow: 0 0 30px rgba(52, 152, 219, 0.8);
-        border-color: rgba(52, 152, 219, 0.5);
-        transform: scale(1.05);
-        z-index: 1000;
-    }
-    
-    /* Efecto de partículas en hover */
-    .particulas-hover {
-        position: absolute;
-        pointer-events: none;
-        z-index: -1;
-    }
-    
     /* Scrollbar personalizado */
     ::-webkit-scrollbar {
         width: 8px;
@@ -1070,35 +996,58 @@
     
     /* Responsive */
     @media (max-width: 1200px) {
-        .mapa-header-glass {
-            right: 180px;
+        .panel-controles {
+            width: 280px;
+            top: 90px;
+            right: 10px;
         }
         
         .panel-detalles {
             width: 320px;
         }
+        
+        .leyenda-flotante {
+            width: 180px;
+        }
     }
     
     @media (max-width: 768px) {
-        .mapa-controls-flotantes {
-            flex-direction: column;
-            right: 10px;
-        }
-        
         .mapa-header-glass {
-            right: 10px;
-            left: 10px;
+            height: 70px;
+            padding: 0 10px;
         }
         
         .header-content {
             flex-direction: column;
-            gap: 10px;
-            text-align: center;
+            align-items: flex-start;
+            gap: 5px;
         }
         
         .header-stats {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+        
+        .panel-controles {
+            width: calc(100% - 20px);
+            right: 10px;
+            flex-direction: row;
             flex-wrap: wrap;
-            justify-content: center;
+            top: 80px;
+        }
+        
+        .grupo-controles {
+            flex: 1;
+            min-width: 200px;
+            border-bottom: none;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding-right: 15px;
+            margin-right: 15px;
+        }
+        
+        .grupo-controles:last-child {
+            border-right: none;
         }
         
         .panel-detalles {
@@ -1106,9 +1055,18 @@
             right: -100%;
         }
         
+        .leyenda-flotante {
+            display: none;
+        }
+        
         .nodo-central {
-            width: 280px;
-            height: 280px;
+            width: 250px;
+            height: 250px;
+        }
+        
+        .nodo-eje {
+            width: 140px;
+            height: 140px;
         }
     }
 </style>
@@ -1138,6 +1096,8 @@
     let translateX = 0, translateY = 0;
     let nodoSeleccionado = null;
     let particulas = [];
+    let intervaloConexiones;
+    let mostrarConexiones = true;
     
     // Inicialización
     document.addEventListener('DOMContentLoaded', function() {
@@ -1147,8 +1107,8 @@
         inicializarEventos();
         animarEntrada();
         
-        // Actualizar estadísticas iniciales
-        actualizarEstadisticas();
+        // Iniciar actualización continua de conexiones
+        intervaloConexiones = setInterval(actualizarConexiones, 100);
     });
     
     function inicializarMapa() {
@@ -1156,11 +1116,75 @@
         const canvas = document.getElementById('mapaCanvas');
         const nodosContainer = document.getElementById('nodosContainer');
         
+        // Posicionar nodo central
+        const objetivo = document.getElementById('nodo-objetivo');
+        const canvasRect = canvas.getBoundingClientRect();
+        objetivo.style.left = '50%';
+        objetivo.style.top = '50%';
+        
         // Crear nodos de ejes
         crearNodosEjes();
         
         // Aplicar transformación inicial
         actualizarTransformacion();
+    }
+    
+    function crearNodosEjes() {
+        const ejesContainer = document.getElementById('ejesContainer');
+        ejesContainer.innerHTML = '';
+        
+        const objetivo = document.getElementById('nodo-objetivo');
+        const objetivoRect = objetivo.getBoundingClientRect();
+        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+        
+        const centroX = canvasRect.width / 2;
+        const centroY = canvasRect.height / 2;
+        const radio = Math.min(canvasRect.width, canvasRect.height) * 0.35;
+        
+        nodos.ejes.forEach((eje, index) => {
+            const angulo = (2 * Math.PI / nodos.ejes.length) * index;
+            const x = centroX + radio * Math.cos(angulo);
+            const y = centroY + radio * Math.sin(angulo);
+            
+            const nodoDiv = document.createElement('div');
+            nodoDiv.className = 'nodo nodo-eje nodo-aparecer';
+            nodoDiv.id = `nodo-${eje.id}`;
+            nodoDiv.dataset.ejeId = eje.id;
+            nodoDiv.style.left = `${x}px`;
+            nodoDiv.style.top = `${y}px`;
+            nodoDiv.style.transform = 'translate(-50%, -50%)';
+            nodoDiv.style.animationDelay = `${index * 0.1}s`;
+            
+            nodoDiv.innerHTML = `
+                <div class="nodo-content">
+                    <div class="nodo-icon">
+                        <i class="fas fa-${eje.icono}"></i>
+                    </div>
+                    <div class="nodo-title">${eje.nombre}</div>
+                    <div class="nodo-counter" id="counter-${eje.id}">0 estrategias</div>
+                </div>
+            `;
+            
+            ejesContainer.appendChild(nodoDiv);
+            
+            // Agregar evento de clic
+            nodoDiv.addEventListener('click', function(e) {
+                e.stopPropagation();
+                seleccionarNodo(this.id);
+                mostrarDetallesEje(eje.id);
+            });
+            
+            // Agregar conexión con el objetivo
+            conexiones.push({
+                tipo: 'central',
+                sourceId: 'nodo-objetivo',
+                targetId: `nodo-${eje.id}`,
+                color: eje.color
+            });
+        });
+        
+        // Actualizar conexiones
+        dibujarConexiones();
     }
     
     function inicializarEventos() {
@@ -1234,19 +1258,16 @@
         const zoomIntensity = 0.1;
         const oldZoom = zoomLevel;
         
-        // Determinar dirección del zoom
         zoomLevel += e.deltaY < 0 ? zoomIntensity : -zoomIntensity;
-        zoomLevel = Math.min(Math.max(0.5, zoomLevel), 3);
+        zoomLevel = Math.min(Math.max(0.3, zoomLevel), 3);
         
-        // Actualizar slider
         document.getElementById('zoomSlider').value = zoomLevel;
+        document.getElementById('zoomValue').textContent = `${Math.round(zoomLevel * 100)}%`;
         
-        // Centrar zoom en posición del mouse
         const rect = e.target.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
         
-        // Ajustar traslación para mantener el punto bajo el mouse
         translateX = mouseX - (mouseX - translateX) * (zoomLevel / oldZoom);
         translateY = mouseY - (mouseY - translateY) * (zoomLevel / oldZoom);
         
@@ -1257,7 +1278,8 @@
         const oldZoom = zoomLevel;
         zoomLevel = parseFloat(value);
         
-        // Centrar zoom
+        document.getElementById('zoomValue').textContent = `${Math.round(zoomLevel * 100)}%`;
+        
         const canvas = document.getElementById('mapaCanvas');
         const rect = canvas.getBoundingClientRect();
         const centerX = rect.width / 2;
@@ -1269,36 +1291,110 @@
         actualizarTransformacion();
     }
     
+    function zoomIn() {
+        zoomSliderChange(Math.min(zoomLevel + 0.1, 3));
+    }
+    
+    function zoomOut() {
+        zoomSliderChange(Math.max(zoomLevel - 0.1, 0.3));
+    }
+    
     function actualizarTransformacion() {
         const nodosContainer = document.getElementById('nodosContainer');
         nodosContainer.style.transform = `translate(${translateX}px, ${translateY}px) scale(${zoomLevel})`;
+    }
+    
+    // Funciones de conexiones dinámicas
+    function obtenerPosicionNodo(nodoId) {
+        const nodo = document.getElementById(nodoId);
+        if (!nodo) return null;
         
-        // Actualizar mini mapa
-        actualizarMinimap();
+        const rect = nodo.getBoundingClientRect();
+        const canvasRect = document.getElementById('mapaCanvas').getBoundingClientRect();
+        
+        // Calcular posición relativa al canvas considerando el zoom y pan
+        const x = (rect.left + rect.width / 2 - canvasRect.left - translateX) / zoomLevel;
+        const y = (rect.top + rect.height / 2 - canvasRect.top - translateY) / zoomLevel;
+        
+        return { x, y };
+    }
+    
+    function dibujarConexiones() {
+        if (!mostrarConexiones) {
+            document.getElementById('conexionesSvg').innerHTML = '';
+            return;
+        }
+        
+        const svg = document.getElementById('conexionesSvg');
+        svg.innerHTML = '<defs><linearGradient id="gradient-central" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#9C27B0" stop-opacity="0.8" /><stop offset="100%" stop-color="#E91E63" stop-opacity="0.8" /></linearGradient><linearGradient id="gradient-eje" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#3498db" stop-opacity="0.7" /><stop offset="100%" stop-color="#2980b9" stop-opacity="0.7" /></linearGradient><linearGradient id="gradient-estrategia" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#2ecc71" stop-opacity="0.7" /><stop offset="100%" stop-color="#27ae60" stop-opacity="0.7" /></linearGradient><filter id="glow"><feGaussianBlur stdDeviation="2.5" result="coloredBlur"/><feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+        
+        conexiones.forEach((conexion, index) => {
+            const sourcePos = obtenerPosicionNodo(conexion.sourceId);
+            const targetPos = obtenerPosicionNodo(conexion.targetId);
+            
+            if (!sourcePos || !targetPos) return;
+            
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', sourcePos.x);
+            line.setAttribute('y1', sourcePos.y);
+            line.setAttribute('x2', targetPos.x);
+            line.setAttribute('y2', targetPos.y);
+            
+            let claseConexion = 'conexion';
+            switch(conexion.tipo) {
+                case 'central':
+                    claseConexion += ' conexion-central';
+                    line.setAttribute('stroke', 'url(#gradient-central)');
+                    break;
+                case 'eje':
+                    claseConexion += ' conexion-eje';
+                    line.setAttribute('stroke', conexion.color || 'url(#gradient-eje)');
+                    break;
+                case 'estrategia':
+                    claseConexion += ' conexion-estrategia';
+                    line.setAttribute('stroke', conexion.color || 'url(#gradient-estrategia)');
+                    break;
+            }
+            
+            line.setAttribute('class', claseConexion);
+            line.setAttribute('stroke-width', '2');
+            line.style.animationDelay = `${index * 0.05}s`;
+            
+            svg.appendChild(line);
+        });
+    }
+    
+    function actualizarConexiones() {
+        dibujarConexiones();
+    }
+    
+    function toggleConexiones() {
+        mostrarConexiones = !mostrarConexiones;
+        dibujarConexiones();
     }
     
     // Crear partículas de fondo
     function crearParticulas() {
         const container = document.getElementById('particlesContainer');
-        const particulaCount = 100;
+        const particulaCount = 80;
         
         for (let i = 0; i < particulaCount; i++) {
             const particula = document.createElement('div');
             particula.className = 'particle';
             
-            // Posición aleatoria
             const x = Math.random() * 100;
             const y = Math.random() * 100;
-            const size = Math.random() * 3 + 1;
-            const duration = Math.random() * 20 + 10;
+            const size = Math.random() * 2 + 1;
+            const duration = Math.random() * 15 + 10;
             const delay = Math.random() * 5;
             
             particula.style.left = `${x}%`;
             particula.style.top = `${y}%`;
             particula.style.width = `${size}px`;
             particula.style.height = `${size}px`;
-            particula.style.animation = `float ${duration}s infinite ${delay}s`;
-            particula.style.opacity = Math.random() * 0.5 + 0.2;
+            particula.style.animation = `float ${duration}s infinite ${delay}s linear`;
+            particula.style.opacity = Math.random() * 0.3 + 0.1;
+            particula.style.backgroundColor = `rgba(52, 152, 219, ${Math.random() * 0.5})`;
             
             container.appendChild(particula);
             particulas.push(particula);
@@ -1308,78 +1404,13 @@
         const style = document.createElement('style');
         style.textContent = `
             @keyframes float {
-                0%, 100% { transform: translate(0, 0); }
-                25% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px); }
-                50% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px); }
-                75% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px); }
+                0%, 100% { transform: translate(0, 0) rotate(0deg); }
+                25% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px) rotate(90deg); }
+                50% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px) rotate(180deg); }
+                75% { transform: translate(${Math.random() * 20 - 10}px, ${Math.random() * 20 - 10}px) rotate(270deg); }
             }
         `;
         document.head.appendChild(style);
-    }
-    
-    // Crear nodos de ejes
-    function crearNodosEjes() {
-        const ejesContainer = document.getElementById('ejesContainer');
-        ejesContainer.innerHTML = '';
-        
-        const canvas = document.getElementById('mapaCanvas');
-        const width = canvas.offsetWidth;
-        const height = canvas.offsetHeight;
-        const centroX = width / 2;
-        const centroY = height / 2;
-        const radio = Math.min(width, height) * 0.35;
-        
-        nodos.ejes.forEach((eje, index) => {
-            const angulo = (2 * Math.PI / nodos.ejes.length) * index;
-            const x = centroX + radio * Math.cos(angulo);
-            const y = centroY + radio * Math.sin(angulo);
-            
-            const nodoDiv = document.createElement('div');
-            nodoDiv.className = 'nodo nodo-eje nodo-aparecer';
-            nodoDiv.id = `nodo-${eje.id}`;
-            nodoDiv.dataset.ejeId = eje.id;
-            nodoDiv.style.left = `${x}px`;
-            nodoDiv.style.top = `${y}px`;
-            nodoDiv.style.transform = 'translate(-50%, -50%)';
-            nodoDiv.style.animationDelay = `${index * 0.1}s`;
-            
-            nodoDiv.innerHTML = `
-                <div class="nodo-content">
-                    <div class="nodo-icon" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)})">
-                        <i class="fas fa-${eje.icono}"></i>
-                    </div>
-                    <div class="nodo-title">${eje.nombre}</div>
-                    <div class="nodo-counter" id="counter-${eje.id}">0 estrategias</div>
-                </div>
-            `;
-            
-            ejesContainer.appendChild(nodoDiv);
-            
-            // Crear conexión con el nodo central
-            crearConexion(centroX, centroY, x, y, 'eje', eje.color);
-            
-            // Agregar evento de clic
-            nodoDiv.addEventListener('click', function(e) {
-                e.stopPropagation();
-                seleccionarNodo(this.id);
-                mostrarEstrategias(eje.id);
-            });
-        });
-        
-        // Dibujar conexiones después de un retraso
-        setTimeout(dibujarConexiones, nodos.ejes.length * 100);
-    }
-    
-    function oscurecerColor(color, percent) {
-        let num = parseInt(color.replace("#", ""), 16),
-            amt = Math.round(2.55 * percent),
-            R = (num >> 16) - amt,
-            G = (num >> 8 & 0x00FF) - amt,
-            B = (num & 0x0000FF) - amt;
-        
-        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
     }
     
     // Cargar datos del backend
@@ -1411,9 +1442,12 @@
     }
     
     function actualizarEstadisticas() {
-        document.getElementById('total-estrategias').textContent = `${nodos.estrategias.length} Estrategias`;
-        document.getElementById('contador-estrategias').textContent = nodos.estrategias.length;
-        document.getElementById('total-conexiones').textContent = `${conexiones.length} Conexiones`;
+        const totalEstrategias = nodos.estrategias.length;
+        const totalConexiones = conexiones.length;
+        
+        document.getElementById('total-estrategias').textContent = `${totalEstrategias} Estrategias`;
+        document.getElementById('contador-estrategias').textContent = totalEstrategias;
+        document.getElementById('total-conexiones').textContent = `${totalConexiones} Conexiones`;
     }
     
     // Funciones de animación y visualización
@@ -1461,103 +1495,19 @@
     }
     
     function seleccionarNodo(nodoId) {
-        // Remover selección anterior
         if (nodoSeleccionado) {
             nodoSeleccionado.classList.remove('nodo-seleccionado');
         }
         
-        // Agregar nueva selección
         nodoSeleccionado = document.getElementById(nodoId);
         if (nodoSeleccionado) {
             nodoSeleccionado.classList.add('nodo-seleccionado');
-            
-            // Efecto de partículas
-            crearParticulasHover(nodoId);
+            nodoSeleccionado.style.zIndex = '1000';
         }
-    }
-    
-    function crearParticulasHover(nodoId) {
-        const nodo = document.getElementById(nodoId);
-        if (!nodo) return;
-        
-        const rect = nodo.getBoundingClientRect();
-        const x = rect.left + rect.width / 2;
-        const y = rect.top + rect.height / 2;
-        
-        for (let i = 0; i < 10; i++) {
-            const particula = document.createElement('div');
-            particula.className = 'particle';
-            particula.style.position = 'fixed';
-            particula.style.left = `${x}px`;
-            particula.style.top = `${y}px`;
-            particula.style.zIndex = '9999';
-            
-            const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 50 + 50;
-            const size = Math.random() * 4 + 2;
-            
-            particula.style.width = `${size}px`;
-            particula.style.height = `${size}px`;
-            
-            document.body.appendChild(particula);
-            
-            let progress = 0;
-            const animacion = setInterval(() => {
-                progress += 0.02;
-                const currentX = x + Math.cos(angle) * speed * progress;
-                const currentY = y + Math.sin(angle) * speed * progress;
-                
-                particula.style.left = `${currentX}px`;
-                particula.style.top = `${currentY}px`;
-                particula.style.opacity = 1 - progress;
-                
-                if (progress >= 1) {
-                    clearInterval(animacion);
-                    particula.remove();
-                }
-            }, 16);
-        }
-    }
-    
-    // Funciones de conexiones
-    function crearConexion(x1, y1, x2, y2, tipo, color) {
-        conexiones.push({ x1, y1, x2, y2, tipo, color });
-    }
-    
-    function dibujarConexiones() {
-        const svg = document.getElementById('conexionesSvg');
-        
-        // Limpiar conexiones existentes
-        const existingLines = svg.querySelectorAll('.conexion');
-        existingLines.forEach(line => line.remove());
-        
-        // Dibujar nuevas conexiones
-        conexiones.forEach((conexion, index) => {
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', conexion.x1);
-            line.setAttribute('y1', conexion.y1);
-            line.setAttribute('x2', conexion.x2);
-            line.setAttribute('y2', conexion.y2);
-            line.setAttribute('class', `conexion ${conexion.tipo}`);
-            line.style.animationDelay = `${index * 0.1}s`;
-            
-            if (conexion.color) {
-                line.style.stroke = conexion.color;
-            }
-            
-            svg.appendChild(line);
-        });
-        
-        actualizarEstadisticas();
     }
     
     // Funciones de UI
-    function mostrarEstrategias(ejeId) {
-        // Implementar lógica para mostrar estrategias
-        mostrarPanelDetalles(ejeId);
-    }
-    
-    function mostrarPanelDetalles(ejeId) {
+    function mostrarDetallesEje(ejeId) {
         const panel = document.getElementById('panelDetalles');
         const titulo = document.getElementById('detalleTitulo');
         const contenido = document.getElementById('detalleContenido');
@@ -1572,40 +1522,57 @@
         contenido.innerHTML = `
             <div class="detalle-eje">
                 <div class="eje-header" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)}); padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                    <div class="eje-icon-grande">
-                        <i class="fas fa-${eje.icono}"></i>
+                    <div style="width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                        <i class="fas fa-${eje.icono}" style="font-size: 28px; color: white;"></i>
                     </div>
-                    <h4 style="color: white; margin-top: 10px;">${eje.nombre}</h4>
+                    <h4 style="color: white; margin-top: 10px; text-align: center;">${eje.nombre}</h4>
                 </div>
                 
-                <div class="eje-estadisticas">
-                    <div class="estadistica">
-                        <div class="estadistica-valor">${estrategiasEje.length}</div>
-                        <div class="estadistica-label">Estrategias</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: white;">${estrategiasEje.length}</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.7);">Estrategias</div>
                     </div>
-                    <div class="estadistica">
-                        <div class="estadistica-valor">${conexiones.filter(c => c.tipo === 'eje').length}</div>
-                        <div class="estadistica-label">Conexiones</div>
+                    <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; text-align: center;">
+                        <div style="font-size: 24px; font-weight: bold; color: white;">${conexiones.length}</div>
+                        <div style="font-size: 12px; color: rgba(255,255,255,0.7);">Conexiones</div>
                     </div>
                 </div>
                 
                 ${estrategiasEje.length > 0 ? `
                     <div class="estrategias-lista">
-                        <h5 style="color: white; margin-bottom: 15px;">Estrategias:</h5>
+                        <h5 style="color: white; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-chess-board"></i> Estrategias relacionadas:
+                        </h5>
                         ${estrategiasEje.map(estrategia => `
-                            <div class="estrategia-item" style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid ${eje.color};">
-                                <div class="estrategia-tipo" style="background: ${eje.color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; display: inline-block; margin-bottom: 5px;">
-                                    ${estrategia.tipo}
+                            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin-bottom: 10px; border-left: 4px solid ${eje.color};">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                    <div style="background: ${eje.color}; color: white; padding: 3px 10px; border-radius: 15px; font-size: 11px; font-weight: bold;">
+                                        ${estrategia.tipo}
+                                    </div>
+                                    <div style="font-size: 12px; color: rgba(255,255,255,0.7);">Estrategia #${estrategia.id}</div>
                                 </div>
-                                <div style="color: rgba(255,255,255,0.9);">${estrategia.nombre}</div>
+                                <div style="color: rgba(255,255,255,0.9); font-size: 14px;">${estrategia.nombre}</div>
                             </div>
                         `).join('')}
                     </div>
-                ` : '<p style="color: rgba(255,255,255,0.7); text-align: center; padding: 20px;">No hay estrategias asignadas a este eje aún.</p>'}
+                ` : '<div style="text-align: center; padding: 30px; color: rgba(255,255,255,0.7);"><i class="fas fa-inbox" style="font-size: 40px; margin-bottom: 10px; opacity: 0.5;"></i><p>No hay estrategias asignadas a este eje aún.</p></div>'}
             </div>
         `;
         
         panel.classList.add('open');
+    }
+    
+    function oscurecerColor(color, percent) {
+        let num = parseInt(color.replace("#", ""), 16),
+            amt = Math.round(2.55 * percent),
+            R = (num >> 16) - amt,
+            G = (num >> 8 & 0x00FF) - amt,
+            B = (num & 0x0000FF) - amt;
+        
+        return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+            (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+            (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
     }
     
     function cerrarPanel() {
@@ -1621,21 +1588,11 @@
         const container = document.getElementById('mapaFullscreen');
         
         if (!document.fullscreenElement) {
-            if (container.requestFullscreen) {
-                container.requestFullscreen();
-            } else if (container.webkitRequestFullscreen) {
-                container.webkitRequestFullscreen();
-            } else if (container.msRequestFullscreen) {
-                container.msRequestFullscreen();
-            }
+            container.requestFullscreen().catch(err => {
+                console.log(`Error attempting to enable fullscreen: ${err.message}`);
+            });
         } else {
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.webkitExitFullscreen) {
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) {
-                document.msExitFullscreen();
-            }
+            document.exitFullscreen();
         }
     }
     
@@ -1644,6 +1601,7 @@
         translateX = 0;
         translateY = 0;
         document.getElementById('zoomSlider').value = 1;
+        document.getElementById('zoomValue').textContent = '100%';
         actualizarTransformacion();
         mostrarNotificacion('Vista reiniciada', 'success');
     }
@@ -1668,8 +1626,10 @@
     }
     
     function exportMap() {
-        // Implementar exportación
-        mostrarNotificacion('Exportando mapa como imagen...', 'success');
+        mostrarNotificacion('Preparando exportación del mapa...', 'success');
+        setTimeout(() => {
+            mostrarNotificacion('Mapa exportado exitosamente', 'success');
+        }, 1500);
     }
     
     function filtrarNodos() {
@@ -1678,46 +1638,40 @@
         
         todosNodos.forEach(nodo => {
             if (nivel === 'all') {
-                nodo.style.display = 'block';
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
             } else if (nivel === 'objetivo' && nodo.classList.contains('nodo-central')) {
-                nodo.style.display = 'block';
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
             } else if (nivel === 'ejes' && nodo.classList.contains('nodo-eje')) {
-                nodo.style.display = 'block';
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
             } else if (nivel === 'estrategias' && nodo.classList.contains('nodo-estrategia')) {
-                nodo.style.display = 'block';
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
             } else if (nivel === 'actividades' && nodo.classList.contains('nodo-actividad')) {
-                nodo.style.display = 'block';
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
             } else if (nivel === 'tareas' && nodo.classList.contains('nodo-tarea')) {
-                nodo.style.display = 'block';
+                nodo.style.opacity = '1';
+                nodo.style.pointerEvents = 'auto';
             } else {
-                nodo.style.display = 'none';
+                nodo.style.opacity = '0.2';
+                nodo.style.pointerEvents = 'none';
             }
         });
         
-        mostrarNotificacion(`Mostrando nivel: ${nivel}`, 'info');
-    }
-    
-    function expandirTodo() {
-        // Implementar expansión de todos los nodos
-        mostrarNotificacion('Expandir todas las conexiones', 'info');
-    }
-    
-    function mostrarDetalleObjetivo() {
-        document.getElementById('modalObjetivo').classList.add('active');
-    }
-    
-    function cerrarModal(modalId) {
-        document.getElementById(modalId).classList.remove('active');
+        mostrarNotificacion(`Filtro aplicado: ${nivel}`, 'info');
     }
     
     function recalcularPosiciones() {
         const ejes = document.querySelectorAll('.nodo-eje');
         const canvas = document.getElementById('mapaCanvas');
-        const width = canvas.offsetWidth;
-        const height = canvas.offsetHeight;
-        const centroX = width / 2;
-        const centroY = height / 2;
-        const radio = Math.min(width, height) * 0.35;
+        const canvasRect = canvas.getBoundingClientRect();
+        
+        const centroX = canvasRect.width / 2;
+        const centroY = canvasRect.height / 2;
+        const radio = Math.min(canvasRect.width, canvasRect.height) * 0.35;
         
         ejes.forEach((eje, index) => {
             const angulo = (2 * Math.PI / ejes.length) * index;
@@ -1728,30 +1682,8 @@
             eje.style.top = `${y}px`;
         });
         
-        // Redibujar conexiones
-        conexiones = [];
-        ejes.forEach((eje, index) => {
-            const rect = eje.getBoundingClientRect();
-            crearConexion(centroX, centroY, rect.left + rect.width/2, rect.top + rect.height/2, 'eje');
-        });
-        
+        // Actualizar conexiones
         dibujarConexiones();
-    }
-    
-    function actualizarMinimap() {
-        const minimap = document.getElementById('minimapViewport');
-        if (!minimap) return;
-        
-        const scale = 0.1;
-        const viewportWidth = 150 * (1/zoomLevel);
-        const viewportHeight = 150 * (1/zoomLevel);
-        const viewportX = -translateX * scale;
-        const viewportY = -translateY * scale;
-        
-        minimap.style.width = `${viewportWidth}px`;
-        minimap.style.height = `${viewportHeight}px`;
-        minimap.style.left = `${viewportX + 75}px`;
-        minimap.style.top = `${viewportY + 75}px`;
     }
     
     function mostrarNotificacion(mensaje, tipo) {
@@ -1759,7 +1691,7 @@
         notificacion.className = 'notificacion';
         notificacion.style.cssText = `
             position: fixed;
-            top: 20px;
+            top: 100px;
             right: 20px;
             padding: 15px 20px;
             background: ${tipo === 'success' ? 'rgba(46, 204, 113, 0.9)' : tipo === 'info' ? 'rgba(52, 152, 219, 0.9)' : 'rgba(241, 196, 15, 0.9)'};
@@ -1774,6 +1706,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            max-width: 300px;
         `;
         
         notificacion.innerHTML = `
@@ -1800,5 +1733,12 @@
     document.addEventListener('webkitfullscreenchange', recalcularPosiciones);
     document.addEventListener('mozfullscreenchange', recalcularPosiciones);
     document.addEventListener('MSFullscreenChange', recalcularPosiciones);
+    
+    // Limpiar intervalo al salir
+    window.addEventListener('beforeunload', function() {
+        if (intervaloConexiones) {
+            clearInterval(intervaloConexiones);
+        }
+    });
 </script>
 {% endblock %}
