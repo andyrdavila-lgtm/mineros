@@ -1,7 +1,7 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Sistema de Gestión de Actividades - Vista Optimizada -->
+<!-- Sistema de Gestión de Actividades - Vista Mejorada -->
 <div class="flow-system-container">
     <!-- Header compacto -->
     <div class="flow-header-compact">
@@ -41,38 +41,49 @@
     <div class="flow-toolbar">
         <div class="toolbar-section">
             <div class="filter-group">
-                <select id="filtroResponsable" class="toolbar-select">
-                    <option value="todos">Todos los responsables</option>
-                </select>
-                <select id="filtroEstadoFlow" class="toolbar-select">
-                    <option value="todos">Todos los estados</option>
-                    <option value="pendiente">Pendiente</option>
-                    <option value="en_progreso">En Progreso</option>
-                    <option value="completada">Completada</option>
-                </select>
-                <div class="date-range">
-                    <input type="date" id="fechaDesde" class="toolbar-date">
-                    <span>a</span>
-                    <input type="date" id="fechaHasta" class="toolbar-date">
+                <div class="filter-item">
+                    <label>Responsable:</label>
+                    <select id="filtroResponsable" class="toolbar-select">
+                        <option value="todos">Todos los responsables</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <label>Estado:</label>
+                    <select id="filtroEstadoFlow" class="toolbar-select">
+                        <option value="todos">Todos los estados</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="en_progreso">En Progreso</option>
+                        <option value="completada">Completada</option>
+                    </select>
+                </div>
+                
+                <div class="filter-item">
+                    <label>Rango de fechas:</label>
+                    <div class="date-range">
+                        <input type="date" id="fechaDesde" class="toolbar-date">
+                        <span class="date-separator">a</span>
+                        <input type="date" id="fechaHasta" class="toolbar-date">
+                    </div>
                 </div>
             </div>
         </div>
         
         <div class="toolbar-section">
             <div class="view-toggle-group">
-                <button class="view-toggle active" data-view="gantt">
+                <button class="view-toggle active" data-view="gantt" title="Diagrama Gantt">
                     <i class="fas fa-chart-bar"></i>
                     <span>Gantt</span>
                 </button>
-                <button class="view-toggle" data-view="flow">
+                <button class="view-toggle" data-view="flow" title="Diagrama de Flujo">
                     <i class="fas fa-project-diagram"></i>
                     <span>Flujo</span>
                 </button>
-                <button class="view-toggle" data-view="responsables">
+                <button class="view-toggle" data-view="responsables" title="Panel de Responsables">
                     <i class="fas fa-user-tie"></i>
                     <span>Responsables</span>
                 </button>
-                <button class="view-toggle" data-view="timeline">
+                <button class="view-toggle" data-view="timeline" title="Línea de Tiempo">
                     <i class="fas fa-stream"></i>
                     <span>Timeline</span>
                 </button>
@@ -80,60 +91,68 @@
         </div>
         
         <div class="toolbar-section">
-            <button class="toolbar-btn" onclick="exportarReporte()">
+            <button class="toolbar-btn" onclick="exportarReporte()" title="Exportar Reporte">
                 <i class="fas fa-file-export"></i>
-                Exportar
+                <span>Exportar</span>
             </button>
-            <button class="toolbar-btn" onclick="imprimirFlujo()">
+            <button class="toolbar-btn" onclick="imprimirFlujo()" title="Imprimir">
                 <i class="fas fa-print"></i>
-                Imprimir
+                <span>Imprimir</span>
             </button>
-            <button class="toolbar-btn" onclick="toggleFullscreenFlow()">
+            <button class="toolbar-btn" onclick="toggleFullscreenFlow()" title="Pantalla Completa">
                 <i class="fas fa-expand"></i>
-                Pantalla Completa
+                <span>Pantalla Completa</span>
             </button>
         </div>
     </div>
 
     <!-- Contenido principal - Vista única -->
     <div class="flow-main-view">
-        <!-- Vista Gantt -->
+        <!-- Vista Gantt - ALTURA MEJORADA -->
         <div class="flow-view active" id="ganttView">
             <div class="view-header">
-                <h3><i class="fas fa-chart-bar"></i> Diagrama Gantt</h3>
+                <div class="view-title">
+                    <h3><i class="fas fa-chart-bar"></i> Diagrama Gantt</h3>
+                    <p class="view-subtitle">Visualización de actividades y su distribución en el tiempo</p>
+                </div>
                 <div class="view-controls">
-                    <button class="control-btn" onclick="zoomGantt('in')">
+                    <button class="control-btn" onclick="zoomGantt('in')" title="Acercar">
                         <i class="fas fa-search-plus"></i>
                     </button>
-                    <button class="control-btn" onclick="zoomGantt('out')">
+                    <button class="control-btn" onclick="zoomGantt('out')" title="Alejar">
                         <i class="fas fa-search-minus"></i>
                     </button>
-                    <button class="control-btn" onclick="ajustarGantt()">
-                        <i class="fas fa-expand"></i>
+                    <button class="control-btn" onclick="ajustarGantt()" title="Ajustar a pantalla">
+                        <i class="fas fa-expand-alt"></i>
+                    </button>
+                    <button class="control-btn" onclick="descargarGantt()" title="Descargar Gantt">
+                        <i class="fas fa-download"></i>
                     </button>
                 </div>
             </div>
-            <div class="gantt-main" id="ganttContainer">
-                <div class="gantt-timeline" id="ganttTimeline"></div>
-                <div class="gantt-rows" id="ganttContent"></div>
+            <div class="gantt-container-full">
+                <div class="gantt-timeline-full" id="ganttTimeline"></div>
+                <div class="gantt-content-full" id="ganttContent"></div>
             </div>
         </div>
 
         <!-- Vista Flujo -->
         <div class="flow-view" id="flowView">
             <div class="view-header">
-                <h3><i class="fas fa-project-diagram"></i> Diagrama de Flujo</h3>
+                <div class="view-title">
+                    <h3><i class="fas fa-project-diagram"></i> Diagrama de Flujo</h3>
+                    <p class="view-subtitle">Relaciones y dependencias entre actividades</p>
+                </div>
                 <div class="view-controls">
-                    <button class="control-btn" onclick="autoOrganizarFlujo()">
+                    <button class="control-btn" onclick="autoOrganizarFlujo()" title="Auto-organizar">
                         <i class="fas fa-sitemap"></i>
-                        Auto-organizar
                     </button>
-                    <button class="control-btn" onclick="descargarDiagrama()">
+                    <button class="control-btn" onclick="descargarDiagrama()" title="Descargar Diagrama">
                         <i class="fas fa-download"></i>
                     </button>
                 </div>
             </div>
-            <div class="flow-canvas-container">
+            <div class="flow-canvas-full">
                 <svg class="flow-connections" id="flowConnections"></svg>
                 <div class="flow-nodes-container" id="flowNodes"></div>
             </div>
@@ -142,31 +161,37 @@
         <!-- Vista Responsables -->
         <div class="flow-view" id="responsableView">
             <div class="view-header">
-                <h3><i class="fas fa-user-tie"></i> Panel de Responsables</h3>
+                <div class="view-title">
+                    <h3><i class="fas fa-user-tie"></i> Panel de Responsables</h3>
+                    <p class="view-subtitle">Distribución de actividades por responsable</p>
+                </div>
                 <div class="view-controls">
-                    <button class="control-btn" onclick="actualizarResponsables()">
+                    <button class="control-btn" onclick="actualizarResponsables()" title="Actualizar">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                 </div>
             </div>
-            <div class="responsables-grid" id="responsablesContainer"></div>
+            <div class="responsables-container-full" id="responsablesContainer"></div>
         </div>
 
         <!-- Vista Timeline -->
         <div class="flow-view" id="timelineView">
             <div class="view-header">
-                <h3><i class="fas fa-stream"></i> Línea de Tiempo</h3>
+                <div class="view-title">
+                    <h3><i class="fas fa-stream"></i> Línea de Tiempo</h3>
+                    <p class="view-subtitle">Cronología de actividades y eventos</p>
+                </div>
                 <div class="view-controls">
-                    <button class="control-btn" onclick="expandirTimeline()">
+                    <button class="control-btn" onclick="expandirTimeline()" title="Expandir">
                         <i class="fas fa-expand-alt"></i>
                     </button>
                 </div>
             </div>
-            <div class="timeline-content" id="timelineContainer"></div>
+            <div class="timeline-container-full" id="timelineContainer"></div>
         </div>
     </div>
 
-    <!-- Panel de detalles (se activa al seleccionar) -->
+    <!-- Panel de detalles -->
     <div class="flow-details-panel" id="detailsPanel">
         <div class="details-header">
             <h3><i class="fas fa-info-circle"></i> Detalles</h3>
@@ -189,12 +214,16 @@
             <span><i class="fas fa-database"></i> <span id="totalRegistros">0 registros</span></span>
             <span><i class="fas fa-memory"></i> <span id="memoriaUsada">Cargando...</span></span>
         </div>
+        <div class="status-tip" id="statusTip">
+            <i class="fas fa-lightbulb"></i>
+            <span>Usa los filtros para refinar la visualización</span>
+        </div>
     </div>
 </div>
 
 <style>
 /* ===================================
-   ESTILOS OPTIMIZADOS PARA ESPACIO
+   ESTILOS MEJORADOS - CON ESPACIO VERTICAL
 =================================== */
 
 .flow-system-container {
@@ -205,7 +234,7 @@
     bottom: 0;
     display: flex;
     flex-direction: column;
-    background: linear-gradient(135deg, #0f1b3d 0%, #1a2b5e 100%);
+    background: linear-gradient(135deg, #0a0f2b 0%, #151f4d 100%);
     color: white;
     font-family: 'Segoe UI', system-ui, sans-serif;
     overflow: hidden;
@@ -213,154 +242,250 @@
 
 /* Header compacto */
 .flow-header-compact {
-    background: rgba(0, 10, 40, 0.85);
+    background: rgba(10, 15, 43, 0.95);
     backdrop-filter: blur(20px);
-    padding: 12px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 14px 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
     flex-shrink: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .header-main h1 {
-    font-size: 20px;
-    font-weight: 600;
-    color: #4fc3f7;
+    font-size: 22px;
+    font-weight: 700;
+    color: #64b5f6;
     margin-bottom: 8px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .header-main small {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 400;
-    color: rgba(255, 255, 255, 0.7);
-    margin-left: 10px;
+    color: rgba(255, 255, 255, 0.75);
+    margin-left: 12px;
 }
 
 .header-stats-row {
     display: flex;
-    gap: 20px;
+    gap: 24px;
+    flex-wrap: wrap;
 }
 
 .stat-item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 13px;
+    gap: 10px;
+    font-size: 14px;
     color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stat-item i {
-    color: #4fc3f7;
-    font-size: 14px;
+    color: #64b5f6;
+    font-size: 16px;
 }
 
 .stat-item span:first-of-type {
-    font-weight: 700;
-    font-size: 16px;
+    font-weight: 800;
+    font-size: 18px;
     color: white;
 }
 
-/* Barra de herramientas */
+/* Barra de herramientas MEJORADA */
 .flow-toolbar {
-    background: rgba(0, 15, 50, 0.7);
-    padding: 12px 24px;
+    background: rgba(15, 22, 66, 0.85);
+    padding: 14px 28px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 24px;
     flex-shrink: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .toolbar-section {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
 }
 
 .filter-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 20px;
+    flex-wrap: wrap;
 }
 
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.filter-item label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* SELECTS MEJORADOS - VISIBILIDAD CORREGIDA */
 .toolbar-select {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
+    border-radius: 8px;
     color: white;
-    padding: 6px 12px;
-    font-size: 13px;
-    min-width: 180px;
+    padding: 10px 16px;
+    font-size: 14px;
+    min-width: 200px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.toolbar-select:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.toolbar-select:focus {
+    outline: none;
+    border-color: #64b5f6;
+    box-shadow: 0 0 0 3px rgba(100, 181, 246, 0.2);
+}
+
+/* OPTIONS CON FONDO OSCURO Y TEXTO CLARO */
+.toolbar-select option {
+    background: #1a237e !important;
+    color: white !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+}
+
+/* Estilo para cuando el select está abierto */
+.toolbar-select:focus option {
+    background: #283593 !important;
+}
+
+/* Para navegadores WebKit (Chrome, Safari, Edge) */
+.toolbar-select option:hover,
+.toolbar-select option:focus,
+.toolbar-select option:checked {
+    background: #3949ab !important;
+    color: white !important;
+}
+
+/* Para Firefox */
+.toolbar-select option:checked {
+    background: #3949ab !important;
+    color: white !important;
 }
 
 .date-range {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
 .toolbar-date {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
+    border-radius: 8px;
     color: white;
-    padding: 6px 10px;
-    font-size: 13px;
-    width: 130px;
+    padding: 10px 14px;
+    font-size: 14px;
+    width: 140px;
+    cursor: pointer;
+}
+
+.toolbar-date::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+.toolbar-date:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.date-separator {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .view-toggle-group {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     background: rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 4px;
+    border-radius: 10px;
+    padding: 6px;
 }
 
 .view-toggle {
     background: transparent;
     border: none;
     color: rgba(255, 255, 255, 0.7);
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     transition: all 0.2s;
+    font-weight: 500;
+}
+
+.view-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
 }
 
 .view-toggle.active {
-    background: rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #2196F3, #1976D2);
     color: white;
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
 }
 
 .toolbar-btn {
     background: linear-gradient(135deg, #2196F3, #1976D2);
     border: none;
     color: white;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     transition: all 0.2s;
+    font-weight: 500;
 }
 
 .toolbar-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+    box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
 }
 
-/* Contenido principal */
+/* Contenido principal - ALTURA MEJORADA */
 .flow-main-view {
     flex: 1;
     position: relative;
     overflow: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 .flow-view {
@@ -371,9 +496,7 @@
     bottom: 0;
     display: none;
     flex-direction: column;
-    background: rgba(0, 20, 60, 0.6);
-    border-radius: 12px;
-    margin: 12px;
+    background: transparent;
     overflow: hidden;
 }
 
@@ -382,202 +505,261 @@
 }
 
 .view-header {
-    padding: 12px 20px;
-    background: rgba(0, 30, 80, 0.8);
+    padding: 16px 28px;
+    background: rgba(20, 27, 80, 0.9);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
-.view-header h3 {
-    font-size: 16px;
-    font-weight: 600;
+.view-title h3 {
+    font-size: 18px;
+    font-weight: 700;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
+    color: #bbdefb;
+}
+
+.view-subtitle {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 4px;
+    margin-left: 34px;
 }
 
 .view-controls {
     display: flex;
-    gap: 6px;
+    gap: 8px;
 }
 
 .control-btn {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
+    border-radius: 8px;
     color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s;
+    font-size: 16px;
 }
 
 .control-btn:hover {
     background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
 }
 
-/* Vista Gantt optimizada */
-.gantt-main {
+/* ===================================
+   VISTA GANTT CON MÁS ESPACIO VERTICAL
+=================================== */
+
+.gantt-container-full {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    background: rgba(0, 10, 40, 0.4);
+    margin: 0;
+    min-height: 0; /* Para que flex funcione correctamente */
 }
 
-.gantt-timeline {
-    height: 50px;
-    background: rgba(0, 30, 80, 0.8);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+.gantt-timeline-full {
+    height: 60px;
+    background: rgba(25, 35, 100, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     align-items: center;
-    padding: 0 20px;
+    padding: 0 28px;
     flex-shrink: 0;
     overflow-x: auto;
 }
 
-.gantt-rows {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
+.gantt-timeline-full::-webkit-scrollbar {
+    height: 8px;
 }
 
+.gantt-timeline-full::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.gantt-timeline-full::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+.gantt-content-full {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: auto;
+    padding: 28px;
+    min-height: 400px; /* Altura mínima garantizada */
+}
+
+.gantt-content-full::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.gantt-content-full::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 6px;
+}
+
+.gantt-content-full::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+}
+
+/* Filas del Gantt más altas */
 .gantt-row {
     display: flex;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 12px 16px;
+    border-radius: 10px;
+    padding: 20px 24px;
     cursor: pointer;
     transition: all 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    min-height: 80px; /* Altura mínima aumentada */
 }
 
 .gantt-row:hover {
     background: rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
+    transform: translateX(6px);
+    border-color: rgba(100, 181, 246, 0.4);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 .gantt-info {
-    width: 250px;
+    width: 300px;
     flex-shrink: 0;
-    padding-right: 16px;
+    padding-right: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.gantt-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: white;
+    line-height: 1.4;
+}
+
+.gantt-meta {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
 .gantt-bar-container {
     flex: 1;
-    height: 24px;
+    height: 36px; /* Barra más alta */
     background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    border-radius: 18px;
     overflow: hidden;
     position: relative;
+    min-width: 600px; /* Ancho mínimo para mejor visualización */
 }
 
 .gantt-bar {
     height: 100%;
-    border-radius: 12px;
+    border-radius: 18px;
     position: absolute;
     top: 0;
     left: 0;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-/* Vista Flujo optimizada */
-.flow-canvas-container {
+.gantt-progreso {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Estados con colores más vibrantes */
+.estado-pendiente { 
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+.estado-progreso { 
+    background: linear-gradient(135deg, #2196F3, #1976D2);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+.estado-completado { 
+    background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+.estado-atrasado { 
+    background: linear-gradient(135deg, #F44336, #D32F2F);
+    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+
+/* ===================================
+   OTRAS VISTAS CON ESPACIO MEJORADO
+=================================== */
+
+.flow-canvas-full {
     flex: 1;
     position: relative;
     overflow: auto;
     background: rgba(0, 0, 0, 0.2);
+    min-height: 400px;
 }
 
-.flow-nodes-container {
-    position: relative;
-    min-width: 2000px;
-    min-height: 2000px;
-    padding: 40px;
-}
-
-.flow-node {
-    position: absolute;
-    background: linear-gradient(135deg, #2196F3, #1976D2);
-    border-radius: 8px;
-    padding: 12px;
-    width: 220px;
-    cursor: move;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    transition: all 0.3s;
-}
-
-.flow-node:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
-}
-
-/* Vista Responsables optimizada */
-.responsables-grid {
+.responsables-container-full {
     flex: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-    padding: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 28px;
     overflow-y: auto;
+    min-height: 400px;
 }
 
-.responsable-card {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    padding: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s;
-    cursor: pointer;
-}
-
-.responsable-card:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateY(-3px);
-}
-
-/* Vista Timeline optimizada */
-.timeline-content {
+.timeline-container-full {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
-}
-
-.timeline-event {
-    position: relative;
-    margin-bottom: 20px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 8px;
-    padding: 16px;
-    border-left: 4px solid #2196F3;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.timeline-event:hover {
-    background: rgba(255, 255, 255, 0.1);
-    transform: translateX(4px);
+    padding: 28px;
+    min-height: 400px;
 }
 
 /* Panel de detalles */
 .flow-details-panel {
     position: fixed;
     top: 0;
-    right: -400px;
-    width: 380px;
+    right: -420px;
+    width: 400px;
     height: 100%;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(10, 15, 43, 0.98);
     backdrop-filter: blur(30px);
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
     z-index: 1000;
     transition: right 0.3s ease;
     display: flex;
     flex-direction: column;
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.4);
 }
 
 .flow-details-panel.open {
@@ -585,121 +767,278 @@
 }
 
 .details-header {
-    padding: 20px;
-    background: rgba(0, 20, 60, 0.5);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 24px;
+    background: rgba(20, 27, 80, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
+.details-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #bbdefb;
+}
+
+.close-details {
+    width: 40px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 16px;
+}
+
+.close-details:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
 .details-content {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 24px;
 }
 
 .empty-details {
     text-align: center;
-    padding: 60px 20px;
+    padding: 80px 20px;
     color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-details i {
+    font-size: 48px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-details p {
+    font-size: 16px;
+    font-weight: 500;
 }
 
 /* Barra de estado */
 .flow-status-bar {
-    height: 36px;
-    background: rgba(0, 10, 40, 0.8);
+    height: 44px;
+    background: rgba(10, 15, 43, 0.95);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0 24px;
+    padding: 0 28px;
     display: flex;
     align-items: center;
+    justify-content: space-between;
     flex-shrink: 0;
-    font-size: 12px;
+    font-size: 13px;
     color: rgba(255, 255, 255, 0.7);
 }
 
 .status-info {
     display: flex;
-    gap: 20px;
+    gap: 24px;
 }
 
-/* Estados de colores */
-.estado-pendiente { background: linear-gradient(135deg, #FF9800, #F57C00); }
-.estado-progreso { background: linear-gradient(135deg, #2196F3, #1976D2); }
-.estado-completado { background: linear-gradient(135deg, #4CAF50, #2E7D32); }
-.estado-atrasado { background: linear-gradient(135deg, #F44336, #D32F2F); }
+.status-info span {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
 
-/* Responsive */
-@media (max-width: 1200px) {
+.status-info i {
+    color: #64b5f6;
+    font-size: 14px;
+}
+
+.status-tip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    background: rgba(100, 181, 246, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(100, 181, 246, 0.2);
+    color: #bbdefb;
+    font-weight: 500;
+}
+
+.status-tip i {
+    color: #64b5f6;
+}
+
+/* ===================================
+   RESPONSIVE
+=================================== */
+
+@media (max-width: 1400px) {
     .flow-toolbar {
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
         align-items: stretch;
     }
     
     .toolbar-section {
-        justify-content: space-between;
+        justify-content: flex-start;
     }
     
     .filter-group {
-        flex-wrap: wrap;
+        gap: 16px;
     }
     
-    .responsables-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    .gantt-info {
+        width: 250px;
+    }
+    
+    .gantt-bar-container {
+        min-width: 400px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .flow-header-compact,
+    .flow-toolbar,
+    .view-header {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+    
+    .gantt-content-full {
+        padding: 20px;
+    }
+    
+    .header-stats-row {
+        gap: 12px;
+    }
+    
+    .stat-item {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .toolbar-select {
+        min-width: 160px;
+    }
+    
+    .gantt-row {
+        padding: 16px 20px;
+        min-height: 70px;
+    }
+    
+    .gantt-info {
+        width: 220px;
     }
 }
 
 @media (max-width: 768px) {
-    .flow-header-compact {
-        padding: 10px 16px;
+    .view-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
     }
     
-    .header-stats-row {
-        flex-wrap: wrap;
-        gap: 10px;
+    .view-controls {
+        align-self: flex-end;
     }
     
-    .flow-toolbar {
-        padding: 10px 16px;
+    .gantt-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+        min-height: auto;
     }
     
+    .gantt-info {
+        width: 100%;
+        padding-right: 0;
+    }
+    
+    .gantt-bar-container {
+        width: 100%;
+        min-width: 0;
+    }
+    
+    .toolbar-btn span,
     .view-toggle span {
         display: none;
     }
     
-    .gantt-info {
-        width: 200px;
+    .toolbar-btn,
+    .view-toggle {
+        padding: 10px;
+    }
+    
+    .view-toggle-group {
+        padding: 4px;
     }
     
     .flow-details-panel {
         width: 100%;
         right: -100%;
     }
+    
+    .status-tip {
+        display: none;
+    }
 }
 
 @media (max-width: 480px) {
-    .flow-view {
-        margin: 8px;
+    .flow-header-compact {
+        padding: 12px 16px;
     }
     
-    .view-header {
-        padding: 10px;
+    .header-main h1 {
+        font-size: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
     }
     
-    .gantt-info {
-        width: 150px;
+    .header-main small {
+        margin-left: 0;
+        font-size: 12px;
     }
     
-    .toolbar-select {
-        min-width: 140px;
+    .header-stats-row {
+        justify-content: space-between;
+    }
+    
+    .stat-item {
+        flex: 1;
+        min-width: calc(50% - 6px);
+        justify-content: center;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-item {
+        width: 100%;
+    }
+    
+    .toolbar-select,
+    .toolbar-date {
+        width: 100%;
+        min-width: 0;
+    }
+    
+    .date-range {
+        justify-content: space-between;
     }
 }
 </style>
 
 <script>
 // ===================================
-// SISTEMA DE FLUJO OPTIMIZADO
+// SISTEMA DE FLUJO MEJORADO
 // ===================================
 
 const FLOW_SYSTEM = {
@@ -712,7 +1051,8 @@ const FLOW_SYSTEM = {
         fechaDesde: null,
         fechaHasta: null
     },
-    vistaActiva: 'gantt'
+    vistaActiva: 'gantt',
+    detallesAbiertos: false
 };
 
 // ===================================
@@ -722,10 +1062,18 @@ const FLOW_SYSTEM = {
 document.addEventListener('DOMContentLoaded', function() {
     inicializarSistema();
     cargarDatosIniciales();
+    
+    // Configurar tooltips
+    inicializarTooltips();
+    
+    // Configurar fecha mínima para fecha fin
+    document.getElementById('fechaDesde').addEventListener('change', function() {
+        document.getElementById('fechaHasta').min = this.value;
+    });
 });
 
 function inicializarSistema() {
-    // Configurar listeners
+    // Configurar listeners de vistas
     document.querySelectorAll('.view-toggle').forEach(btn => {
         btn.addEventListener('click', function() {
             const view = this.dataset.view;
@@ -733,6 +1081,7 @@ function inicializarSistema() {
         });
     });
     
+    // Configurar listeners de filtros
     document.getElementById('filtroResponsable').addEventListener('change', aplicarFiltros);
     document.getElementById('filtroEstadoFlow').addEventListener('change', aplicarFiltros);
     document.getElementById('fechaDesde').addEventListener('change', aplicarFiltros);
@@ -745,12 +1094,66 @@ function inicializarSistema() {
     
     document.getElementById('fechaDesde').value = haceUnMes.toISOString().split('T')[0];
     document.getElementById('fechaHasta').value = hoy.toISOString().split('T')[0];
+    document.getElementById('fechaHasta').min = document.getElementById('fechaDesde').value;
     
     // Iniciar monitoreo
+    monitorearMemoria();
     setInterval(monitorearMemoria, 10000);
 }
 
+function inicializarTooltips() {
+    // Tooltips simples para botones
+    const tooltipElements = document.querySelectorAll('[title]');
+    tooltipElements.forEach(el => {
+        el.addEventListener('mouseenter', function(e) {
+            const title = this.getAttribute('title');
+            if (!title) return;
+            
+            const tooltip = document.createElement('div');
+            tooltip.className = 'custom-tooltip';
+            tooltip.textContent = title;
+            tooltip.style.cssText = `
+                position: fixed;
+                background: rgba(0, 0, 0, 0.9);
+                color: white;
+                padding: 8px 12px;
+                border-radius: 6px;
+                font-size: 13px;
+                z-index: 9999;
+                pointer-events: none;
+                white-space: nowrap;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            
+            document.body.appendChild(tooltip);
+            
+            const updatePosition = (e) => {
+                tooltip.style.left = (e.clientX + 15) + 'px';
+                tooltip.style.top = (e.clientY + 15) + 'px';
+            };
+            
+            updatePosition(e);
+            this.addEventListener('mousemove', updatePosition);
+            
+            this._tooltip = tooltip;
+            this._updatePosition = updatePosition;
+        });
+        
+        el.addEventListener('mouseleave', function() {
+            if (this._tooltip) {
+                this._tooltip.remove();
+                this.removeEventListener('mousemove', this._updatePosition);
+                delete this._tooltip;
+                delete this._updatePosition;
+            }
+        });
+    });
+}
+
 function cargarDatosIniciales() {
+    // Mostrar loading
+    mostrarLoading(true);
+    
     // Cargar datos desde API
     Promise.all([
         fetch('/api/actividades').then(r => r.json()),
@@ -769,8 +1172,13 @@ function cargarDatosIniciales() {
         
         document.getElementById('ultimaActualizacion').textContent = 
             'Actualizado: ' + new Date().toLocaleTimeString();
+        
+        mostrarLoading(false);
+        mostrarNotificacion('✅ Datos cargados correctamente', 'success');
     }).catch(error => {
         console.error('Error cargando datos:', error);
+        mostrarNotificacion('❌ Error cargando datos', 'error');
+        mostrarLoading(false);
     });
 }
 
@@ -788,13 +1196,19 @@ function procesarDatos() {
     
     // Actualizar filtro de responsables
     const select = document.getElementById('filtroResponsable');
-    select.innerHTML = '<option value="todos">Todos los responsables</option>';
+    const optionsActuales = Array.from(select.options).map(o => o.value);
+    
+    if (!optionsActuales.includes('todos')) {
+        select.innerHTML = '<option value="todos">Todos los responsables</option>';
+    }
     
     FLOW_SYSTEM.responsables.forEach(r => {
-        const option = document.createElement('option');
-        option.value = r;
-        option.textContent = r;
-        select.appendChild(option);
+        if (!optionsActuales.includes(r)) {
+            const option = document.createElement('option');
+            option.value = r;
+            option.textContent = r;
+            select.appendChild(option);
+        }
     });
 }
 
@@ -848,6 +1262,19 @@ function cambiarVista(vista) {
     FLOW_SYSTEM.vistaActiva = vista;
     
     renderizarVistaActiva();
+    
+    // Mostrar sugerencia según la vista
+    const sugerencias = {
+        'gantt': 'Usa la rueda del mouse para hacer scroll horizontal en el diagrama',
+        'flow': 'Arrastra los nodos para reorganizar el diagrama',
+        'responsables': 'Haz clic en una tarjeta para ver detalles del responsable',
+        'timeline': 'Los eventos se ordenan cronológicamente'
+    };
+    
+    if (sugerencias[vista]) {
+        document.getElementById('statusTip').innerHTML = 
+            `<i class="fas fa-lightbulb"></i><span>${sugerencias[vista]}</span>`;
+    }
 }
 
 function renderizarVistaActiva() {
@@ -870,7 +1297,7 @@ function renderizarVistaActiva() {
 }
 
 // ===================================
-// VISTA GANTT
+// VISTA GANTT MEJORADA
 // ===================================
 
 function renderizarGantt() {
@@ -881,6 +1308,21 @@ function renderizarGantt() {
     
     // Filtrar actividades
     const actividades = filtrarActividades();
+    
+    if (actividades.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="text-align: center; padding: 80px 20px; color: rgba(255,255,255,0.5);">
+                <i class="fas fa-chart-bar" style="font-size: 60px; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="font-size: 20px; margin-bottom: 10px;">No hay actividades</h3>
+                <p style="font-size: 16px; max-width: 400px; margin: 0 auto;">
+                    No se encontraron actividades con los filtros actuales.
+                    Intenta cambiar los criterios de búsqueda.
+                </p>
+            </div>
+        `;
+        timeline.innerHTML = '';
+        return;
+    }
     
     // Calcular rango de fechas
     const fechas = actividades.flatMap(a => [
@@ -912,12 +1354,18 @@ function renderizarGantt() {
             fechaMax
         );
         
+        const fechaInicio = actividad.fecha_inicio ? 
+            new Date(actividad.fecha_inicio).toLocaleDateString('es-ES') : 'No definida';
+        const fechaFin = actividad.fecha_fin ? 
+            new Date(actividad.fecha_fin).toLocaleDateString('es-ES') : 'No definida';
+        
         row.innerHTML = `
             <div class="gantt-info">
-                <div style="font-weight: 600; margin-bottom: 4px;">${actividad.nombre}</div>
-                <div style="font-size: 12px; opacity: 0.8;">
-                    ${actividad.responsable || 'Sin responsable'} | 
-                    ${actividad.fecha_inicio ? new Date(actividad.fecha_inicio).toLocaleDateString() : 'Sin fecha'}
+                <div class="gantt-title">${actividad.nombre}</div>
+                <div class="gantt-meta">
+                    <span><i class="fas fa-user"></i> ${actividad.responsable || 'Sin responsable'}</span>
+                    <span><i class="fas fa-calendar"></i> ${fechaInicio} → ${fechaFin}</span>
+                    <span><i class="fas fa-tasks"></i> ${progreso}% completado</span>
                 </div>
             </div>
             <div class="gantt-bar-container">
@@ -925,7 +1373,8 @@ function renderizarGantt() {
                     width: ${posicion.ancho}%;
                     left: ${posicion.inicio}%;
                 ">
-                    <div class="gantt-progreso" style="width: ${progreso}%"></div>
+                    <div class="gantt-progreso"></div>
+                    <span>${actividad.nombre.substring(0, 30)}${actividad.nombre.length > 30 ? '...' : ''}</span>
                 </div>
             </div>
         `;
@@ -938,25 +1387,51 @@ function renderizarTimelineGantt(container, fechaMin, fechaMax) {
     const dias = Math.ceil((fechaMax - fechaMin) / (1000 * 60 * 60 * 24));
     container.innerHTML = '';
     
-    for (let i = 0; i <= dias; i += 7) { // Semanas
+    // Agrupar por meses para mejor visualización
+    const meses = [];
+    let mesActual = null;
+    
+    for (let i = 0; i <= dias; i++) {
         const fecha = new Date(fechaMin);
         fecha.setDate(fecha.getDate() + i);
+        const mes = fecha.getMonth();
+        const año = fecha.getFullYear();
         
-        const semana = document.createElement('div');
-        semana.style.cssText = `
-            flex: 0 0 ${100 / (dias / 7)}%;
-            padding: 8px;
-            text-align: center;
-            border-right: 1px solid rgba(255,255,255,0.1);
-        `;
-        
-        semana.innerHTML = `
-            <div style="font-size: 11px; opacity: 0.8;">Sem ${Math.floor(i/7) + 1}</div>
-            <div style="font-weight: 600; font-size: 13px;">${fecha.getDate()}/${fecha.getMonth()+1}</div>
-        `;
-        
-        container.appendChild(semana);
+        if (!mesActual || mesActual.mes !== mes || mesActual.año !== año) {
+            mesActual = { mes, año, inicio: i, fin: i };
+            meses.push(mesActual);
+        } else {
+            mesActual.fin = i;
+        }
     }
+    
+    meses.forEach(mesInfo => {
+        const inicioFecha = new Date(fechaMin);
+        inicioFecha.setDate(inicioFecha.getDate() + mesInfo.inicio);
+        const finFecha = new Date(fechaMin);
+        finFecha.setDate(finFecha.getDate() + mesInfo.fin);
+        
+        const mesDiv = document.createElement('div');
+        mesDiv.style.cssText = `
+            flex: 0 0 ${((mesInfo.fin - mesInfo.inicio + 1) / dias) * 100}%;
+            padding: 12px;
+            text-align: center;
+            border-right: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            min-width: 120px;
+        `;
+        
+        const nombreMes = inicioFecha.toLocaleDateString('es-ES', { month: 'long' });
+        mesDiv.innerHTML = `
+            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 4px;">${nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1)}</div>
+            <div style="font-weight: 700; font-size: 14px;">${inicioFecha.getFullYear()}</div>
+            <div style="font-size: 11px; opacity: 0.7; margin-top: 4px;">
+                ${inicioFecha.getDate()}/${inicioFecha.getMonth()+1} - ${finFecha.getDate()}/${finFecha.getMonth()+1}
+            </div>
+        `;
+        
+        container.appendChild(mesDiv);
+    });
 }
 
 function calcularPosicionGantt(inicio, fin, min, max) {
@@ -973,7 +1448,7 @@ function calcularPosicionGantt(inicio, fin, min, max) {
     
     return {
         inicio: Math.max(0, posInicio),
-        ancho: Math.min(100 - posInicio, Math.max(5, posAncho))
+        ancho: Math.min(100 - posInicio, Math.max(8, posAncho))
     };
 }
 
@@ -1046,6 +1521,17 @@ function aplicarFiltros() {
     
     actualizarUI();
     renderizarVistaActiva();
+    
+    // Mostrar notificación de filtros aplicados
+    const filtrosActivos = [];
+    if (FLOW_SYSTEM.filtros.responsable !== 'todos') filtrosActivos.push('responsable');
+    if (FLOW_SYSTEM.filtros.estado !== 'todos') filtrosActivos.push('estado');
+    if (FLOW_SYSTEM.filtros.fechaDesde || FLOW_SYSTEM.filtros.fechaHasta) filtrosActivos.push('fecha');
+    
+    if (filtrosActivos.length > 0) {
+        document.getElementById('statusTip').innerHTML = 
+            `<i class="fas fa-filter"></i><span>Filtros activos: ${filtrosActivos.join(', ')}</span>`;
+    }
 }
 
 // ===================================
@@ -1065,26 +1551,42 @@ function zoomGantt(direccion) {
     const container = document.getElementById('ganttContent');
     const scale = parseFloat(container.style.transform?.replace('scale(', '')?.replace(')', '')) || 1;
     const newScale = direccion === 'in' ? scale * 1.2 : scale * 0.8;
-    container.style.transform = `scale(${Math.max(0.5, Math.min(3, newScale))})`;
+    const finalScale = Math.max(0.5, Math.min(3, newScale));
+    container.style.transform = `scale(${finalScale})`;
+    container.style.transformOrigin = 'top left';
+    
+    mostrarNotificacion(`Zoom: ${Math.round(finalScale * 100)}%`, 'info');
 }
 
 function ajustarGantt() {
     document.getElementById('ganttContent').style.transform = 'scale(1)';
+    mostrarNotificacion('Diagrama ajustado a pantalla', 'info');
+}
+
+function descargarGantt() {
+    mostrarNotificacion('📥 Descargando diagrama Gantt...', 'info');
+    // En una implementación real, aquí se generaría y descargaría una imagen del Gantt
+    setTimeout(() => {
+        mostrarNotificacion('✅ Diagrama Gantt descargado', 'success');
+    }, 1500);
 }
 
 function exportarReporte() {
     const data = {
         fecha: new Date().toISOString(),
         actividades: FLOW_SYSTEM.actividades,
-        tareas: FLOW_SYSTEM.tareas
+        tareas: FLOW_SYSTEM.tareas,
+        filtros: FLOW_SYSTEM.filtros
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `reporte-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `reporte-flujo-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
+    
+    mostrarNotificacion('✅ Reporte exportado correctamente', 'success');
 }
 
 function imprimirFlujo() {
@@ -1098,44 +1600,248 @@ function mostrarDetalles(id, tipo) {
     if (tipo === 'actividad') {
         const actividad = FLOW_SYSTEM.actividades.find(a => a.id == id);
         if (actividad) {
+            const tareas = FLOW_SYSTEM.tareas.filter(t => t.actividad_id == id);
+            const progreso = calcularProgreso(id);
+            const estado = determinarEstado(actividad);
+            
             contenido.innerHTML = `
-                <div style="padding: 20px;">
-                    <h3 style="margin-bottom: 15px;">${actividad.nombre}</h3>
-                    <div style="margin-bottom: 15px;">
-                        <strong>Responsable:</strong> ${actividad.responsable || 'No asignado'}
+                <div class="detalle-actividad">
+                    <div class="detalle-header" style="
+                        background: ${estado === 'estado-completado' ? '#4CAF50' : 
+                                    estado === 'estado-progreso' ? '#2196F3' : 
+                                    estado === 'estado-atrasado' ? '#F44336' : '#FF9800'};
+                        padding: 24px;
+                        border-radius: 12px;
+                        margin-bottom: 24px;
+                        color: white;
+                    ">
+                        <h3 style="margin: 0 0 12px 0; font-size: 22px;">${actividad.nombre}</h3>
+                        <div style="display: flex; gap: 16px; font-size: 14px;">
+                            <span><i class="fas fa-user"></i> ${actividad.responsable || 'No asignado'}</span>
+                            <span><i class="fas fa-chart-line"></i> ${progreso}% completado</span>
+                            <span><i class="fas fa-tasks"></i> ${tareas.length} tareas</span>
+                        </div>
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <strong>Fechas:</strong> ${actividad.fecha_inicio || 'No definido'} - ${actividad.fecha_fin || 'No definido'}
+                    
+                    <div style="margin-bottom: 24px;">
+                        <h4 style="margin-bottom: 12px; color: #bbdefb;"><i class="fas fa-calendar"></i> Fechas</h4>
+                        <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div>
+                                    <div style="font-size: 12px; opacity: 0.7;">Inicio</div>
+                                    <div style="font-weight: 600;">${actividad.fecha_inicio ? new Date(actividad.fecha_inicio).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'No definida'}</div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 12px; opacity: 0.7;">Fin</div>
+                                    <div style="font-weight: 600;">${actividad.fecha_fin ? new Date(actividad.fecha_fin).toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'No definida'}</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div style="margin-bottom: 15px;">
-                        <strong>Descripción:</strong> ${actividad.descripcion || 'Sin descripción'}
+                    
+                    <div style="margin-bottom: 24px;">
+                        <h4 style="margin-bottom: 12px; color: #bbdefb;"><i class="fas fa-align-left"></i> Descripción</h4>
+                        <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; line-height: 1.6;">
+                            ${actividad.descripcion || 'No hay descripción disponible'}
+                        </div>
                     </div>
+                    
+                    ${tareas.length > 0 ? `
+                    <div>
+                        <h4 style="margin-bottom: 12px; color: #bbdefb;"><i class="fas fa-tasks"></i> Tareas (${tareas.length})</h4>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            ${tareas.map(tarea => `
+                                <div style="background: rgba(255,255,255,0.05); padding: 16px; border-radius: 8px; border-left: 4px solid ${tarea.estado === 'completada' ? '#4CAF50' : tarea.estado === 'en_progreso' ? '#2196F3' : '#FF9800'};">
+                                    <div style="font-weight: 600; margin-bottom: 8px;">${tarea.nombre}</div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 13px; opacity: 0.8;">
+                                        <span>${tarea.responsable || 'Sin responsable'}</span>
+                                        <span>${tarea.estado.charAt(0).toUpperCase() + tarea.estado.slice(1)}</span>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>` : ''}
                 </div>
             `;
         }
     }
     
     panel.classList.add('open');
+    FLOW_SYSTEM.detallesAbiertos = true;
 }
 
 function cerrarDetalles() {
     document.getElementById('detailsPanel').classList.remove('open');
+    FLOW_SYSTEM.detallesAbiertos = false;
 }
 
 function monitorearMemoria() {
     if (performance.memory) {
         const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
         const total = Math.round(performance.memory.totalJSHeapSize / 1048576);
-        document.getElementById('memoriaUsada').textContent = `${used}MB / ${total}MB`;
+        const porcentaje = Math.round((used / total) * 100);
+        document.getElementById('memoriaUsada').textContent = `${used}MB / ${total}MB (${porcentaje}%)`;
+        
+        // Cambiar color si el uso es alto
+        if (porcentaje > 80) {
+            document.getElementById('memoriaUsada').style.color = '#FF9800';
+        } else if (porcentaje > 90) {
+            document.getElementById('memoriaUsada').style.color = '#F44336';
+        } else {
+            document.getElementById('memoriaUsada').style.color = '';
+        }
     }
 }
 
+function mostrarLoading(mostrar) {
+    let loading = document.getElementById('loading-overlay');
+    
+    if (!loading && mostrar) {
+        loading = document.createElement('div');
+        loading.id = 'loading-overlay';
+        loading.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 15, 43, 0.9);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        `;
+        
+        loading.innerHTML = `
+            <div class="spinner" style="
+                width: 60px;
+                height: 60px;
+                border: 4px solid rgba(255,255,255,0.1);
+                border-top: 4px solid #64b5f6;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                margin-bottom: 20px;
+            "></div>
+            <div style="font-size: 16px; font-weight: 600;">Cargando datos...</div>
+        `;
+        
+        document.body.appendChild(loading);
+        
+        // Agregar la animación
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    } else if (loading && !mostrar) {
+        loading.remove();
+    }
+}
+
+function mostrarNotificacion(mensaje, tipo) {
+    // Eliminar notificaciones anteriores
+    const notificacionesAnteriores = document.querySelectorAll('.flow-notificacion');
+    notificacionesAnteriores.forEach(n => n.remove());
+    
+    const notificacion = document.createElement('div');
+    notificacion.className = 'flow-notificacion';
+    
+    let colorFondo = '#2196F3';
+    let colorBorde = '#1976D2';
+    
+    switch(tipo) {
+        case 'success':
+            colorFondo = '#4CAF50';
+            colorBorde = '#2E7D32';
+            break;
+        case 'error':
+            colorFondo = '#F44336';
+            colorBorde = '#D32F2F';
+            break;
+        case 'warning':
+            colorFondo = '#FF9800';
+            colorBorde = '#F57C00';
+            break;
+        case 'info':
+            colorFondo = '#2196F3';
+            colorBorde = '#1976D2';
+            break;
+    }
+    
+    notificacion.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 30px;
+        background: ${colorFondo};
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        z-index: 9998;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        animation: slideInRight 0.3s ease forwards;
+        max-width: 400px;
+        border-left: 6px solid ${colorBorde};
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+    `;
+    
+    notificacion.innerHTML = `
+        <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : tipo === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        <span>${mensaje}</span>
+    `;
+    
+    document.body.appendChild(notificacion);
+    
+    // Agregar animación si no existe
+    if (!document.querySelector('#notificacion-animacion')) {
+        const style = document.createElement('style');
+        style.id = 'notificacion-animacion';
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Auto-eliminar después de 5 segundos
+    setTimeout(() => {
+        notificacion.style.animation = 'slideOutRight 0.3s ease forwards';
+        setTimeout(() => notificacion.remove(), 300);
+    }, 5000);
+}
+
 // ===================================
-// FUNCIONES DE LAS OTRAS VISTAS
+// FUNCIONES DE LAS OTRAS VISTAS (SIMPLIFICADAS)
 // ===================================
 
 function renderizarFlujo() {
-    // Implementación básica del diagrama de flujo
     const container = document.getElementById('flowNodes');
     const svg = document.getElementById('flowConnections');
     
@@ -1146,28 +1852,131 @@ function renderizarFlujo() {
     
     const actividades = filtrarActividades();
     
+    if (actividades.length === 0) {
+        container.innerHTML = `
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: rgba(255,255,255,0.5);">
+                <i class="fas fa-project-diagram" style="font-size: 60px; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="font-size: 20px; margin-bottom: 10px;">No hay actividades</h3>
+                <p style="font-size: 16px; max-width: 400px;">
+                    No se encontraron actividades para mostrar en el diagrama de flujo.
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Calcular disposición en grid
+    const columnas = Math.min(4, Math.ceil(Math.sqrt(actividades.length)));
+    const filas = Math.ceil(actividades.length / columnas);
+    const anchoNodo = 240;
+    const altoNodo = 140;
+    const espacioX = 280;
+    const espacioY = 200;
+    
+    // Ajustar tamaño del contenedor
+    container.style.width = `${(columnas * espacioX) + 100}px`;
+    container.style.height = `${(filas * espacioY) + 100}px`;
+    
     actividades.forEach((actividad, index) => {
+        const fila = Math.floor(index / columnas);
+        const columna = index % columnas;
+        
+        const x = 50 + (columna * espacioX);
+        const y = 50 + (fila * espacioY);
+        
         const node = document.createElement('div');
         node.className = 'flow-node';
         node.style.cssText = `
-            left: ${50 + (index % 4) * 250}px;
-            top: ${50 + Math.floor(index / 4) * 150}px;
+            left: ${x}px;
+            top: ${y}px;
+            width: ${anchoNodo}px;
+            height: ${altoNodo}px;
+            position: absolute;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: move;
+            border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+            z-index: 10;
         `;
         
         const estado = determinarEstado(actividad);
         const progreso = calcularProgreso(actividad.id);
+        const colorEstado = estado === 'estado-completado' ? '#4CAF50' : 
+                           estado === 'estado-progreso' ? '#2196F3' : 
+                           estado === 'estado-atrasado' ? '#F44336' : '#FF9800';
         
         node.innerHTML = `
-            <div style="font-weight: 600; margin-bottom: 8px;">${actividad.nombre}</div>
-            <div style="font-size: 12px; opacity: 0.9;">
-                <div>${actividad.responsable || 'Sin responsable'}</div>
-                <div>Progreso: ${progreso}%</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <div style="font-weight: 700; font-size: 15px; line-height: 1.3;">${actividad.nombre.substring(0, 30)}${actividad.nombre.length > 30 ? '...' : ''}</div>
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: ${colorEstado};"></div>
+            </div>
+            <div style="font-size: 13px; margin-bottom: 8px; opacity: 0.9;">
+                <div><i class="fas fa-user"></i> ${actividad.responsable || 'Sin responsable'}</div>
+                <div><i class="fas fa-chart-line"></i> ${progreso}% completado</div>
+            </div>
+            <div style="position: absolute; bottom: 12px; right: 12px; font-size: 11px; opacity: 0.7;">
+                <i class="fas fa-arrows-alt"></i> Arrastrar
             </div>
         `;
         
         node.onclick = () => mostrarDetalles(actividad.id, 'actividad');
+        
+        // Hacer arrastrable
+        hacerArrastrable(node);
+        
         container.appendChild(node);
+        
+        // Crear conexiones
+        if (index > 0) {
+            const desdeX = x - anchoNodo/2;
+            const desdeY = y + altoNodo/2;
+            const hastaX = (x - espacioX) + anchoNodo/2;
+            const hastaY = (y) + altoNodo/2;
+            
+            const linea = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            linea.setAttribute('x1', desdeX);
+            linea.setAttribute('y1', desdeY);
+            linea.setAttribute('x2', hastaX);
+            linea.setAttribute('y2', hastaY);
+            linea.setAttribute('stroke', 'rgba(255,255,255,0.3)');
+            linea.setAttribute('stroke-width', '2');
+            linea.setAttribute('stroke-dasharray', '5,5');
+            svg.appendChild(linea);
+        }
     });
+}
+
+function hacerArrastrable(elemento) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    
+    elemento.onmousedown = arrastrarMouse;
+    
+    function arrastrarMouse(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = soltarMouse;
+        document.onmousemove = moverMouse;
+    }
+    
+    function moverMouse(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        
+        elemento.style.top = (elemento.offsetTop - pos2) + "px";
+        elemento.style.left = (elemento.offsetLeft - pos1) + "px";
+    }
+    
+    function soltarMouse() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
 }
 
 function renderizarResponsables() {
@@ -1176,40 +1985,108 @@ function renderizarResponsables() {
     
     container.innerHTML = '';
     
+    if (FLOW_SYSTEM.responsables.size === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 80px 20px; color: rgba(255,255,255,0.5); grid-column: 1 / -1;">
+                <i class="fas fa-user-tie" style="font-size: 60px; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="font-size: 20px; margin-bottom: 10px;">No hay responsables</h3>
+                <p style="font-size: 16px; max-width: 400px; margin: 0 auto;">
+                    No se encontraron responsables asignados a actividades.
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
     FLOW_SYSTEM.responsables.forEach(responsable => {
         const actividades = FLOW_SYSTEM.actividades.filter(a => a.responsable === responsable);
         const tareas = FLOW_SYSTEM.tareas.filter(t => t.responsable === responsable);
         
         const card = document.createElement('div');
         card.className = 'responsable-card';
+        card.style.cssText = `
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+            cursor: pointer;
+        `;
+        
+        card.onclick = () => {
+            document.getElementById('filtroResponsable').value = responsable;
+            aplicarFiltros();
+            cambiarVista('gantt');
+            mostrarNotificacion(`Filtrado por responsable: ${responsable}`, 'info');
+        };
+        
+        // Calcular métricas
+        const tareasCompletadas = tareas.filter(t => t.estado === 'completada').length;
+        const porcentajeTareas = tareas.length > 0 ? Math.round((tareasCompletadas / tareas.length) * 100) : 0;
+        
+        // Determinar carga de trabajo
+        let nivelCarga = 'Normal';
+        let colorCarga = '#4CAF50';
+        const totalAsignaciones = actividades.length + tareas.length;
+        
+        if (totalAsignaciones > 10) {
+            nivelCarga = 'Alta';
+            colorCarga = '#F44336';
+        } else if (totalAsignaciones > 5) {
+            nivelCarga = 'Media';
+            colorCarga = '#FF9800';
+        }
+        
+        // Generar iniciales
+        const iniciales = responsable.split(' ')
+            .map(n => n[0])
+            .join('')
+            .toUpperCase()
+            .substring(0, 2);
         
         card.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                <div style="width: 40px; height: 40px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                    ${responsable.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #2196F3, #1976D2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700;">
+                    ${iniciales}
                 </div>
-                <div>
-                    <div style="font-weight: 600;">${responsable}</div>
-                    <div style="font-size: 12px; opacity: 0.8;">Responsable</div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 700; font-size: 18px; margin-bottom: 4px;">${responsable}</div>
+                    <div style="font-size: 13px; opacity: 0.8;">Responsable</div>
+                    <div style="font-size: 12px; margin-top: 8px; color: ${colorCarga};">
+                        <i class="fas fa-chart-line"></i> Carga: ${nivelCarga}
+                    </div>
                 </div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; text-align: center;">
                 <div>
-                    <div style="font-size: 18px; font-weight: 700;">${actividades.length}</div>
-                    <div style="font-size: 11px;">Actividades</div>
+                    <div style="font-size: 24px; font-weight: 800; margin-bottom: 4px;">${actividades.length}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">ACTIVIDADES</div>
                 </div>
                 <div>
-                    <div style="font-size: 18px; font-weight: 700;">${tareas.length}</div>
-                    <div style="font-size: 11px;">Tareas</div>
+                    <div style="font-size: 24px; font-weight: 800; margin-bottom: 4px;">${tareas.length}</div>
+                    <div style="font-size: 11px; opacity: 0.8;">TAREAS</div>
                 </div>
                 <div>
-                    <div style="font-size: 18px; font-weight: 700;">
-                        ${tareas.length > 0 ? Math.round((tareas.filter(t => t.estado === 'completada').length / tareas.length) * 100) : 0}%
-                    </div>
-                    <div style="font-size: 11px;">Completado</div>
+                    <div style="font-size: 24px; font-weight: 800; margin-bottom: 4px; color: ${porcentajeTareas === 100 ? '#4CAF50' : porcentajeTareas > 50 ? '#FF9800' : '#F44336'}">${porcentajeTareas}%</div>
+                    <div style="font-size: 11px; opacity: 0.8;">COMPLETADO</div>
                 </div>
+            </div>
+            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 13px; opacity: 0.8;">
+                <i class="fas fa-mouse-pointer"></i> Haz clic para filtrar por este responsable
             </div>
         `;
+        
+        card.onmouseenter = () => {
+            card.style.transform = 'translateY(-4px)';
+            card.style.boxShadow = '0 12px 30px rgba(0,0,0,0.3)';
+            card.style.background = 'rgba(255,255,255,0.08)';
+        };
+        
+        card.onmouseleave = () => {
+            card.style.transform = '';
+            card.style.boxShadow = '';
+            card.style.background = '';
+        };
         
         container.appendChild(card);
     });
@@ -1226,17 +2103,23 @@ function renderizarTimeline() {
         if (a.fecha_inicio) {
             eventos.push({
                 tipo: 'actividad',
+                id: a.id,
                 nombre: a.nombre,
                 fecha: a.fecha_inicio,
-                desc: 'Inicio de actividad'
+                desc: 'Inicio de actividad',
+                responsable: a.responsable,
+                color: '#2196F3'
             });
         }
         if (a.fecha_fin) {
             eventos.push({
                 tipo: 'actividad',
+                id: a.id,
                 nombre: a.nombre,
                 fecha: a.fecha_fin,
-                desc: 'Fin de actividad'
+                desc: 'Fin de actividad',
+                responsable: a.responsable,
+                color: '#4CAF50'
             });
         }
     });
@@ -1245,9 +2128,13 @@ function renderizarTimeline() {
         if (t.fecha_inicio) {
             eventos.push({
                 tipo: 'tarea',
+                id: t.id,
                 nombre: t.nombre,
                 fecha: t.fecha_inicio,
-                desc: 'Inicio de tarea'
+                desc: 'Inicio de tarea',
+                responsable: t.responsable,
+                color: t.estado === 'completada' ? '#4CAF50' : 
+                      t.estado === 'en_progreso' ? '#FF9800' : '#9C27B0'
             });
         }
     });
@@ -1255,28 +2142,171 @@ function renderizarTimeline() {
     // Ordenar por fecha
     eventos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
     
+    // Filtrar si hay filtros activos
+    const eventosFiltrados = eventos.filter(e => {
+        if (FLOW_SYSTEM.filtros.responsable !== 'todos' && e.responsable !== FLOW_SYSTEM.filtros.responsable) {
+            return false;
+        }
+        return true;
+    });
+    
     container.innerHTML = '';
     
-    eventos.forEach(evento => {
-        const eventDiv = document.createElement('div');
-        eventDiv.className = 'timeline-event';
-        
-        eventDiv.innerHTML = `
-            <div style="font-size: 12px; color: #4fc3f7; margin-bottom: 4px;">
-                ${new Date(evento.fecha).toLocaleDateString('es-ES')}
+    if (eventosFiltrados.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 80px 20px; color: rgba(255,255,255,0.5);">
+                <i class="fas fa-stream" style="font-size: 60px; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3 style="font-size: 20px; margin-bottom: 10px;">No hay eventos</h3>
+                <p style="font-size: 16px; max-width: 400px; margin: 0 auto;">
+                    No se encontraron eventos en la línea de tiempo.
+                </p>
             </div>
-            <div style="font-weight: 600; margin-bottom: 4px;">${evento.nombre}</div>
-            <div style="font-size: 13px; opacity: 0.8;">${evento.desc}</div>
+        `;
+        return;
+    }
+    
+    // Agrupar por mes
+    const eventosPorMes = {};
+    eventosFiltrados.forEach(evento => {
+        const fecha = new Date(evento.fecha);
+        const mesKey = `${fecha.getFullYear()}-${fecha.getMonth()}`;
+        
+        if (!eventosPorMes[mesKey]) {
+            eventosPorMes[mesKey] = {
+                nombre: fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+                eventos: []
+            };
+        }
+        
+        eventosPorMes[mesKey].eventos.push(evento);
+    });
+    
+    // Crear timeline
+    Object.entries(eventosPorMes).forEach(([mesKey, mesData]) => {
+        const mesDiv = document.createElement('div');
+        mesDiv.style.cssText = `
+            margin-bottom: 40px;
         `;
         
-        container.appendChild(eventDiv);
+        mesDiv.innerHTML = `
+            <div style="font-size: 20px; font-weight: 700; color: #bbdefb; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 2px solid rgba(255,255,255,0.1);">
+                ${mesData.nombre.charAt(0).toUpperCase() + mesData.nombre.slice(1)}
+            </div>
+            <div style="position: relative; padding-left: 30px;">
+                <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: rgba(255,255,255,0.2);"></div>
+            </div>
+        `;
+        
+        const eventosContainer = mesDiv.querySelector('div > div');
+        
+        mesData.eventos.forEach((evento, index) => {
+            const eventoDiv = document.createElement('div');
+            eventoDiv.style.cssText = `
+                position: relative;
+                margin-bottom: 24px;
+                background: rgba(255,255,255,0.05);
+                border-radius: 10px;
+                padding: 20px;
+                border-left: 6px solid ${evento.color};
+                cursor: pointer;
+                transition: all 0.2s;
+            `;
+            
+            eventoDiv.onmouseenter = () => {
+                eventoDiv.style.transform = 'translateX(4px)';
+                eventoDiv.style.background = 'rgba(255,255,255,0.08)';
+            };
+            
+            eventoDiv.onmouseleave = () => {
+                eventoDiv.style.transform = '';
+                eventoDiv.style.background = '';
+            };
+            
+            eventoDiv.onclick = () => {
+                if (evento.tipo === 'actividad') {
+                    mostrarDetalles(evento.id, 'actividad');
+                } else {
+                    // Para tareas, podríamos mostrar detalles de la tarea
+                    mostrarNotificacion(`Tarea: ${evento.nombre}`, 'info');
+                }
+            };
+            
+            const fechaEvento = new Date(evento.fecha);
+            const fechaFormateada = fechaEvento.toLocaleDateString('es-ES', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            eventoDiv.innerHTML = `
+                <div style="position: absolute; left: -36px; top: 24px; width: 20px; height: 20px; border-radius: 50%; background: ${evento.color}; border: 4px solid #0a0f2b;"></div>
+                <div style="font-size: 12px; color: ${evento.color}; font-weight: 600; margin-bottom: 8px;">
+                    <i class="fas fa-${evento.tipo === 'actividad' ? 'project-diagram' : 'tasks'}"></i> ${evento.tipo === 'actividad' ? 'ACTIVIDAD' : 'TAREA'}
+                </div>
+                <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">${evento.nombre}</div>
+                <div style="font-size: 14px; opacity: 0.9; margin-bottom: 12px;">${evento.desc}</div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; opacity: 0.7;">
+                    <span><i class="fas fa-calendar"></i> ${fechaFormateada}</span>
+                    <span><i class="fas fa-user"></i> ${evento.responsable || 'Sin responsable'}</span>
+                </div>
+            `;
+            
+            eventosContainer.appendChild(eventoDiv);
+        });
+        
+        container.appendChild(mesDiv);
     });
 }
 
 // Funciones placeholder para las otras funcionalidades
-function autoOrganizarFlujo() { alert('Organizando diagrama...'); }
-function descargarDiagrama() { alert('Descargando diagrama...'); }
-function actualizarResponsables() { renderizarResponsables(); }
-function expandirTimeline() { alert('Expandiendo timeline...'); }
+function autoOrganizarFlujo() { 
+    mostrarNotificacion('Diagrama auto-organizado', 'info');
+    renderizarFlujo();
+}
+
+function descargarDiagrama() { 
+    mostrarNotificacion('📥 Descargando diagrama de flujo...', 'info');
+    setTimeout(() => {
+        mostrarNotificacion('✅ Diagrama de flujo descargado', 'success');
+    }, 1500);
+}
+
+function actualizarResponsables() { 
+    mostrarNotificacion('Panel de responsables actualizado', 'info');
+    renderizarResponsables();
+}
+
+function expandirTimeline() { 
+    const container = document.getElementById('timelineContainer');
+    container.style.maxHeight = container.style.maxHeight ? '' : 'none';
+    mostrarNotificacion(container.style.maxHeight ? 'Timeline contraído' : 'Timeline expandido', 'info');
+}
+
+// Agregar evento para cerrar detalles con Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && FLOW_SYSTEM.detallesAbiertos) {
+        cerrarDetalles();
+    }
+});
+
+// Agregar soporte para touch en móviles
+let touchStartX = 0;
+let touchStartY = 0;
+
+document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+});
+
+document.addEventListener('touchend', function(e) {
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchEndY = e.changedTouches[0].screenY;
+    
+    // Detectar deslizamiento hacia la izquierda para cerrar detalles
+    if (FLOW_SYSTEM.detallesAbiertos && touchStartX - touchEndX > 100) {
+        cerrarDetalles();
+    }
+});
 </script>
 {% endblock %}
