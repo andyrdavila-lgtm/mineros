@@ -1,215 +1,230 @@
 {% extends "inicio.html" %}
 
 {% block content %}
-<!-- Mapa Neuronal Estratégico - Sistema Solar Completo -->
-<div class="mapa-neuronal-container" id="mapaFullscreen">
+<!-- Mapa de Flujo de Actividades - Sistema de Gestión -->
+<div class="flowmap-container" id="flowmapFullscreen">
     <!-- Cabecera principal -->
-    <div class="mapa-header-glass">
+    <div class="flowmap-header-glass">
         <div class="header-content">
-            <h1 class="mapa-title-glow">
-                <i class="fas fa-solar-system"></i>
-                <span class="title-text">SISTEMA SOLAR ESTRATÉGICO</span>
-                <span class="subtitle">Proyecto El Domo</span>
+            <h1 class="flowmap-title">
+                <i class="fas fa-project-diagram"></i>
+                <span class="title-text">MAPA DE FLUJO DE ACTIVIDADES</span>
+                <span class="subtitle">Proyecto El Domo - Gestión de Responsables y Tiempos</span>
             </h1>
             <div class="header-stats">
                 <div class="stat-badge">
-                    <i class="fas fa-sun"></i>
-                    <span>1 Sol</span>
+                    <i class="fas fa-tasks"></i>
+                    <span id="total-actividades-flow">0 Actividades</span>
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-globe"></i>
-                    <span id="total-ejes">0 Ejes</span>
+                    <i class="fas fa-user-tie"></i>
+                    <span id="total-responsables">0 Responsables</span>
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-moon"></i>
-                    <span id="total-estrategias">0 Lunas</span>
+                    <i class="fas fa-calendar-alt"></i>
+                    <span id="dias-totales">0 Días</span>
                 </div>
                 <div class="stat-badge">
-                    <i class="fas fa-satellite"></i>
-                    <span id="total-actividades">0 Satélites</span>
-                </div>
-                <div class="stat-badge">
-                    <i class="fas fa-meteor"></i>
-                    <span id="total-tareas">0 Asteroides</span>
+                    <i class="fas fa-check-circle"></i>
+                    <span id="completadas-flow">0% Completado</span>
                 </div>
             </div>
         </div>
     </div>
     
     <!-- Panel de controles principal -->
-    <div class="panel-controles">
-        <div class="grupo-controles">
-            <h4><i class="fas fa-cogs"></i> Controles</h4>
-            <div class="controles-grid">
-                <button class="control-btn tooltip" onclick="toggleFullscreen()" data-tooltip="Pantalla completa">
-                    <i class="fas fa-expand"></i>
-                </button>
-                <button class="control-btn tooltip" onclick="resetView()" data-tooltip="Reiniciar vista">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-                <button class="control-btn tooltip" onclick="toggleAnimaciones()" data-tooltip="Animaciones">
-                    <i class="fas fa-play" id="animacionIcon"></i>
-                </button>
-                <button class="control-btn tooltip" onclick="iniciarOrbitas()" data-tooltip="Iniciar órbitas">
-                    <i class="fas fa-satellite"></i>
-                </button>
-                <button class="control-btn tooltip" onclick="mostrarFiltros()" data-tooltip="Mostrar filtros">
-                    <i class="fas fa-filter"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Filtros (oculto inicialmente) -->
-        <div class="grupo-filtros" id="panelFiltros" style="display: none;">
-            <h4><i class="fas fa-filter"></i> Filtros</h4>
-            <div class="filtros-grid">
-                <div class="filtro-grupo">
-                    <label>Filtrar por Eje:</label>
-                    <select id="filtroEje" onchange="aplicarFiltros()" class="filtro-select">
-                        <option value="todos">Todos los ejes</option>
-                        <option value="educacion">Educación</option>
-                        <option value="salud">Salud</option>
-                        <option value="empleabilidad">Empleabilidad</option>
-                        <option value="desarrollo_economico">Desarrollo Económico</option>
-                        <option value="sostenibilidad_ambiental">Sostenibilidad Ambiental</option>
-                        <option value="comunicacion">Comunicación</option>
-                        <option value="institucional">Institucional</option>
-                    </select>
-                </div>
-                
-                <div class="filtro-grupo">
-                    <label>Filtrar por Tipo:</label>
-                    <select id="filtroTipo" onchange="aplicarFiltros()" class="filtro-select">
-                        <option value="todos">Todos los tipos</option>
-                        <option value="FO">FO - Fortalezas/Oportunidades</option>
-                        <option value="DO">DO - Debilidades/Oportunidades</option>
-                        <option value="FA">FA - Fortalezas/Amenazas</option>
-                        <option value="DA">DA - Debilidades/Amenazas</option>
-                    </select>
-                </div>
-                
-                <div class="filtro-grupo">
-                    <label>Estado de Tareas:</label>
-                    <select id="filtroEstado" onchange="aplicarFiltros()" class="filtro-select">
-                        <option value="todos">Todos los estados</option>
-                        <option value="pendiente">Pendientes</option>
-                        <option value="en_progreso">En progreso</option>
-                        <option value="completada">Completadas</option>
-                    </select>
-                </div>
-                
-                <div class="filtro-grupo">
-                    <label>Mostrar:</label>
-                    <div class="filtro-checkboxes">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="mostrarEjes" checked onchange="aplicarFiltros()">
-                            <span class="checkmark"></span>
-                            Ejes (Planetas)
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="mostrarEstrategias" checked onchange="aplicarFiltros()">
-                            <span class="checkmark"></span>
-                            Estrategias (Lunas)
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="mostrarActividades" checked onchange="aplicarFiltros()">
-                            <span class="checkmark"></span>
-                            Actividades (Satélites)
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="mostrarTareas" checked onchange="aplicarFiltros()">
-                            <span class="checkmark"></span>
-                            Tareas (Asteroides)
-                        </label>
+    <div class="flowmap-controls-panel">
+        <div class="controls-grid">
+            <div class="control-group">
+                <h4><i class="fas fa-sliders-h"></i> Filtros Avanzados</h4>
+                <div class="filter-row">
+                    <div class="filter-item">
+                        <label>Filtrar por Responsable:</label>
+                        <select id="filtroResponsable" class="filter-select" onchange="aplicarFiltrosFlow()">
+                            <option value="todos">Todos los responsables</option>
+                        </select>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Controles de navegación -->
-    <div class="controles-navegacion">
-        <button class="nav-btn tooltip" onclick="zoomIn()" data-tooltip="Acercar (Ctrl +)">
-            <i class="fas fa-search-plus"></i>
-        </button>
-        <button class="nav-btn tooltip" onclick="zoomOut()" data-tooltip="Alejar (Ctrl -)">
-            <i class="fas fa-search-minus"></i>
-        </button>
-        <button class="nav-btn tooltip" onclick="moverArriba()" data-tooltip="Mover arriba">
-            <i class="fas fa-arrow-up"></i>
-        </button>
-        <button class="nav-btn tooltip" onclick="moverAbajo()" data-tooltip="Mover abajo">
-            <i class="fas fa-arrow-down"></i>
-        </button>
-        <button class="nav-btn tooltip" onclick="moverIzquierda()" data-tooltip="Mover izquierda">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        <button class="nav-btn tooltip" onclick="moverDerecha()" data-tooltip="Mover derecha">
-            <i class="fas fa-arrow-right"></i>
-        </button>
-        <button class="nav-btn tooltip" onclick="centrarVista()" data-tooltip="Centrar vista">
-            <i class="fas fa-crosshairs"></i>
-        </button>
-    </div>
-    
-    <!-- Canvas principal -->
-    <div class="mapa-canvas-fullscreen" id="mapaCanvas">
-        <!-- Fondo estrellado -->
-        <div class="estrellas-container" id="estrellasContainer"></div>
-        
-        <!-- Anillos orbitales concéntricos -->
-        <div class="anillos-orbitales" id="anillosOrbitales"></div>
-        
-        <!-- SVG para conexiones -->
-        <svg class="conexiones-svg" id="conexionesSVG"></svg>
-        
-        <!-- Contenedor del sistema solar -->
-        <div class="sistema-solar" id="sistemaSolar">
-            <!-- Sol Central Fijo -->
-            <div class="orbita-sol" id="orbitaSol">
-                <div class="nodo-sol" id="nodo-objetivo">
-                    <div class="nodo-glow-sol"></div>
-                    <div class="nodo-content">
-                        <div class="nodo-icon-pulse-sol">
-                            <i class="fas fa-sun"></i>
+                    
+                    <div class="filter-item">
+                        <label>Filtrar por Estado:</label>
+                        <select id="filtroEstadoFlow" class="filter-select" onchange="aplicarFiltrosFlow()">
+                            <option value="todos">Todos los estados</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="en_progreso">En Progreso</option>
+                            <option value="completada">Completada</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-item">
+                        <label>Rango de Fechas:</label>
+                        <div class="date-range">
+                            <input type="date" id="fechaDesde" class="date-input" onchange="aplicarFiltrosFlow()">
+                            <span>a</span>
+                            <input type="date" id="fechaHasta" class="date-input" onchange="aplicarFiltrosFlow()">
                         </div>
-                        <div class="nodo-title-glow">OBJETIVO ESTRATÉGICO</div>
-                        <button class="btn-ver-mas" onclick="mostrarDetalleObjetivo()">
-                            <i class="fas fa-eye"></i> Ver completo
-                        </button>
                     </div>
                 </div>
             </div>
             
-            <!-- Planetas (ejes) con órbitas concéntricas -->
-            <div class="ejes-orbitales" id="ejesOrbitales"></div>
-            
-            <!-- Estrategias (lunas) -->
-            <div class="estrategias-orbitales" id="estrategiasOrbitales"></div>
-            
-            <!-- Actividades (satélites) -->
-            <div class="actividades-orbitales" id="actividadesOrbitales"></div>
-            
-            <!-- Tareas (asteroides) -->
-            <div class="tareas-orbitales" id="tareasOrbitales"></div>
+            <div class="control-group">
+                <h4><i class="fas fa-eye"></i> Mostrar/Ocultar</h4>
+                <div class="toggle-grid">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="mostrarGantt" checked onchange="toggleVista('gantt')">
+                        <span class="toggle-slider"></span>
+                        <span>Diagrama Gantt</span>
+                    </label>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="mostrarFlujo" checked onchange="toggleVista('flujo')">
+                        <span class="toggle-slider"></span>
+                        <span>Diagrama de Flujo</span>
+                    </label>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="mostrarResponsables" checked onchange="toggleVista('responsables')">
+                        <span class="toggle-slider"></span>
+                        <span>Panel de Responsables</span>
+                    </label>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="mostrarTimeline" checked onchange="toggleVista('timeline')">
+                        <span class="toggle-slider"></span>
+                        <span>Línea de Tiempo</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quick-actions">
+            <button class="action-btn" onclick="exportarReporte()">
+                <i class="fas fa-file-export"></i> Exportar Reporte
+            </button>
+            <button class="action-btn" onclick="imprimirFlujo()">
+                <i class="fas fa-print"></i> Imprimir
+            </button>
+            <button class="action-btn" onclick="toggleFullscreenFlow()">
+                <i class="fas fa-expand"></i> Pantalla Completa
+            </button>
         </div>
     </div>
     
-    <!-- Panel de detalles -->
-    <div class="panel-detalles" id="panelDetalles">
+    <!-- Contenido principal - 4 vistas -->
+    <div class="flowmap-main-content">
+        <!-- Vista 1: Diagrama Gantt -->
+        <div class="view-container gantt-view active" id="ganttView">
+            <div class="view-header">
+                <h3><i class="fas fa-chart-bar"></i> Diagrama Gantt</h3>
+                <div class="view-actions">
+                    <button class="view-btn" onclick="zoomGantt('in')">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button class="view-btn" onclick="zoomGantt('out')">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button class="view-btn" onclick="ajustarGantt()">
+                        <i class="fas fa-arrows-alt-h"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="gantt-container" id="ganttContainer">
+                <!-- Cabecera del Gantt (timeline) -->
+                <div class="gantt-timeline" id="ganttTimeline"></div>
+                
+                <!-- Contenido del Gantt -->
+                <div class="gantt-content" id="ganttContent"></div>
+            </div>
+        </div>
+        
+        <!-- Vista 2: Diagrama de Flujo -->
+        <div class="view-container flow-view" id="flowView">
+            <div class="view-header">
+                <h3><i class="fas fa-project-diagram"></i> Diagrama de Flujo</h3>
+                <div class="view-actions">
+                    <button class="view-btn" onclick="autoOrganizarFlujo()">
+                        <i class="fas fa-sitemap"></i> Auto-organizar
+                    </button>
+                    <button class="view-btn" onclick="descargarDiagrama()">
+                        <i class="fas fa-download"></i> Descargar
+                    </button>
+                </div>
+            </div>
+            <div class="flow-diagram-container">
+                <div class="flow-canvas" id="flowCanvas">
+                    <svg class="flow-connections" id="flowConnections"></svg>
+                    <div class="flow-nodes" id="flowNodes"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vista 3: Panel de Responsables -->
+        <div class="view-container responsables-view" id="responsableView">
+            <div class="view-header">
+                <h3><i class="fas fa-user-tie"></i> Panel de Responsables</h3>
+                <div class="view-actions">
+                    <button class="view-btn" onclick="actualizarResponsables()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="responsables-container" id="responsablesContainer">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+        
+        <!-- Vista 4: Línea de Tiempo -->
+        <div class="view-container timeline-view" id="timelineView">
+            <div class="view-header">
+                <h3><i class="fas fa-stream"></i> Línea de Tiempo</h3>
+                <div class="view-actions">
+                    <button class="view-btn" onclick="expandirTimeline()">
+                        <i class="fas fa-expand-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="timeline-container" id="timelineContainer">
+                <!-- Se llenará dinámicamente -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Panel de detalles lateral -->
+    <div class="flowmap-details-panel" id="detailsPanel">
         <div class="panel-header">
-            <h3 id="detalleTitulo"><i class="fas fa-info-circle"></i> Detalles</h3>
-            <button class="panel-close" onclick="cerrarPanel()">
+            <h3><i class="fas fa-info-circle"></i> Detalles de Actividad</h3>
+            <button class="panel-close" onclick="cerrarDetalles()">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="panel-body" id="detalleContenido"></div>
+        <div class="panel-body" id="detallesContenido">
+            <div class="empty-state">
+                <i class="fas fa-mouse-pointer"></i>
+                <p>Selecciona una actividad para ver los detalles</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Barra de estado inferior -->
+    <div class="flowmap-status-bar">
+        <div class="status-left">
+            <span class="status-item">
+                <i class="fas fa-sync-alt"></i>
+                <span id="ultimaActualizacion">Actualizado ahora</span>
+            </span>
+        </div>
+        <div class="status-right">
+            <span class="status-item">
+                <i class="fas fa-database"></i>
+                <span id="totalRegistros">0 registros cargados</span>
+            </span>
+            <span class="status-item">
+                <i class="fas fa-memory"></i>
+                <span id="memoriaUsada">Cargando...</span>
+            </span>
+        </div>
     </div>
 </div>
 
 <style>
     /* ================================
-       ESTILOS PRINCIPALES MEJORADOS
+       ESTILOS PRINCIPALES DEL FLOWMAP
     ================================ */
     
     * {
@@ -218,42 +233,37 @@
         box-sizing: border-box;
     }
     
-    .mapa-neuronal-container {
+    .flowmap-container {
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
-        background: linear-gradient(135deg, #000428 0%, #000e3b 50%, #001f5c 100%);
+        background: linear-gradient(135deg, #0f1b3d 0%, #1a2b5e 100%);
         overflow: hidden;
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #fff;
+        display: flex;
+        flex-direction: column;
     }
     
     /* Cabecera */
-    .mapa-header-glass {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 80px;
-        background: rgba(0, 0, 0, 0.3);
+    .flowmap-header-glass {
+        background: rgba(0, 10, 40, 0.8);
         backdrop-filter: blur(20px);
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        padding: 0 20px;
-        z-index: 1000;
-        display: flex;
-        align-items: center;
+        padding: 15px 25px;
+        z-index: 100;
+        flex-shrink: 0;
     }
     
     .header-content {
-        width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     
-    .mapa-title-glow {
-        color: white;
+    .flowmap-title {
         display: flex;
         flex-direction: column;
         gap: 5px;
@@ -262,15 +272,14 @@
     .title-text {
         font-size: 22px;
         font-weight: 700;
-        letter-spacing: 1px;
-        text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+        color: #4fc3f7;
+        text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
     }
     
     .subtitle {
         font-size: 14px;
-        opacity: 0.8;
+        color: rgba(255, 255, 255, 0.7);
         font-weight: 400;
-        color: rgba(255, 255, 255, 0.9);
     }
     
     .header-stats {
@@ -281,92 +290,64 @@
     .stat-badge {
         background: rgba(255, 255, 255, 0.1);
         padding: 8px 15px;
-        border-radius: 15px;
+        border-radius: 20px;
         display: flex;
         align-items: center;
         gap: 8px;
-        color: white;
         font-size: 14px;
         border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Panel de controles principal */
-    .panel-controles {
-        position: absolute;
-        top: 90px;
-        right: 20px;
-        width: 350px;
-        background: rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(20px);
-        border-radius: 15px;
-        padding: 20px;
-        z-index: 1000;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .grupo-controles h4 {
-        color: white;
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 15px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-    
-    .controles-grid {
-        display: grid;
-        grid-template-columns: repeat(5, 1fr);
-        gap: 8px;
-        margin-bottom: 20px;
-    }
-    
-    .control-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: rgba(255, 215, 0, 0.2);
-        border: 1px solid rgba(255, 215, 0, 0.3);
-        color: white;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 16px;
         transition: all 0.3s ease;
     }
     
-    .control-btn:hover {
-        background: rgba(255, 215, 0, 0.4);
+    .stat-badge:hover {
+        background: rgba(255, 255, 255, 0.15);
         transform: translateY(-2px);
     }
     
-    /* Panel de filtros */
-    .grupo-filtros {
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    /* Panel de controles */
+    .flowmap-controls-panel {
+        background: rgba(0, 15, 50, 0.7);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 15px 25px;
+        flex-shrink: 0;
     }
     
-    .filtros-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
+    .controls-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+        margin-bottom: 15px;
     }
     
-    .filtro-grupo {
+    .control-group h4 {
+        font-size: 14px;
+        margin-bottom: 10px;
+        color: #4fc3f7;
         display: flex;
-        flex-direction: column;
+        align-items: center;
         gap: 8px;
     }
     
-    .filtro-grupo label {
-        color: white;
-        font-size: 12px;
-        font-weight: 600;
+    .filter-row {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
     }
     
-    .filtro-select {
+    .filter-item {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .filter-item label {
+        display: block;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 5px;
+    }
+    
+    .filter-select {
+        width: 100%;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
         border-radius: 8px;
@@ -377,604 +358,481 @@
         transition: all 0.3s ease;
     }
     
-    .filtro-select:hover {
+    .filter-select:hover {
         background: rgba(255, 255, 255, 0.15);
     }
     
-    .filtro-select option {
+    .filter-select option {
         background: #1a1a2e;
         color: white;
     }
     
-    .filtro-checkboxes {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .checkbox-label {
+    .date-range {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+    }
+    
+    .date-input {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
         color: white;
+        padding: 8px 12px;
         font-size: 13px;
         cursor: pointer;
     }
     
-    .checkbox-label input {
+    .date-input::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+    }
+    
+    .toggle-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .toggle-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.9);
+        cursor: pointer;
+    }
+    
+    .toggle-label input {
         display: none;
     }
     
-    .checkmark {
-        width: 18px;
-        height: 18px;
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        border-radius: 4px;
+    .toggle-slider {
+        width: 36px;
+        height: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
         position: relative;
         transition: all 0.3s ease;
     }
     
-    .checkbox-label input:checked + .checkmark {
+    .toggle-slider::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        background: white;
+        border-radius: 50%;
+        top: 2px;
+        left: 2px;
+        transition: all 0.3s ease;
+    }
+    
+    .toggle-label input:checked + .toggle-slider {
         background: #4CAF50;
-        border-color: #4CAF50;
     }
     
-    .checkbox-label input:checked + .checkmark::after {
-        content: '✓';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+    .toggle-label input:checked + .toggle-slider::after {
+        transform: translateX(16px);
+    }
+    
+    .quick-actions {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+    
+    .action-btn {
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+        border: none;
         color: white;
-        font-size: 12px;
-    }
-    
-    /* Controles de navegación */
-    .controles-navegacion {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
         gap: 8px;
-        background: rgba(0, 0, 0, 0.3);
-        backdrop-filter: blur(20px);
-        border-radius: 15px;
-        padding: 15px;
-        z-index: 1000;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 13px;
+        transition: all 0.3s ease;
     }
     
-    .nav-btn {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        background: rgba(0, 100, 255, 0.2);
-        border: 1px solid rgba(0, 100, 255, 0.3);
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+    }
+    
+    /* Contenido principal */
+    .flowmap-main-content {
+        flex: 1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 15px;
+        padding: 15px;
+        overflow: hidden;
+    }
+    
+    .view-container {
+        background: rgba(0, 20, 60, 0.6);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        display: none;
+    }
+    
+    .view-container.active {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .view-header {
+        background: rgba(0, 30, 80, 0.8);
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .view-header h3 {
+        font-size: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .view-actions {
+        display: flex;
+        gap: 5px;
+    }
+    
+    .view-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
+        font-size: 14px;
         transition: all 0.3s ease;
     }
     
-    .nav-btn:hover {
-        background: rgba(0, 100, 255, 0.4);
+    .view-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
         transform: translateY(-2px);
     }
     
-    /* Tooltip general */
-    .tooltip {
+    /* Vista Gantt */
+    .gantt-container {
+        flex: 1;
+        overflow: auto;
         position: relative;
     }
     
-    .tooltip::after {
-        content: attr(data-tooltip);
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 6px 12px;
-        border-radius: 6px;
-        font-size: 12px;
-        white-space: nowrap;
-        opacity: 0;
-        visibility: hidden;
+    .gantt-timeline {
+        height: 50px;
+        background: rgba(0, 30, 80, 0.8);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+    }
+    
+    .gantt-content {
+        padding: 20px;
+        min-height: 100%;
+    }
+    
+    .gantt-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 0 15px;
         transition: all 0.3s ease;
-        pointer-events: none;
-        z-index: 1001;
+        cursor: pointer;
+        position: relative;
     }
     
-    .tooltip:hover::after {
-        opacity: 1;
-        visibility: visible;
-        bottom: 120%;
+    .gantt-row:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
     }
     
-    /* Canvas principal */
-    .mapa-canvas-fullscreen {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+    .gantt-info {
+        width: 300px;
+        flex-shrink: 0;
+    }
+    
+    .gantt-bar-container {
+        flex: 1;
+        height: 30px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
         overflow: hidden;
-        cursor: grab;
-        z-index: 1;
+        position: relative;
     }
     
-    .mapa-canvas-fullscreen.grabbing {
-        cursor: grabbing;
-    }
-    
-    /* Estrellas de fondo */
-    .estrellas-container {
-        position: absolute;
-        width: 100%;
+    .gantt-bar {
         height: 100%;
-        pointer-events: none;
-        z-index: 1;
+        border-radius: 15px;
+        position: relative;
+        transition: all 0.3s ease;
     }
     
-    .estrella {
+    .gantt-bar-progress {
         position: absolute;
-        background: white;
-        border-radius: 50%;
-        animation: twinkle 3s infinite;
-    }
-    
-    @keyframes twinkle {
-        0%, 100% { opacity: 0.3; }
-        50% { opacity: 1; }
-    }
-    
-    /* Anillos orbitales concéntricos */
-    .anillos-orbitales {
-        position: absolute;
-        width: 100%;
+        top: 0;
+        left: 0;
         height: 100%;
-        pointer-events: none;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .gantt-milestone {
+        position: absolute;
+        width: 4px;
+        height: 40px;
+        background: #FFD700;
+        top: -5px;
+        transform: translateX(-2px);
         z-index: 2;
     }
     
-    .anillo-orbital {
+    .gantt-milestone::after {
+        content: '';
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border: 1px solid rgba(255, 255, 255, 0.05);
+        width: 12px;
+        height: 12px;
+        background: #FFD700;
         border-radius: 50%;
-        box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
-        z-index: 2;
+        top: -4px;
+        left: -4px;
     }
     
-    /* SVG para conexiones */
-    .conexiones-svg {
+    /* Vista Diagrama de Flujo */
+    .flow-diagram-container {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .flow-canvas {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: auto;
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .flow-connections {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
         pointer-events: none;
+        z-index: 1;
+    }
+    
+    .flow-nodes {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+    }
+    
+    .flow-node {
+        position: absolute;
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+        border-radius: 8px;
+        padding: 15px;
+        min-width: 200px;
+        cursor: move;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
         z-index: 3;
     }
     
-    .conexion {
-        stroke: rgba(255, 255, 255, 0.2);
-        stroke-width: 1;
-        stroke-dasharray: 5, 5;
-        transition: all 0.3s ease;
+    .flow-node:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
     }
     
-    .conexion-planeta-luna {
-        stroke: rgba(255, 255, 255, 0.3);
-    }
-    
-    .conexion-luna-satelite {
-        stroke: rgba(255, 255, 255, 0.2);
-    }
-    
-    .conexion-satelite-asteroide {
-        stroke: rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Sistema solar */
-    .sistema-solar {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        height: 100%;
-        transition: transform 0.1s linear;
-        z-index: 10;
-    }
-    
-    /* Sol Fijo */
-    .orbita-sol {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 300px;
-        height: 300px;
-        z-index: 100;
-    }
-    
-    .nodo-sol {
-        width: 100%;
-        height: 100%;
-        position: relative;
-    }
-    
-    .nodo-glow-sol {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        background: radial-gradient(circle, 
-            rgba(255, 215, 0, 0.6) 0%, 
-            rgba(255, 140, 0, 0.3) 30%, 
-            rgba(255, 140, 0, 0) 70%);
-        animation: pulseSol 3s infinite;
-        filter: blur(30px);
-        z-index: -1;
-    }
-    
-    .nodo-sol .nodo-content {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle, #FFD700, #FF8C00);
-        border-radius: 50%;
+    .flow-node-header {
         display: flex;
-        flex-direction: column;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 40px;
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 0 60px rgba(255, 215, 0, 0.7);
-    }
-    
-    .nodo-icon-pulse-sol {
-        width: 100px;
-        height: 100px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-        font-size: 48px;
-        color: #FF8C00;
-        animation: pulseSolIcon 2s infinite;
-        box-shadow: 0 0 40px rgba(255, 215, 0, 0.8);
-    }
-    
-    .nodo-title-glow {
-        font-size: 18px;
-        font-weight: 700;
-        color: white;
         margin-bottom: 10px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
     }
     
-    .btn-ver-mas {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 215, 0, 0.8));
-        border: none;
-        color: #000;
-        padding: 10px 20px;
-        border-radius: 25px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+    .flow-node-title {
+        font-weight: 600;
         font-size: 14px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-ver-mas:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
-    }
-    
-    /* Planetas (ejes) con órbitas concéntricas - CORREGIDO */
-    .ejes-orbitales {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        height: 100%;
-        z-index: 90;
-    }
-    
-    .planeta-contenedor {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform-origin: center center;
-        transform: translate(-50%, -50%) rotate(var(--angulo-inicial, 0deg));
-        z-index: 90;
-    }
-    
-    .nodo-eje {
-        position: absolute;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        z-index: 90;
-        transform: translate(-50%, -50%);
-        left: var(--distancia, 0px);
-    }
-    
-    .nodo-eje .nodo-content {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        padding: 15px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3),
-                    inset 0 0 20px rgba(255, 255, 255, 0.1);
-        transition: all 0.3s ease;
-    }
-    
-    .nodo-eje:hover .nodo-content {
-        transform: scale(1.1);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4),
-                    inset 0 0 30px rgba(255, 255, 255, 0.2);
-    }
-    
-    .nodo-eje .nodo-icon {
-        width: 40px;
-        height: 40px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 8px;
-        font-size: 18px;
-        color: #2980b9;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-    }
-    
-    .nodo-eje .nodo-title {
-        font-size: 11px;
-        font-weight: 600;
         color: white;
-        text-align: center;
-        line-height: 1.2;
-        word-break: break-word;
-        max-width: 80px;
     }
     
-    .nodo-subtitle {
-        font-size: 9px;
-        color: rgba(255, 255, 255, 0.7);
-        margin-top: 2px;
-    }
-    
-    /* Estrategias (lunas) - REDONDAS Y CONECTADAS */
-    .estrategias-orbitales {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        height: 100%;
-        z-index: 80;
-    }
-    
-    .luna-contenedor {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform-origin: center center;
-        transform: translate(-50%, -50%) rotate(var(--angulo-inicial, 0deg));
-        z-index: 80;
-    }
-    
-    .nodo-estrategia {
-        position: absolute;
+    .flow-node-status {
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
-        cursor: pointer;
-        z-index: 80;
-        transform: translate(-50%, -50%);
-        left: var(--distancia, 0px);
     }
     
-    .nodo-estrategia .nodo-content {
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        padding: 12px;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-    
-    .nodo-estrategia:hover .nodo-content {
-        transform: scale(1.1);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-    }
-    
-    .nodo-estrategia .nodo-icon {
-        width: 25px;
-        height: 25px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 5px;
+    .flow-node-body {
         font-size: 12px;
+        color: rgba(255, 255, 255, 0.9);
     }
     
-    .nodo-estrategia .nodo-title {
-        font-size: 9px;
-        font-weight: 600;
-        color: white;
-        text-align: center;
-        line-height: 1.1;
-        word-break: break-word;
-        max-width: 60px;
+    /* Vista Panel de Responsables */
+    .responsables-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
     }
     
-    /* Actividades (satélites) */
-    .actividades-orbitales {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        height: 100%;
-        z-index: 70;
-    }
-    
-    .satelite-contenedor {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform-origin: center center;
-        transform: translate(-50%, -50%) rotate(var(--angulo-inicial, 0deg));
-        z-index: 70;
-    }
-    
-    .nodo-actividad {
-        position: absolute;
-        border-radius: 50%;
-        cursor: pointer;
-        z-index: 70;
-        transform: translate(-50%, -50%);
-        left: var(--distancia, 0px);
-    }
-    
-    .nodo-actividad .nodo-content {
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        padding: 10px;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
+    .responsable-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        padding: 15px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
         transition: all 0.3s ease;
     }
     
-    .nodo-actividad:hover .nodo-content {
-        transform: scale(1.1);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    .responsable-card:hover {
+        background: rgba(255, 255, 255, 0.1);
+        transform: translateY(-5px);
     }
     
-    .nodo-actividad .nodo-icon {
+    .responsable-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .responsable-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4CAF50, #2E7D32);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+    
+    .responsable-info {
+        flex: 1;
+    }
+    
+    .responsable-name {
+        font-weight: 600;
+        font-size: 16px;
+    }
+    
+    .responsable-role {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .responsable-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+    }
+    
+    .stat-label {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Vista Línea de Tiempo */
+    .timeline-container {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 50px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 25px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .timeline-event {
+        position: relative;
+        margin-bottom: 30px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        padding: 15px;
+        border-left: 4px solid #2196F3;
+    }
+    
+    .timeline-event::before {
+        content: '';
+        position: absolute;
+        left: -38px;
+        top: 20px;
         width: 20px;
         height: 20px;
-        background: rgba(255, 255, 255, 0.9);
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 3px;
-        font-size: 10px;
+        background: #2196F3;
+        border: 3px solid #0f1b3d;
     }
     
-    .nodo-actividad .nodo-title {
-        font-size: 8px;
+    .event-date {
+        font-size: 12px;
+        color: #4fc3f7;
         font-weight: 600;
-        color: white;
-        text-align: center;
-        line-height: 1;
-        word-break: break-word;
-        max-width: 50px;
+        margin-bottom: 5px;
     }
     
-    /* Tareas (asteroides) */
-    .tareas-orbitales {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 100%;
-        height: 100%;
-        z-index: 60;
-    }
-    
-    .asteroide-contenedor {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform-origin: center center;
-        transform: translate(-50%, -50%) rotate(var(--angulo-inicial, 0deg));
-        z-index: 60;
-    }
-    
-    .nodo-tarea {
-        position: absolute;
-        border-radius: 50%;
-        cursor: pointer;
-        z-index: 60;
-        transform: translate(-50%, -50%);
-        left: var(--distancia, 0px);
-    }
-    
-    .nodo-tarea .nodo-content {
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        padding: 8px;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        text-align: center;
-        transition: all 0.3s ease;
-    }
-    
-    .nodo-tarea:hover .nodo-content {
-        transform: scale(1.1);
-        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
-    }
-    
-    .nodo-tarea .nodo-icon {
-        width: 16px;
-        height: 16px;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 8px;
-    }
-    
-    .nodo-tarea .nodo-title {
-        font-size: 7px;
+    .event-title {
+        font-size: 14px;
         font-weight: 600;
-        color: white;
-        text-align: center;
-        line-height: 1;
-        word-break: break-word;
-        max-width: 40px;
-        margin-top: 2px;
+        margin-bottom: 5px;
+    }
+    
+    .event-desc {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
     }
     
     /* Panel de detalles */
-    .panel-detalles {
+    .flowmap-details-panel {
         position: fixed;
         top: 0;
         right: -400px;
@@ -988,12 +846,12 @@
         overflow-y: auto;
     }
     
-    .panel-detalles.open {
+    .flowmap-details-panel.open {
         right: 0;
     }
     
     .panel-header {
-        padding: 25px;
+        padding: 20px;
         background: rgba(0, 20, 60, 0.5);
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         display: flex;
@@ -1002,17 +860,15 @@
     }
     
     .panel-header h3 {
-        color: white;
-        font-size: 18px;
-        font-weight: 600;
+        font-size: 16px;
         display: flex;
         align-items: center;
         gap: 10px;
     }
     
     .panel-close {
-        width: 40px;
-        height: 40px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         background: rgba(255, 255, 255, 0.1);
         border: none;
@@ -1030,87 +886,118 @@
     }
     
     .panel-body {
-        padding: 25px;
-        color: rgba(255, 255, 255, 0.9);
+        padding: 20px;
     }
     
-    /* Animaciones */
-    @keyframes pulseSol {
-        0%, 100% { opacity: 0.6; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.05); }
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: rgba(255, 255, 255, 0.5);
     }
     
-    @keyframes pulseSolIcon {
-        0%, 100% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
-        50% { box-shadow: 0 0 60px rgba(255, 215, 0, 1); }
+    .empty-state i {
+        font-size: 48px;
+        margin-bottom: 15px;
+        opacity: 0.5;
     }
     
-    /* Colores específicos para cada eje */
-    .eje-educacion .nodo-content { background: radial-gradient(circle, #3498db, #2980b9) !important; }
-    .eje-salud .nodo-content { background: radial-gradient(circle, #e74c3c, #c0392b) !important; }
-    .eje-empleabilidad .nodo-content { background: radial-gradient(circle, #2ecc71, #27ae60) !important; }
-    .eje-desarrollo_economico .nodo-content { background: radial-gradient(circle, #9b59b6, #8e44ad) !important; }
-    .eje-sostenibilidad_ambiental .nodo-content { background: radial-gradient(circle, #1abc9c, #16a085) !important; }
-    .eje-comunicacion .nodo-content { background: radial-gradient(circle, #f1c40f, #f39c12) !important; }
-    .eje-institucional .nodo-content { background: radial-gradient(circle, #e67e22, #d35400) !important; }
+    /* Barra de estado */
+    .flowmap-status-bar {
+        background: rgba(0, 10, 40, 0.8);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        flex-shrink: 0;
+    }
     
-    .eje-educacion .nodo-icon { color: #2980b9 !important; }
-    .eje-salud .nodo-icon { color: #c0392b !important; }
-    .eje-empleabilidad .nodo-icon { color: #27ae60 !important; }
-    .eje-desarrollo_economico .nodo-icon { color: #8e44ad !important; }
-    .eje-sostenibilidad_ambiental .nodo-icon { color: #16a085 !important; }
-    .eje-comunicacion .nodo-icon { color: #f39c12 !important; }
-    .eje-institucional .nodo-icon { color: #d35400 !important; }
+    .status-left, .status-right {
+        display: flex;
+        gap: 20px;
+    }
+    
+    .status-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    /* Estados de actividad */
+    .estado-pendiente {
+        background: linear-gradient(135deg, #FF9800, #F57C00);
+    }
+    
+    .estado-progreso {
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+    }
+    
+    .estado-completado {
+        background: linear-gradient(135deg, #4CAF50, #2E7D32);
+    }
+    
+    .estado-atrasado {
+        background: linear-gradient(135deg, #F44336, #D32F2F);
+    }
+    
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .flowmap-main-content {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr 1fr 1fr 1fr;
+        }
+        
+        .view-container {
+            min-height: 300px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .controls-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .filter-row {
+            flex-direction: column;
+        }
+        
+        .quick-actions {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .header-content {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+        }
+        
+        .header-stats {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
 </style>
 
 <script>
 // ================================
-// SISTEMA SOLAR CON FILTROS Y NAVEGACIÓN - VERSIÓN CORREGIDA
+// SISTEMA DE MAPA DE FLUJO
 // ================================
 
-const SISTEMA_SOLAR = {
-    ejes: [],
-    estrategias: [],
+const FLOW_SYSTEM = {
     actividades: [],
-    tareas: [],
-    animacionesActivas: true,
+    responsables: new Set(),
     filtros: {
-        eje: 'todos',
-        tipo: 'todos',
+        responsable: 'todos',
         estado: 'todos',
-        mostrarEjes: true,
-        mostrarEstrategias: true,
-        mostrarActividades: true,
-        mostrarTareas: true
-    }
-};
-
-// Variables para navegación
-let offsetX = 0;
-let offsetY = 0;
-let scale = 1;
-let isDragging = false;
-let lastX = 0;
-let lastY = 0;
-
-// Configuración orbital
-const CONFIG_ORBITAS = {
-    // Distancias desde el sol para cada eje (órbitas concéntricas)
-    distanciasEjes: [400, 500, 600, 700, 800, 900, 1000],
-    
-    // Velocidades de rotación
-    velocidadesEjes: [0.8, 0.6, 0.5, 0.4, 0.35, 0.3, 0.25],
-    
-    // Tamaños de los nodos
-    tamanoEjes: [120, 115, 110, 105, 100, 95, 90],
-    tamanoEstrategias: 80,
-    tamanoActividades: 60,
-    tamanoTareas: 40,
-    
-    // Radios orbitales
-    radioLuna: 100,
-    radioSatelite: 70,
-    radioAsteroide: 40
+        fechaDesde: null,
+        fechaHasta: null
+    },
+    vistaActiva: 'gantt',
+    dataCargada: false
 };
 
 // ================================
@@ -1118,1212 +1005,1129 @@ const CONFIG_ORBITAS = {
 // ================================
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log("🚀 Inicializando Sistema Solar Estratégico...");
-    inicializarSistema();
-    crearEstrellas();
-    crearAnillosOrbitales();
-    inicializarNavegacion();
-    cargarDatosBackend(); // Cargar datos desde BD
+    cargarDatos();
+    inicializarEventos();
+    inicializarVistas();
+    monitorearMemoria();
 });
 
-function inicializarSistema() {
-    const sistemaSolar = document.getElementById('sistemaSolar');
-    const canvas = document.getElementById('mapaCanvas');
-    const canvasRect = canvas.getBoundingClientRect();
-    
-    sistemaSolar.style.width = `${canvasRect.width}px`;
-    sistemaSolar.style.height = `${canvasRect.height}px`;
-}
-
-function crearEstrellas() {
-    const container = document.getElementById('estrellasContainer');
-    const cantidad = 200;
-    
-    for (let i = 0; i < cantidad; i++) {
-        const estrella = document.createElement('div');
-        estrella.className = 'estrella';
-        
-        const x = Math.random() * 100;
-        const y = Math.random() * 100;
-        const size = Math.random() * 2 + 1;
-        const duracion = Math.random() * 5 + 2;
-        const delay = Math.random() * 5;
-        
-        estrella.style.left = `${x}%`;
-        estrella.style.top = `${y}%`;
-        estrella.style.width = `${size}px`;
-        estrella.style.height = `${size}px`;
-        estrella.style.animation = `twinkle ${duracion}s infinite ${delay}s`;
-        estrella.style.opacity = Math.random() * 0.5 + 0.3;
-        
-        container.appendChild(estrella);
-    }
-}
-
-function crearAnillosOrbitales() {
-    const container = document.getElementById('anillosOrbitales');
-    container.innerHTML = '';
-    
-    const sistemaSolar = document.getElementById('sistemaSolar');
-    const sistemaRect = sistemaSolar.getBoundingClientRect();
-    const centroX = sistemaRect.width / 2;
-    const centroY = sistemaRect.height / 2;
-    
-    // Crear anillos concéntricos para cada eje
-    CONFIG_ORBITAS.distanciasEjes.forEach((distancia, index) => {
-        const anillo = document.createElement('div');
-        anillo.className = 'anillo-orbital';
-        
-        anillo.style.cssText = `
-            width: ${distancia * 2}px;
-            height: ${distancia * 2}px;
-            top: ${centroY}px;
-            left: ${centroX}px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.02);
-            z-index: 2;
-        `;
-        
-        container.appendChild(anillo);
-    });
-}
-
-// ================================
-// CARGAR DATOS DEL BACKEND - VERSIÓN CORREGIDA
-// ================================
-
-function cargarDatosBackend() {
-    console.log("🔍 Iniciando carga de datos del backend...");
-    
-    // Cargar estrategias con eje
-    fetch('/api/estrategias_foda_con_eje')
-        .then(response => {
-            console.log("📡 Respuesta de estrategias recibida");
-            if (!response.ok) {
-                throw new Error('Error en la respuesta del servidor');
-            }
-            return response.json();
-        })
+function cargarDatos() {
+    // Cargar actividades
+    fetch('/api/actividades')
+        .then(response => response.json())
         .then(data => {
-            console.log("✅ Datos de estrategias:", data);
-            if (data.success && data.estrategias) {
-                SISTEMA_SOLAR.estrategias = data.estrategias;
-                document.getElementById('total-estrategias').textContent = `${SISTEMA_SOLAR.estrategias.length} Lunas`;
-                console.log(`📊 ${SISTEMA_SOLAR.estrategias.length} estrategias cargadas`);
-                
-                // Crear ejes basados en las estrategias de la BD
-                crearEjesDesdeBD();
-                
-                // Cargar actividades
-                return fetch('/api/actividades');
-            } else {
-                throw new Error('Estructura de datos inválida');
-            }
-        })
-        .then(response => {
-            if (!response) return;
-            console.log("📡 Respuesta de actividades recibida");
-            return response.json();
-        })
-        .then(data => {
-            if (data && data.success && data.actividades) {
-                SISTEMA_SOLAR.actividades = data.actividades;
-                document.getElementById('total-actividades').textContent = `${SISTEMA_SOLAR.actividades.length} Satélites`;
-                console.log(`📊 ${SISTEMA_SOLAR.actividades.length} actividades cargadas`);
-                
-                // Cargar tareas
-                return fetch('/api/tareas');
-            }
-        })
-        .then(response => {
-            if (!response) return;
-            console.log("📡 Respuesta de tareas recibida");
-            return response.json();
-        })
-        .then(data => {
-            if (data && data.success && data.tareas) {
-                SISTEMA_SOLAR.tareas = data.tareas;
-                document.getElementById('total-tareas').textContent = `${SISTEMA_SOLAR.tareas.length} Asteroides`;
-                console.log(`📊 ${SISTEMA_SOLAR.tareas.length} tareas cargadas`);
-                
-                // Crear todas las lunas, satélites y asteroides
-                crearEstrategias();
-                crearActividadesYtareas();
-                iniciarOrbitasPlanetas();
+            if (data.success) {
+                FLOW_SYSTEM.actividades = data.actividades;
+                actualizarEstadisticas();
+                cargarTareas();
             }
         })
         .catch(error => {
-            console.error('❌ Error al cargar datos del backend:', error);
-            mostrarErrorCarga();
+            console.error('Error cargando actividades:', error);
+            mostrarError('No se pudieron cargar las actividades');
         });
 }
 
-function crearEjesDesdeBD() {
-    console.log("🔍 Creando ejes desde base de datos...");
-    
-    // Obtener ejes únicos de las estrategias
-    const ejesUnicos = {};
-    SISTEMA_SOLAR.estrategias.forEach(estrategia => {
-        if (estrategia.eje_id && estrategia.eje_texto) {
-            if (!ejesUnicos[estrategia.eje_id]) {
-                ejesUnicos[estrategia.eje_id] = {
-                    id: estrategia.eje_id,
-                    nombre: estrategia.eje_texto,
-                    icono: getIconoPorEjeId(estrategia.eje_id),
-                    color: getColorPorEjeId(estrategia.eje_id),
-                    descripcion: getDescripcionPorEjeId(estrategia.eje_id),
-                    estrategias: []
-                };
+function cargarTareas() {
+    // Cargar tareas
+    fetch('/api/tareas')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                FLOW_SYSTEM.tareas = data.tareas;
+                procesarResponsables();
+                renderizarVistas();
+                FLOW_SYSTEM.dataCargada = true;
+                document.getElementById('ultimaActualizacion').textContent = 
+                    'Actualizado: ' + new Date().toLocaleTimeString();
             }
-            ejesUnicos[estrategia.eje_id].estrategias.push(estrategia);
+        })
+        .catch(error => {
+            console.error('Error cargando tareas:', error);
+        });
+}
+
+function procesarResponsables() {
+    // Extraer responsables únicos de actividades y tareas
+    FLOW_SYSTEM.responsables = new Set();
+    
+    FLOW_SYSTEM.actividades.forEach(actividad => {
+        if (actividad.responsable) {
+            FLOW_SYSTEM.responsables.add(actividad.responsable);
         }
     });
     
-    // Convertir a array
-    SISTEMA_SOLAR.ejes = Object.values(ejesUnicos);
-    console.log(`📊 ${SISTEMA_SOLAR.ejes.length} ejes encontrados:`, SISTEMA_SOLAR.ejes);
+    FLOW_SYSTEM.tareas.forEach(tarea => {
+        if (tarea.responsable) {
+            FLOW_SYSTEM.responsables.add(tarea.responsable);
+        }
+    });
+    
+    // Actualizar filtro de responsables
+    const selectResponsable = document.getElementById('filtroResponsable');
+    selectResponsable.innerHTML = '<option value="todos">Todos los responsables</option>';
+    
+    FLOW_SYSTEM.responsables.forEach(responsable => {
+        const option = document.createElement('option');
+        option.value = responsable;
+        option.textContent = responsable;
+        selectResponsable.appendChild(option);
+    });
+}
+
+function actualizarEstadisticas() {
+    const actividades = FLOW_SYSTEM.actividades.length;
+    const responsables = FLOW_SYSTEM.responsables.size;
+    
+    // Calcular días totales
+    let diasTotales = 0;
+    FLOW_SYSTEM.actividades.forEach(actividad => {
+        if (actividad.fecha_inicio && actividad.fecha_fin) {
+            const inicio = new Date(actividad.fecha_inicio);
+            const fin = new Date(actividad.fecha_fin);
+            const dias = Math.ceil((fin - inicio) / (1000 * 60 * 60 * 24));
+            if (dias > 0) diasTotales += dias;
+        }
+    });
+    
+    // Calcular porcentaje completado
+    const tareasCompletadas = FLOW_SYSTEM.tareas ? 
+        FLOW_SYSTEM.tareas.filter(t => t.estado === 'completada').length : 0;
+    const totalTareas = FLOW_SYSTEM.tareas ? FLOW_SYSTEM.tareas.length : 0;
+    const porcentajeCompletado = totalTareas > 0 ? 
+        Math.round((tareasCompletadas / totalTareas) * 100) : 0;
     
     // Actualizar UI
-    document.getElementById('total-ejes').textContent = `${SISTEMA_SOLAR.ejes.length} Ejes`;
+    document.getElementById('total-actividades-flow').textContent = `${actividades} Actividades`;
+    document.getElementById('total-responsables').textContent = `${responsables} Responsables`;
+    document.getElementById('dias-totales').textContent = `${diasTotales} Días`;
+    document.getElementById('completadas-flow').textContent = `${porcentajeCompletado}% Completado`;
+    document.getElementById('totalRegistros').textContent = 
+        `${actividades + (FLOW_SYSTEM.tareas ? FLOW_SYSTEM.tareas.length : 0)} registros cargados`;
+}
+
+// ================================
+// VISTAS
+// ================================
+
+function inicializarVistas() {
+    // Activar vista Gantt por defecto
+    toggleVista('gantt');
+}
+
+function toggleVista(vista) {
+    // Desactivar todas las vistas
+    document.querySelectorAll('.view-container').forEach(view => {
+        view.classList.remove('active');
+    });
     
-    // Crear visualización de ejes
-    crearEjesVisuales();
-}
-
-function getIconoPorEjeId(ejeId) {
-    const iconos = {
-        'educacion': 'graduation-cap',
-        'salud': 'heartbeat',
-        'empleabilidad': 'briefcase',
-        'desarrollo_economico': 'chart-line',
-        'sostenibilidad_ambiental': 'tint',
-        'comunicacion': 'bullhorn',
-        'institucional': 'landmark'
-    };
-    return iconos[ejeId] || 'circle';
-}
-
-function getColorPorEjeId(ejeId) {
-    const colores = {
-        'educacion': '#3498db',
-        'salud': '#e74c3c',
-        'empleabilidad': '#2ecc71',
-        'desarrollo_economico': '#9b59b6',
-        'sostenibilidad_ambiental': '#1abc9c',
-        'comunicacion': '#f1c40f',
-        'institucional': '#e67e22'
-    };
-    return colores[ejeId] || '#95a5a6';
-}
-
-function getDescripcionPorEjeId(ejeId) {
-    const descripciones = {
-        'educacion': 'Mejora de infraestructura educativa y capacitación docente',
-        'salud': 'Equipamiento médico y mejoras en servicios de salud',
-        'empleabilidad': 'Formación técnica y oportunidades de empleo local',
-        'desarrollo_economico': 'Impulso al desarrollo económico comunitario',
-        'sostenibilidad_ambiental': 'Gestión sostenible del recurso hídrico y monitoreo ambiental',
-        'comunicacion': 'Sistema de comunicación comunitaria y transparencia',
-        'institucional': 'Cooperación técnica con GADs y niveles distritales'
-    };
-    return descripciones[ejeId] || 'Eje estratégico';
-}
-
-function crearEjesVisuales() {
-    const container = document.getElementById('ejesOrbitales');
-    container.innerHTML = '';
-    
-    if (SISTEMA_SOLAR.ejes.length === 0) {
-        console.log("⚠️ No hay ejes para mostrar");
-        return;
+    // Activar vista seleccionada
+    const checkbox = document.getElementById(`mostrar${vista.charAt(0).toUpperCase() + vista.slice(1)}`);
+    if (checkbox && checkbox.checked) {
+        const viewElement = document.getElementById(`${vista}View`);
+        if (viewElement) {
+            viewElement.classList.add('active');
+            FLOW_SYSTEM.vistaActiva = vista;
+            renderizarVista(vista);
+        }
     }
+}
+
+function renderizarVistas() {
+    if (!FLOW_SYSTEM.dataCargada) return;
     
-    // Crear cada planeta (eje) en su órbita
-    SISTEMA_SOLAR.ejes.forEach((eje, index) => {
-        // Calcular posición orbital
-        const distancia = CONFIG_ORBITAS.distanciasEjes[Math.min(index, CONFIG_ORBITAS.distanciasEjes.length - 1)];
-        const tamano = CONFIG_ORBITAS.tamanoEjes[Math.min(index, CONFIG_ORBITAS.tamanoEjes.length - 1)];
-        const velocidad = CONFIG_ORBITAS.velocidadesEjes[Math.min(index, CONFIG_ORBITAS.velocidadesEjes.length - 1)];
-        const anguloInicial = (360 / SISTEMA_SOLAR.ejes.length) * index;
-        
-        // Contenedor para el planeta
-        const planetaContenedor = document.createElement('div');
-        planetaContenedor.className = 'planeta-contenedor';
-        planetaContenedor.id = `contenedor-${eje.id}`;
-        planetaContenedor.dataset.ejeId = eje.id;
-        planetaContenedor.style.setProperty('--angulo-inicial', `${anguloInicial}deg`);
-        
-        // Crear el planeta (nodo eje)
-        const planetaDiv = document.createElement('div');
-        planetaDiv.className = `nodo nodo-eje eje-${eje.id}`;
-        planetaDiv.id = `eje-${eje.id}`;
-        planetaDiv.dataset.ejeId = eje.id;
-        planetaDiv.dataset.tipo = 'eje';
-        planetaDiv.dataset.velocidad = velocidad;
-        planetaDiv.dataset.angulo = anguloInicial;
-        planetaDiv.style.setProperty('--distancia', `${distancia}px`);
-        
-        // Tamaño del planeta
-        planetaDiv.style.cssText = `
-            width: ${tamano}px;
-            height: ${tamano}px;
-        `;
-        
-        planetaDiv.innerHTML = `
-            <div class="nodo-content">
-                <div class="nodo-icon">
-                    <i class="fas fa-${eje.icono}"></i>
-                </div>
-                <div class="nodo-title">${eje.nombre}</div>
-                <div class="nodo-subtitle">${eje.estrategias.length} estrategias</div>
-            </div>
-        `;
-        
-        // Eventos
-        planetaDiv.addEventListener('click', function(e) {
-            e.stopPropagation();
-            mostrarDetallesEje(eje.id);
-        });
-        
-        // Añadir planeta al contenedor
-        planetaContenedor.appendChild(planetaDiv);
-        container.appendChild(planetaContenedor);
-        
-        console.log(`✅ Eje creado: ${eje.nombre} con ${eje.estrategias.length} estrategias`);
+    // Renderizar cada vista activa
+    const vistas = ['gantt', 'flujo', 'responsables', 'timeline'];
+    vistas.forEach(vista => {
+        const checkbox = document.getElementById(`mostrar${vista.charAt(0).toUpperCase() + vista.slice(1)}`);
+        if (checkbox && checkbox.checked) {
+            renderizarVista(vista);
+        }
     });
 }
 
-function crearEstrategias() {
-    const container = document.getElementById('estrategiasOrbitales');
+function renderizarVista(vista) {
+    switch(vista) {
+        case 'gantt':
+            renderizarGantt();
+            break;
+        case 'flujo':
+            renderizarFlujo();
+            break;
+        case 'responsables':
+            renderizarResponsables();
+            break;
+        case 'timeline':
+            renderizarTimeline();
+            break;
+    }
+}
+
+// ================================
+// VISTA GANTT
+// ================================
+
+function renderizarGantt() {
+    const container = document.getElementById('ganttContent');
+    if (!container) return;
+    
+    // Filtrar actividades
+    const actividadesFiltradas = filtrarActividades();
+    
+    // Limpiar contenedor
     container.innerHTML = '';
     
-    if (SISTEMA_SOLAR.estrategias.length === 0) {
-        console.log("⚠️ No hay estrategias para mostrar");
-        return;
-    }
+    // Calcular rango de fechas
+    const { fechaMin, fechaMax } = calcularRangoFechas(actividadesFiltradas);
     
-    console.log(`🎯 Creando ${SISTEMA_SOLAR.estrategias.length} estrategias...`);
+    // Renderizar timeline
+    renderizarTimelineGantt(fechaMin, fechaMax);
     
-    SISTEMA_SOLAR.estrategias.forEach((estrategia, index) => {
-        const eje = SISTEMA_SOLAR.ejes.find(e => e.id === estrategia.eje_id);
-        if (!eje) {
-            console.log(`⚠️ Estrategia ${estrategia.id} sin eje válido: ${estrategia.eje_id}`);
-            return;
-        }
+    // Renderizar cada actividad
+    actividadesFiltradas.forEach((actividad, index) => {
+        const row = document.createElement('div');
+        row.className = 'gantt-row';
+        row.dataset.id = actividad.id;
+        row.dataset.tipo = 'actividad';
         
-        const ejeElement = document.getElementById(`eje-${eje.id}`);
-        if (!ejeElement) {
-            console.log(`⚠️ Elemento del eje no encontrado: eje-${eje.id}`);
-            return;
-        }
+        // Calcular progreso
+        const progreso = calcularProgresoActividad(actividad.id);
+        const estado = determinarEstadoActividad(actividad);
+        const colorEstado = getColorEstado(estado);
         
-        // Contenedor para la luna (estrategia)
-        const lunaContenedor = document.createElement('div');
-        lunaContenedor.className = 'luna-contenedor';
-        lunaContenedor.id = `contenedor-estrategia-${estrategia.id}`;
-        lunaContenedor.dataset.estrategiaId = estrategia.id;
-        lunaContenedor.dataset.ejeId = estrategia.eje_id;
-        lunaContenedor.dataset.tipo = estrategia.tipo_cruce;
+        // Calcular posición de la barra
+        const posicion = calcularPosicionGantt(actividad.fecha_inicio, actividad.fecha_fin, fechaMin, fechaMax);
         
-        // Ángulo inicial basado en el índice
-        const anguloInicial = (index * 137.5) % 360; // Ángulo áureo para distribución uniforme
-        lunaContenedor.style.setProperty('--angulo-inicial', `${anguloInicial}deg`);
-        
-        // Crear la luna (estrategia)
-        const lunaDiv = document.createElement('div');
-        lunaDiv.className = 'nodo nodo-estrategia';
-        lunaDiv.id = `estrategia-${estrategia.id}`;
-        lunaDiv.dataset.estrategiaId = estrategia.id;
-        lunaDiv.dataset.ejeId = estrategia.eje_id;
-        lunaDiv.dataset.tipo = 'estrategia';
-        lunaDiv.dataset.tipoCruce = estrategia.tipo_cruce;
-        lunaDiv.style.setProperty('--distancia', `${CONFIG_ORBITAS.radioLuna}px`);
-        
-        // Tamaño de la luna
-        lunaDiv.style.cssText = `
-            width: ${CONFIG_ORBITAS.tamanoEstrategias}px;
-            height: ${CONFIG_ORBITAS.tamanoEstrategias}px;
-        `;
-        
-        // Determinar color según tipo de cruce
-        let colorTipo = getColorByTipo(estrategia.tipo_cruce);
-        
-        lunaDiv.innerHTML = `
-            <div class="nodo-content" style="background: radial-gradient(circle, ${colorTipo}, ${oscurecerColor(colorTipo, 20)})">
-                <div class="nodo-icon" style="background: rgba(255,255,255,0.9); color: ${colorTipo}">
-                    <i class="fas fa-moon"></i>
+        row.innerHTML = `
+            <div class="gantt-info">
+                <div style="font-weight: 600; margin-bottom: 5px;">${actividad.nombre}</div>
+                <div style="font-size: 11px; color: rgba(255,255,255,0.7);">
+                    ${actividad.responsable || 'Sin responsable'} | 
+                    ${actividad.fecha_inicio ? new Date(actividad.fecha_inicio).toLocaleDateString() : 'Sin fecha'}
                 </div>
-                <div class="nodo-title">${estrategia.tipo_cruce}: ${estrategia.estrategia.substring(0, 15)}...</div>
+            </div>
+            <div class="gantt-bar-container">
+                <div class="gantt-bar ${estado}" style="
+                    width: ${posicion.ancho}%;
+                    left: ${posicion.inicio}%;
+                    background: ${colorEstado};
+                ">
+                    <div class="gantt-bar-progress" style="width: ${progreso}%"></div>
+                    <div class="gantt-milestone" style="left: 100%;"></div>
+                </div>
             </div>
         `;
         
-        // Eventos
-        lunaDiv.addEventListener('click', function(e) {
-            e.stopPropagation();
-            mostrarDetallesEstrategia(estrategia.id);
-        });
+        // Evento de clic
+        row.addEventListener('click', () => mostrarDetallesActividad(actividad.id));
         
-        // Añadir luna al contenedor
-        lunaContenedor.appendChild(lunaDiv);
-        container.appendChild(lunaContenedor);
-        
-        // Crear conexión entre planeta y luna
-        crearConexionPlanetaLuna(eje.id, estrategia.id);
+        container.appendChild(row);
     });
     
-    console.log(`✅ ${document.querySelectorAll('.nodo-estrategia').length} estrategias creadas`);
-}
-
-function crearConexionPlanetaLuna(ejeId, estrategiaId) {
-    const conexionesSVG = document.getElementById('conexionesSVG');
-    
-    // Crear línea SVG
-    const linea = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    linea.classList.add('conexion', 'conexion-planeta-luna');
-    linea.setAttribute('data-eje', ejeId);
-    linea.setAttribute('data-estrategia', estrategiaId);
-    
-    // Actualizar posición de la línea en cada frame
-    function actualizarLinea() {
-        const planeta = document.getElementById(`eje-${ejeId}`);
-        const luna = document.getElementById(`estrategia-${estrategiaId}`);
-        
-        if (planeta && luna) {
-            const rectPlaneta = planeta.getBoundingClientRect();
-            const rectLuna = luna.getBoundingClientRect();
-            
-            // Calcular centro de los elementos
-            const centroPlanetaX = rectPlaneta.left + rectPlaneta.width / 2;
-            const centroPlanetaY = rectPlaneta.top + rectPlaneta.height / 2;
-            const centroLunaX = rectLuna.left + rectLuna.width / 2;
-            const centroLunaY = rectLuna.top + rectLuna.height / 2;
-            
-            // Actualizar coordenadas de la línea
-            linea.setAttribute('x1', centroPlanetaX);
-            linea.setAttribute('y1', centroPlanetaY);
-            linea.setAttribute('x2', centroLunaX);
-            linea.setAttribute('y2', centroLunaY);
-        }
-        
-        if (SISTEMA_SOLAR.animacionesActivas) {
-            requestAnimationFrame(actualizarLinea);
-        }
+    // Renderizar tareas si están habilitadas
+    if (document.getElementById('mostrarTareasGantt')?.checked) {
+        renderizarTareasGantt(fechaMin, fechaMax);
     }
-    
-    conexionesSVG.appendChild(linea);
-    requestAnimationFrame(actualizarLinea);
 }
 
-function crearActividadesYtareas() {
-    console.log("🔍 Creando actividades y tareas...");
+function renderizarTimelineGantt(fechaMin, fechaMax) {
+    const container = document.getElementById('ganttTimeline');
+    if (!container) return;
     
-    // Crear actividades
-    SISTEMA_SOLAR.actividades.forEach((actividad, index) => {
-        const estrategiaId = actividad.estrategia_id;
-        const estrategiaElement = document.getElementById(`estrategia-${estrategiaId}`);
+    // Calcular días entre fechas
+    const dias = Math.ceil((new Date(fechaMax) - new Date(fechaMin)) / (1000 * 60 * 60 * 24));
+    
+    // Limitar a 30 días para mejor visualización
+    const maxDias = 30;
+    const paso = dias > maxDias ? Math.ceil(dias / maxDias) : 1;
+    
+    container.innerHTML = '';
+    
+    for (let i = 0; i <= dias; i += paso) {
+        const fecha = new Date(fechaMin);
+        fecha.setDate(fecha.getDate() + i);
         
-        if (!estrategiaElement) {
-            console.log(`⚠️ Actividad ${actividad.id} sin estrategia válida: ${estrategiaId}`);
-            return;
-        }
-        
-        // Contenedor para el satélite (actividad)
-        const sateliteContenedor = document.createElement('div');
-        sateliteContenedor.className = 'satelite-contenedor';
-        sateliteContenedor.id = `contenedor-actividad-${actividad.id}`;
-        sateliteContenedor.dataset.actividadId = actividad.id;
-        sateliteContenedor.dataset.estrategiaId = estrategiaId;
-        
-        // Ángulo inicial
-        const anguloInicial = (index * 90) % 360;
-        sateliteContenedor.style.setProperty('--angulo-inicial', `${anguloInicial}deg`);
-        
-        // Crear el satélite (actividad)
-        const sateliteDiv = document.createElement('div');
-        sateliteDiv.className = 'nodo nodo-actividad';
-        sateliteDiv.id = `actividad-${actividad.id}`;
-        sateliteDiv.dataset.actividadId = actividad.id;
-        sateliteDiv.dataset.tipo = 'actividad';
-        sateliteDiv.style.setProperty('--distancia', `${CONFIG_ORBITAS.radioSatelite}px`);
-        
-        // Tamaño del satélite
-        sateliteDiv.style.cssText = `
-            width: ${CONFIG_ORBITAS.tamanoActividades}px;
-            height: ${CONFIG_ORBITAS.tamanoActividades}px;
+        const dayElement = document.createElement('div');
+        dayElement.style.cssText = `
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            font-size: 12px;
+            min-width: 80px;
         `;
         
-        sateliteDiv.innerHTML = `
-            <div class="nodo-content">
-                <div class="nodo-icon">
-                    <i class="fas fa-satellite"></i>
+        dayElement.innerHTML = `
+            <div style="font-weight: 600; margin-bottom: 5px;">
+                ${fecha.toLocaleDateString('es-ES', { weekday: 'short' })}
+            </div>
+            <div>${fecha.getDate()}/${fecha.getMonth() + 1}</div>
+        `;
+        
+        container.appendChild(dayElement);
+    }
+}
+
+function calcularPosicionGantt(fechaInicio, fechaFin, fechaMin, fechaMax) {
+    if (!fechaInicio || !fechaFin) return { inicio: 0, ancho: 0 };
+    
+    const inicioMs = new Date(fechaInicio).getTime();
+    const finMs = new Date(fechaFin).getTime();
+    const minMs = new Date(fechaMin).getTime();
+    const maxMs = new Date(fechaMax).getTime();
+    const totalMs = maxMs - minMs;
+    
+    const inicio = ((inicioMs - minMs) / totalMs) * 100;
+    const ancho = ((finMs - inicioMs) / totalMs) * 100;
+    
+    return {
+        inicio: Math.max(0, inicio),
+        ancho: Math.min(100 - inicio, Math.max(5, ancho))
+    };
+}
+
+// ================================
+// VISTA DIAGRAMA DE FLUJO
+// ================================
+
+function renderizarFlujo() {
+    const container = document.getElementById('flowNodes');
+    const svg = document.getElementById('flowConnections');
+    
+    if (!container || !svg) return;
+    
+    // Limpiar
+    container.innerHTML = '';
+    svg.innerHTML = '';
+    
+    // Filtrar actividades
+    const actividadesFiltradas = filtrarActividades();
+    
+    // Crear nodos
+    const nodos = [];
+    const espacioVertical = 150;
+    const espacioHorizontal = 300;
+    
+    actividadesFiltradas.forEach((actividad, index) => {
+        const nodo = document.createElement('div');
+        nodo.className = 'flow-node';
+        nodo.id = `flow-node-${actividad.id}`;
+        nodo.dataset.id = actividad.id;
+        nodo.dataset.tipo = 'actividad';
+        
+        // Posicionar nodos en grid
+        const fila = Math.floor(index / 3);
+        const columna = index % 3;
+        
+        const x = 50 + (columna * espacioHorizontal);
+        const y = 50 + (fila * espacioVertical);
+        
+        nodo.style.cssText = `
+            position: absolute;
+            left: ${x}px;
+            top: ${y}px;
+        `;
+        
+        const estado = determinarEstadoActividad(actividad);
+        const colorEstado = getColorEstado(estado);
+        const progreso = calcularProgresoActividad(actividad.id);
+        
+        nodo.innerHTML = `
+            <div class="flow-node-header">
+                <div class="flow-node-title">${actividad.nombre.substring(0, 30)}${actividad.nombre.length > 30 ? '...' : ''}</div>
+                <div class="flow-node-status" style="background: ${colorEstado};"></div>
+            </div>
+            <div class="flow-node-body">
+                <div style="margin-bottom: 5px;">
+                    <i class="fas fa-user"></i> ${actividad.responsable || 'Sin responsable'}
                 </div>
-                <div class="nodo-title">${actividad.nombre.substring(0, 10)}</div>
+                <div style="margin-bottom: 5px;">
+                    <i class="fas fa-calendar"></i> 
+                    ${actividad.fecha_inicio ? new Date(actividad.fecha_inicio).toLocaleDateString() : 'Sin fecha'}
+                </div>
+                <div>
+                    <i class="fas fa-tasks"></i> Progreso: ${progreso}%
+                </div>
             </div>
         `;
         
-        // Eventos
-        sateliteDiv.addEventListener('click', function(e) {
+        // Hacer nodo arrastrable
+        hacerArrastrable(nodo);
+        
+        // Evento de clic
+        nodo.addEventListener('click', (e) => {
             e.stopPropagation();
             mostrarDetallesActividad(actividad.id);
         });
         
-        // Añadir satélite al contenedor
-        sateliteContenedor.appendChild(sateliteDiv);
-        document.getElementById('actividadesOrbitales').appendChild(sateliteContenedor);
+        container.appendChild(nodo);
+        nodos.push({ id: actividad.id, x, y });
         
-        // Crear conexión entre luna y satélite
-        crearConexionLunaSatelite(estrategiaId, actividad.id);
+        // Crear conexiones con actividades relacionadas
+        if (index > 0) {
+            crearConexionFlujo(nodos[index - 1], { id: actividad.id, x, y }, svg);
+        }
     });
     
-    // Crear tareas
-    SISTEMA_SOLAR.tareas.forEach((tarea, index) => {
-        const actividadId = tarea.actividad_id;
-        const actividadElement = document.getElementById(`actividad-${actividadId}`);
+    // Ajustar tamaño del canvas
+    const canvas = document.getElementById('flowCanvas');
+    const totalFilas = Math.ceil(actividadesFiltradas.length / 3);
+    canvas.style.minHeight = `${50 + (totalFilas * espacioVertical) + 100}px`;
+}
+
+function hacerArrastrable(elemento) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    
+    elemento.onmousedown = arrastrarMouse;
+    
+    function arrastrarMouse(e) {
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = soltarMouse;
+        document.onmousemove = moverMouse;
+    }
+    
+    function moverMouse(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
         
-        if (!actividadElement) {
-            console.log(`⚠️ Tarea ${tarea.id} sin actividad válida: ${actividadId}`);
-            return;
+        elemento.style.top = (elemento.offsetTop - pos2) + "px";
+        elemento.style.left = (elemento.offsetLeft - pos1) + "px";
+        
+        // Actualizar conexiones
+        actualizarConexionesFlujo();
+    }
+    
+    function soltarMouse() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
+}
+
+function crearConexionFlujo(desde, hasta, svg) {
+    const linea = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    linea.id = `conexion-${desde.id}-${hasta.id}`;
+    linea.classList.add('flow-connection');
+    
+    linea.setAttribute('x1', desde.x + 200); // Ancho del nodo
+    linea.setAttribute('y1', desde.y + 75);  // Centro del nodo
+    linea.setAttribute('x2', hasta.x);
+    linea.setAttribute('y2', hasta.y + 75);
+    linea.setAttribute('stroke', 'rgba(255,255,255,0.3)');
+    linea.setAttribute('stroke-width', '2');
+    linea.setAttribute('stroke-dasharray', '5,5');
+    linea.setAttribute('marker-end', 'url(#arrowhead)');
+    
+    // Crear marcador de flecha si no existe
+    if (!document.getElementById('arrowhead')) {
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+        marker.id = 'arrowhead';
+        marker.setAttribute('markerWidth', '10');
+        marker.setAttribute('markerHeight', '7');
+        marker.setAttribute('refX', '10');
+        marker.setAttribute('refY', '3.5');
+        marker.setAttribute('orient', 'auto');
+        
+        const polygon = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+        polygon.setAttribute('points', '0 0, 10 3.5, 0 7');
+        polygon.setAttribute('fill', 'rgba(255,255,255,0.3)');
+        
+        marker.appendChild(polygon);
+        defs.appendChild(marker);
+        svg.appendChild(defs);
+    }
+    
+    svg.appendChild(linea);
+}
+
+function actualizarConexionesFlujo() {
+    document.querySelectorAll('.flow-connection').forEach(linea => {
+        const ids = linea.id.replace('conexion-', '').split('-');
+        const desdeId = ids[0];
+        const hastaId = ids[1];
+        
+        const desdeNodo = document.getElementById(`flow-node-${desdeId}`);
+        const hastaNodo = document.getElementById(`flow-node-${hastaId}`);
+        
+        if (desdeNodo && hastaNodo) {
+            const rectDesde = desdeNodo.getBoundingClientRect();
+            const rectHasta = hastaNodo.getBoundingClientRect();
+            const canvasRect = document.getElementById('flowCanvas').getBoundingClientRect();
+            
+            const x1 = rectDesde.left - canvasRect.left + rectDesde.width;
+            const y1 = rectDesde.top - canvasRect.top + (rectDesde.height / 2);
+            const x2 = rectHasta.left - canvasRect.left;
+            const y2 = rectHasta.top - canvasRect.top + (rectHasta.height / 2);
+            
+            linea.setAttribute('x1', x1);
+            linea.setAttribute('y1', y1);
+            linea.setAttribute('x2', x2);
+            linea.setAttribute('y2', y2);
+        }
+    });
+}
+
+// ================================
+// VISTA RESPONSABLES
+// ================================
+
+function renderizarResponsables() {
+    const container = document.getElementById('responsablesContainer');
+    if (!container) return;
+    
+    // Agrupar actividades por responsable
+    const actividadesPorResponsable = {};
+    FLOW_SYSTEM.actividades.forEach(actividad => {
+        if (actividad.responsable) {
+            if (!actividadesPorResponsable[actividad.responsable]) {
+                actividadesPorResponsable[actividad.responsable] = [];
+            }
+            actividadesPorResponsable[actividad.responsable].push(actividad);
+        }
+    });
+    
+    // Agrupar tareas por responsable
+    const tareasPorResponsable = {};
+    if (FLOW_SYSTEM.tareas) {
+        FLOW_SYSTEM.tareas.forEach(tarea => {
+            if (tarea.responsable) {
+                if (!tareasPorResponsable[tarea.responsable]) {
+                    tareasPorResponsable[tarea.responsable] = [];
+                }
+                tareasPorResponsable[tarea.responsable].push(tarea);
+            }
+        });
+    }
+    
+    container.innerHTML = '';
+    
+    // Crear tarjeta para cada responsable
+    Object.keys(actividadesPorResponsable).forEach(responsable => {
+        const actividades = actividadesPorResponsable[responsable];
+        const tareas = tareasPorResponsable[responsable] || [];
+        
+        // Calcular estadísticas
+        const tareasCompletadas = tareas.filter(t => t.estado === 'completada').length;
+        const tareasEnProgreso = tareas.filter(t => t.estado === 'en_progreso').length;
+        const tareasPendientes = tareas.filter(t => t.estado === 'pendiente').length;
+        
+        // Determinar carga de trabajo
+        let cargaTrabajo = 'Normal';
+        let colorCarga = '#4CAF50';
+        const totalAsignaciones = actividades.length + tareas.length;
+        
+        if (totalAsignaciones > 10) {
+            cargaTrabajo = 'Alta';
+            colorCarga = '#F44336';
+        } else if (totalAsignaciones > 5) {
+            cargaTrabajo = 'Media';
+            colorCarga = '#FF9800';
         }
         
-        // Contenedor para el asteroide (tarea)
-        const asteroideContenedor = document.createElement('div');
-        asteroideContenedor.className = 'asteroide-contenedor';
-        asteroideContenedor.id = `contenedor-tarea-${tarea.id}`;
-        asteroideContenedor.dataset.tareaId = tarea.id;
-        asteroideContenedor.dataset.actividadId = actividadId;
-        asteroideContenedor.dataset.estado = tarea.estado;
+        const card = document.createElement('div');
+        card.className = 'responsable-card';
         
-        // Ángulo inicial
-        const anguloInicial = (index * 120) % 360;
-        asteroideContenedor.style.setProperty('--angulo-inicial', `${anguloInicial}deg`);
+        // Generar iniciales para avatar
+        const iniciales = responsable.split(' ').map(n => n[0]).join('').toUpperCase();
+        const coloresAvatar = ['#4CAF50', '#2196F3', '#9C27B0', '#FF9800', '#F44336'];
+        const colorAvatar = coloresAvatar[Math.floor(Math.random() * coloresAvatar.length)];
         
-        // Crear el asteroide (tarea)
-        const asteroideDiv = document.createElement('div');
-        asteroideDiv.className = 'nodo nodo-tarea';
-        asteroideDiv.id = `tarea-${tarea.id}`;
-        asteroideDiv.dataset.tareaId = tarea.id;
-        asteroideDiv.dataset.tipo = 'tarea';
-        asteroideDiv.dataset.estado = tarea.estado;
-        asteroideDiv.style.setProperty('--distancia', `${CONFIG_ORBITAS.radioAsteroide}px`);
-        
-        // Determinar color según estado
-        let colorEstado = getColorByEstado(tarea.estado);
-        let iconoEstado = getIconoByEstado(tarea.estado);
-        
-        // Tamaño del asteroide
-        asteroideDiv.style.cssText = `
-            width: ${CONFIG_ORBITAS.tamanoTareas}px;
-            height: ${CONFIG_ORBITAS.tamanoTareas}px;
-        `;
-        
-        asteroideDiv.innerHTML = `
-            <div class="nodo-content" style="background: radial-gradient(circle, ${colorEstado}, ${oscurecerColor(colorEstado, 20)})">
-                <div class="nodo-icon" style="background: rgba(255,255,255,0.9); color: ${colorEstado}">
-                    <i class="fas ${iconoEstado}"></i>
+        card.innerHTML = `
+            <div class="responsable-header">
+                <div class="responsable-avatar" style="background: ${colorAvatar}">
+                    ${iniciales.substring(0, 2)}
                 </div>
-                <div class="nodo-title">${tarea.nombre.substring(0, 6)}</div>
+                <div class="responsable-info">
+                    <div class="responsable-name">${responsable}</div>
+                    <div class="responsable-role">Responsable de Proyecto</div>
+                    <div style="font-size: 11px; color: ${colorCarga}; margin-top: 5px;">
+                        <i class="fas fa-chart-line"></i> Carga: ${cargaTrabajo}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="responsable-stats">
+                <div>
+                    <div class="stat-value">${actividades.length}</div>
+                    <div class="stat-label">Actividades</div>
+                </div>
+                <div>
+                    <div class="stat-value">${tareas.length}</div>
+                    <div class="stat-label">Tareas</div>
+                </div>
+                <div>
+                    <div class="stat-value">${tareasCompletadas}</div>
+                    <div class="stat-label">Completadas</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; font-size: 11px; color: rgba(255,255,255,0.7);">
+                <i class="fas fa-clipboard-list"></i> 
+                Actividades activas: ${actividades.length}
             </div>
         `;
         
-        // Eventos
-        asteroideDiv.addEventListener('click', function(e) {
-            e.stopPropagation();
-            mostrarDetallesTarea(tarea.id);
+        // Evento de clic para ver detalles del responsable
+        card.addEventListener('click', () => {
+            mostrarDetallesResponsable(responsable, actividades, tareas);
         });
         
-        // Añadir asteroide al contenedor
-        asteroideContenedor.appendChild(asteroideDiv);
-        document.getElementById('tareasOrbitales').appendChild(asteroideContenedor);
-        
-        // Crear conexión entre satélite y asteroide
-        crearConexionSateliteAsteroide(actividadId, tarea.id);
-    });
-    
-    console.log(`✅ Actividades y tareas creadas`);
-}
-
-function getColorByEstado(estado) {
-    switch(estado) {
-        case 'completada': return '#2ecc71';
-        case 'en_progreso': return '#3498db';
-        default: return '#f39c12'; // pendiente
-    }
-}
-
-function getIconoByEstado(estado) {
-    switch(estado) {
-        case 'completada': return 'fa-check-circle';
-        case 'en_progreso': return 'fa-spinner';
-        default: return 'fa-clock'; // pendiente
-    }
-}
-
-function crearConexionLunaSatelite(estrategiaId, actividadId) {
-    const conexionesSVG = document.getElementById('conexionesSVG');
-    
-    const linea = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    linea.classList.add('conexion', 'conexion-luna-satelite');
-    linea.setAttribute('data-estrategia', estrategiaId);
-    linea.setAttribute('data-actividad', actividadId);
-    
-    function actualizarLinea() {
-        const luna = document.getElementById(`estrategia-${estrategiaId}`);
-        const satelite = document.getElementById(`actividad-${actividadId}`);
-        
-        if (luna && satelite) {
-            const rectLuna = luna.getBoundingClientRect();
-            const rectSatelite = satelite.getBoundingClientRect();
-            
-            const centroLunaX = rectLuna.left + rectLuna.width / 2;
-            const centroLunaY = rectLuna.top + rectLuna.height / 2;
-            const centroSateliteX = rectSatelite.left + rectSatelite.width / 2;
-            const centroSateliteY = rectSatelite.top + rectSatelite.height / 2;
-            
-            linea.setAttribute('x1', centroLunaX);
-            linea.setAttribute('y1', centroLunaY);
-            linea.setAttribute('x2', centroSateliteX);
-            linea.setAttribute('y2', centroSateliteY);
-        }
-        
-        if (SISTEMA_SOLAR.animacionesActivas) {
-            requestAnimationFrame(actualizarLinea);
-        }
-    }
-    
-    conexionesSVG.appendChild(linea);
-    requestAnimationFrame(actualizarLinea);
-}
-
-function crearConexionSateliteAsteroide(actividadId, tareaId) {
-    const conexionesSVG = document.getElementById('conexionesSVG');
-    
-    const linea = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    linea.classList.add('conexion', 'conexion-satelite-asteroide');
-    linea.setAttribute('data-actividad', actividadId);
-    linea.setAttribute('data-tarea', tareaId);
-    
-    function actualizarLinea() {
-        const satelite = document.getElementById(`actividad-${actividadId}`);
-        const asteroide = document.getElementById(`tarea-${tareaId}`);
-        
-        if (satelite && asteroide) {
-            const rectSatelite = satelite.getBoundingClientRect();
-            const rectAsteroide = asteroide.getBoundingClientRect();
-            
-            const centroSateliteX = rectSatelite.left + rectSatelite.width / 2;
-            const centroSateliteY = rectSatelite.top + rectSatelite.height / 2;
-            const centroAsteroideX = rectAsteroide.left + rectAsteroide.width / 2;
-            const centroAsteroideY = rectAsteroide.top + rectAsteroide.height / 2;
-            
-            linea.setAttribute('x1', centroSateliteX);
-            linea.setAttribute('y1', centroSateliteY);
-            linea.setAttribute('x2', centroAsteroideX);
-            linea.setAttribute('y2', centroAsteroideY);
-        }
-        
-        if (SISTEMA_SOLAR.animacionesActivas) {
-            requestAnimationFrame(actualizarLinea);
-        }
-    }
-    
-    conexionesSVG.appendChild(linea);
-    requestAnimationFrame(actualizarLinea);
-}
-
-function mostrarErrorCarga() {
-    const sistemaSolar = document.getElementById('sistemaSolar');
-    sistemaSolar.innerHTML += `
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; z-index: 1000;">
-            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #ff6b6b; margin-bottom: 20px;"></i>
-            <h3>Error al cargar datos</h3>
-            <p>No se pudieron cargar las estrategias de la base de datos.</p>
-            <p>Verifica la conexión o intenta recargar la página.</p>
-            <button onclick="location.reload()" style="margin-top: 20px; padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                <i class="fas fa-redo"></i> Recargar
-            </button>
-        </div>
-    `;
-}
-
-// ================================
-// FILTROS FUNCIONALES
-// ================================
-
-function mostrarFiltros() {
-    const panelFiltros = document.getElementById('panelFiltros');
-    panelFiltros.style.display = panelFiltros.style.display === 'none' ? 'block' : 'none';
-}
-
-function aplicarFiltros() {
-    // Actualizar estado de filtros
-    SISTEMA_SOLAR.filtros.eje = document.getElementById('filtroEje').value;
-    SISTEMA_SOLAR.filtros.tipo = document.getElementById('filtroTipo').value;
-    SISTEMA_SOLAR.filtros.estado = document.getElementById('filtroEstado').value;
-    SISTEMA_SOLAR.filtros.mostrarEjes = document.getElementById('mostrarEjes').checked;
-    SISTEMA_SOLAR.filtros.mostrarEstrategias = document.getElementById('mostrarEstrategias').checked;
-    SISTEMA_SOLAR.filtros.mostrarActividades = document.getElementById('mostrarActividades').checked;
-    SISTEMA_SOLAR.filtros.mostrarTareas = document.getElementById('mostrarTareas').checked;
-    
-    // Aplicar filtros a todos los elementos
-    aplicarFiltroEjes();
-    aplicarFiltroEstrategias();
-    aplicarFiltroActividades();
-    aplicarFiltroTareas();
-    aplicarFiltroConexiones();
-}
-
-function aplicarFiltroEjes() {
-    const mostrarEjes = SISTEMA_SOLAR.filtros.mostrarEjes;
-    const filtroEje = SISTEMA_SOLAR.filtros.eje;
-    
-    document.querySelectorAll('.nodo-eje').forEach(eje => {
-        const ejeId = eje.dataset.ejeId;
-        const mostrar = mostrarEjes && (filtroEje === 'todos' || filtroEje === ejeId);
-        eje.style.display = mostrar ? 'block' : 'none';
-    });
-}
-
-function aplicarFiltroEstrategias() {
-    const mostrarEstrategias = SISTEMA_SOLAR.filtros.mostrarEstrategias;
-    const filtroEje = SISTEMA_SOLAR.filtros.eje;
-    const filtroTipo = SISTEMA_SOLAR.filtros.tipo;
-    
-    document.querySelectorAll('.nodo-estrategia').forEach(estrategia => {
-        const ejeId = estrategia.dataset.ejeId;
-        const tipoCruce = estrategia.dataset.tipoCruce;
-        const estrategiaObj = SISTEMA_SOLAR.estrategias.find(e => e.id == estrategia.dataset.estrategiaId);
-        
-        const mostrar = mostrarEstrategias && 
-                      (filtroEje === 'todos' || filtroEje === ejeId) &&
-                      (filtroTipo === 'todos' || filtroTipo === tipoCruce) &&
-                      estrategiaObj;
-        
-        estrategia.style.display = mostrar ? 'block' : 'none';
-    });
-}
-
-function aplicarFiltroActividades() {
-    const mostrarActividades = SISTEMA_SOLAR.filtros.mostrarActividades;
-    
-    document.querySelectorAll('.nodo-actividad').forEach(actividad => {
-        const estrategiaId = actividad.closest('[data-estrategia-id]')?.dataset.estrategiaId;
-        const estrategiaElement = document.getElementById(`estrategia-${estrategiaId}`);
-        
-        const mostrar = mostrarActividades && 
-                       estrategiaElement && 
-                       estrategiaElement.style.display !== 'none';
-        
-        actividad.style.display = mostrar ? 'block' : 'none';
-    });
-}
-
-function aplicarFiltroTareas() {
-    const mostrarTareas = SISTEMA_SOLAR.filtros.mostrarTareas;
-    const filtroEstado = SISTEMA_SOLAR.filtros.estado;
-    
-    document.querySelectorAll('.nodo-tarea').forEach(tarea => {
-        const estado = tarea.dataset.estado;
-        const actividadId = tarea.closest('[data-actividad-id]')?.dataset.actividadId;
-        const actividadElement = document.getElementById(`actividad-${actividadId}`);
-        
-        const mostrar = mostrarTareas && 
-                       (filtroEstado === 'todos' || filtroEstado === estado) &&
-                       actividadElement && 
-                       actividadElement.style.display !== 'none';
-        
-        tarea.style.display = mostrar ? 'block' : 'none';
-    });
-}
-
-function aplicarFiltroConexiones() {
-    document.querySelectorAll('.conexion').forEach(conexion => {
-        const tipo = conexion.classList.contains('conexion-planeta-luna') ? 'planeta-luna' :
-                    conexion.classList.contains('conexion-luna-satelite') ? 'luna-satelite' :
-                    'satelite-asteroide';
-        
-        let mostrar = true;
-        
-        switch(tipo) {
-            case 'planeta-luna':
-                const ejeId = conexion.dataset.eje;
-                const estrategiaId = conexion.dataset.estrategia;
-                const planeta = document.getElementById(`eje-${ejeId}`);
-                const luna = document.getElementById(`estrategia-${estrategiaId}`);
-                mostrar = planeta && planeta.style.display !== 'none' && 
-                         luna && luna.style.display !== 'none';
-                break;
-                
-            case 'luna-satelite':
-                const estrategiaId2 = conexion.dataset.estrategia;
-                const actividadId = conexion.dataset.actividad;
-                const luna2 = document.getElementById(`estrategia-${estrategiaId2}`);
-                const satelite = document.getElementById(`actividad-${actividadId}`);
-                mostrar = luna2 && luna2.style.display !== 'none' && 
-                         satelite && satelite.style.display !== 'none';
-                break;
-                
-            case 'satelite-asteroide':
-                const actividadId2 = conexion.dataset.actividad;
-                const tareaId = conexion.dataset.tarea;
-                const satelite2 = document.getElementById(`actividad-${actividadId2}`);
-                const asteroide = document.getElementById(`tarea-${tareaId}`);
-                mostrar = satelite2 && satelite2.style.display !== 'none' && 
-                         asteroide && asteroide.style.display !== 'none';
-                break;
-        }
-        
-        conexion.style.display = mostrar ? 'block' : 'none';
+        container.appendChild(card);
     });
 }
 
 // ================================
-// ANIMACIONES
+// VISTA TIMELINE
 // ================================
 
-function animarPlaneta(planetaDiv, eje) {
-    let angulo = parseFloat(planetaDiv.dataset.angulo) || 0;
-    const velocidad = parseFloat(planetaDiv.dataset.velocidad) || 0.5;
-    const contenedor = document.getElementById(`contenedor-${eje.id}`);
+function renderizarTimeline() {
+    const container = document.getElementById('timelineContainer');
+    if (!container) return;
     
-    function actualizarPosicion() {
-        if (!SISTEMA_SOLAR.animacionesActivas || !contenedor) return;
-        
-        angulo += velocidad * 0.1;
-        if (angulo >= 360) angulo = 0;
-        
-        contenedor.style.setProperty('--angulo-inicial', `${angulo}deg`);
-        planetaDiv.dataset.angulo = angulo;
-        
-        requestAnimationFrame(actualizarPosicion);
-    }
+    // Combinar actividades y tareas
+    const eventos = [];
     
-    requestAnimationFrame(actualizarPosicion);
-}
-
-function animarLuna(lunaDiv, estrategia) {
-    let angulo = 0;
-    const velocidad = 1.2;
-    const contenedor = document.getElementById(`contenedor-estrategia-${estrategia.id}`);
-    
-    function actualizarPosicion() {
-        if (!SISTEMA_SOLAR.animacionesActivas || !contenedor) return;
+    // Agregar actividades como eventos
+    FLOW_SYSTEM.actividades.forEach(actividad => {
+        if (actividad.fecha_inicio) {
+            eventos.push({
+                tipo: 'actividad',
+                id: actividad.id,
+                nombre: actividad.nombre,
+                fecha: actividad.fecha_inicio,
+                responsable: actividad.responsable,
+                descripcion: `Inicio de actividad - ${actividad.descripcion?.substring(0, 50) || 'Sin descripción'}`
+            });
+        }
         
-        angulo += velocidad * 0.1;
-        if (angulo >= 360) angulo = 0;
-        
-        contenedor.style.setProperty('--angulo-inicial', `${angulo}deg`);
-        
-        requestAnimationFrame(actualizarPosicion);
-    }
-    
-    requestAnimationFrame(actualizarPosicion);
-}
-
-function animarSatelite(sateliteDiv, actividad) {
-    let angulo = 0;
-    const velocidad = 1.8;
-    const contenedor = document.getElementById(`contenedor-actividad-${actividad.id}`);
-    
-    function actualizarPosicion() {
-        if (!SISTEMA_SOLAR.animacionesActivas || !contenedor) return;
-        
-        angulo += velocidad * 0.1;
-        if (angulo >= 360) angulo = 0;
-        
-        contenedor.style.setProperty('--angulo-inicial', `${angulo}deg`);
-        
-        requestAnimationFrame(actualizarPosicion);
-    }
-    
-    requestAnimationFrame(actualizarPosicion);
-}
-
-function animarAsteroide(asteroideDiv, tarea) {
-    let angulo = 0;
-    const velocidad = 2.5;
-    const contenedor = document.getElementById(`contenedor-tarea-${tarea.id}`);
-    
-    function actualizarPosicion() {
-        if (!SISTEMA_SOLAR.animacionesActivas || !contenedor) return;
-        
-        angulo += velocidad * 0.1;
-        if (angulo >= 360) angulo = 0;
-        
-        contenedor.style.setProperty('--angulo-inicial', `${angulo}deg`);
-        
-        // Rotación sobre su propio eje
-        const rotacion = (parseFloat(asteroideDiv.dataset.rotacion) || 0) + 2;
-        asteroideDiv.dataset.rotacion = rotacion;
-        asteroideDiv.querySelector('.nodo-content').style.transform = `rotate(${rotacion}deg)`;
-        
-        requestAnimationFrame(actualizarPosicion);
-    }
-    
-    requestAnimationFrame(actualizarPosicion);
-}
-
-function iniciarOrbitasPlanetas() {
-    SISTEMA_SOLAR.animacionesActivas = true;
-    
-    // Iniciar animación para cada planeta
-    SISTEMA_SOLAR.ejes.forEach(eje => {
-        const planetaDiv = document.getElementById(`eje-${eje.id}`);
-        if (planetaDiv && planetaDiv.style.display !== 'none') {
-            animarPlaneta(planetaDiv, eje);
+        if (actividad.fecha_fin) {
+            eventos.push({
+                tipo: 'actividad',
+                id: actividad.id,
+                nombre: actividad.nombre,
+                fecha: actividad.fecha_fin,
+                responsable: actividad.responsable,
+                descripcion: `Fin de actividad - ${actividad.descripcion?.substring(0, 50) || 'Sin descripción'}`
+            });
         }
     });
     
-    // Iniciar animación para lunas
-    SISTEMA_SOLAR.estrategias.forEach(estrategia => {
-        const lunaDiv = document.getElementById(`estrategia-${estrategia.id}`);
-        if (lunaDiv && lunaDiv.style.display !== 'none') {
-            animarLuna(lunaDiv, estrategia);
-        }
-    });
-    
-    // Iniciar animación para satélites
-    SISTEMA_SOLAR.actividades.forEach(actividad => {
-        const sateliteDiv = document.getElementById(`actividad-${actividad.id}`);
-        if (sateliteDiv && sateliteDiv.style.display !== 'none') {
-            animarSatelite(sateliteDiv, actividad);
-        }
-    });
-    
-    // Iniciar animación para asteroides
-    SISTEMA_SOLAR.tareas.forEach(tarea => {
-        const asteroideDiv = document.getElementById(`tarea-${tarea.id}`);
-        if (asteroideDiv && asteroideDiv.style.display !== 'none') {
-            animarAsteroide(asteroideDiv, tarea);
-        }
-    });
-}
-
-// ================================
-// NAVEGACIÓN Y ZOOM
-// ================================
-
-function inicializarNavegacion() {
-    const canvas = document.getElementById('mapaCanvas');
-    const sistemaSolar = document.getElementById('sistemaSolar');
-    
-    // Eventos de mouse para arrastrar
-    canvas.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.nodo') || e.target.closest('.control-btn') || e.target.closest('.nav-btn')) {
-            return;
-        }
-        
-        isDragging = true;
-        lastX = e.clientX;
-        lastY = e.clientY;
-        canvas.classList.add('grabbing');
-    });
-    
-    canvas.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        
-        const deltaX = e.clientX - lastX;
-        const deltaY = e.clientY - lastY;
-        
-        offsetX += deltaX;
-        offsetY += deltaY;
-        
-        aplicarTransformacion();
-        
-        lastX = e.clientX;
-        lastY = e.clientY;
-    });
-    
-    canvas.addEventListener('mouseup', () => {
-        isDragging = false;
-        canvas.classList.remove('grabbing');
-    });
-    
-    canvas.addEventListener('mouseleave', () => {
-        isDragging = false;
-        canvas.classList.remove('grabbing');
-    });
-    
-    // Zoom con rueda del mouse
-    canvas.addEventListener('wheel', (e) => {
-        e.preventDefault();
-        
-        const zoomIntensity = 0.1;
-        const rect = canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        
-        const worldX = (mouseX - offsetX) / scale;
-        const worldY = (mouseY - offsetY) / scale;
-        
-        if (e.deltaY < 0) {
-            scale *= 1 + zoomIntensity;
-        } else {
-            scale *= 1 - zoomIntensity;
-        }
-        
-        // Limitar zoom
-        scale = Math.min(Math.max(0.1, scale), 5);
-        
-        // Ajustar offset para hacer zoom en el punto del mouse
-        offsetX = mouseX - worldX * scale;
-        offsetY = mouseY - worldY * scale;
-        
-        aplicarTransformacion();
-    });
-    
-    // Atajos de teclado
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey || e.metaKey) {
-            switch(e.key) {
-                case '+':
-                case '=':
-                    e.preventDefault();
-                    zoomIn();
-                    break;
-                case '-':
-                    e.preventDefault();
-                    zoomOut();
-                    break;
-                case '0':
-                    e.preventDefault();
-                    resetView();
-                    break;
+    // Agregar tareas como eventos
+    if (FLOW_SYSTEM.tareas) {
+        FLOW_SYSTEM.tareas.forEach(tarea => {
+            if (tarea.fecha_inicio) {
+                eventos.push({
+                    tipo: 'tarea',
+                    id: tarea.id,
+                    nombre: tarea.nombre,
+                    fecha: tarea.fecha_inicio,
+                    responsable: tarea.responsable,
+                    descripcion: `Inicio de tarea - ${tarea.descripcion?.substring(0, 50) || 'Sin descripción'}`,
+                    estado: tarea.estado
+                });
             }
-        }
+        });
+    }
+    
+    // Ordenar por fecha
+    eventos.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+    
+    // Agrupar por mes
+    const eventosPorMes = {};
+    eventos.forEach(evento => {
+        const fecha = new Date(evento.fecha);
+        const mes = fecha.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' });
         
-        // Teclas de flecha para navegación
-        if (!e.ctrlKey && !e.metaKey) {
-            switch(e.key) {
-                case 'ArrowUp':
-                    e.preventDefault();
-                    moverArriba();
-                    break;
-                case 'ArrowDown':
-                    e.preventDefault();
-                    moverAbajo();
-                    break;
-                case 'ArrowLeft':
-                    e.preventDefault();
-                    moverIzquierda();
-                    break;
-                case 'ArrowRight':
-                    e.preventDefault();
-                    moverDerecha();
-                    break;
-            }
+        if (!eventosPorMes[mes]) {
+            eventosPorMes[mes] = [];
+        }
+        eventosPorMes[mes].push(evento);
+    });
+    
+    container.innerHTML = '';
+    
+    // Crear timeline
+    const timeline = document.createElement('div');
+    timeline.className = 'timeline';
+    
+    Object.keys(eventosPorMes).forEach((mes, mesIndex) => {
+        // Encabezado del mes
+        const header = document.createElement('div');
+        header.className = 'timeline-month';
+        header.style.cssText = `
+            font-size: 16px;
+            font-weight: 600;
+            color: #4fc3f7;
+            margin-bottom: 20px;
+            padding-left: 50px;
+        `;
+        header.textContent = mes.charAt(0).toUpperCase() + mes.slice(1);
+        timeline.appendChild(header);
+        
+        // Eventos del mes
+        eventosPorMes[mes].forEach(evento => {
+            const eventElement = document.createElement('div');
+            eventElement.className = 'timeline-event';
+            
+            const colorEvento = evento.tipo === 'actividad' ? '#2196F3' : 
+                              evento.estado === 'completada' ? '#4CAF50' : '#FF9800';
+            
+            eventElement.style.borderLeftColor = colorEvento;
+            
+            eventElement.innerHTML = `
+                <div class="event-date">
+                    ${new Date(evento.fecha).toLocaleDateString('es-ES', { 
+                        weekday: 'long', 
+                        year: 'numeric', 
+                        month: 'long', 
+                        day: 'numeric' 
+                    })}
+                </div>
+                <div class="event-title">
+                    <i class="fas fa-${evento.tipo === 'actividad' ? 'project-diagram' : 'tasks'}"></i>
+                    ${evento.nombre.substring(0, 40)}${evento.nombre.length > 40 ? '...' : ''}
+                </div>
+                <div class="event-desc">
+                    ${evento.descripcion}<br>
+                    <small><i class="fas fa-user"></i> ${evento.responsable || 'Sin responsable'}</small>
+                </div>
+            `;
+            
+            // Evento de clic
+            eventElement.addEventListener('click', () => {
+                if (evento.tipo === 'actividad') {
+                    mostrarDetallesActividad(evento.id);
+                } else {
+                    mostrarDetallesTarea(evento.id);
+                }
+            });
+            
+            timeline.appendChild(eventElement);
+        });
+    });
+    
+    container.appendChild(timeline);
+}
+
+// ================================
+// FUNCIONES AUXILIARES
+// ================================
+
+function filtrarActividades() {
+    let actividades = FLOW_SYSTEM.actividades;
+    
+    // Filtrar por responsable
+    if (FLOW_SYSTEM.filtros.responsable !== 'todos') {
+        actividades = actividades.filter(a => 
+            a.responsable === FLOW_SYSTEM.filtros.responsable
+        );
+    }
+    
+    // Filtrar por estado (basado en tareas)
+    if (FLOW_SYSTEM.filtros.estado !== 'todos') {
+        actividades = actividades.filter(actividad => {
+            const tareasActividad = FLOW_SYSTEM.tareas?.filter(t => t.actividad_id == actividad.id) || [];
+            if (tareasActividad.length === 0) return FLOW_SYSTEM.filtros.estado === 'pendiente';
+            
+            return tareasActividad.some(t => t.estado === FLOW_SYSTEM.filtros.estado);
+        });
+    }
+    
+    // Filtrar por fechas
+    if (FLOW_SYSTEM.filtros.fechaDesde) {
+        actividades = actividades.filter(a => 
+            !a.fecha_inicio || new Date(a.fecha_inicio) >= new Date(FLOW_SYSTEM.filtros.fechaDesde)
+        );
+    }
+    
+    if (FLOW_SYSTEM.filtros.fechaHasta) {
+        actividades = actividades.filter(a => 
+            !a.fecha_fin || new Date(a.fecha_fin) <= new Date(FLOW_SYSTEM.filtros.fechaHasta)
+        );
+    }
+    
+    return actividades;
+}
+
+function calcularRangoFechas(actividades) {
+    let fechaMin = new Date();
+    let fechaMax = new Date();
+    
+    actividades.forEach(actividad => {
+        if (actividad.fecha_inicio) {
+            const fecha = new Date(actividad.fecha_inicio);
+            if (fecha < fechaMin) fechaMin = fecha;
+        }
+        if (actividad.fecha_fin) {
+            const fecha = new Date(actividad.fecha_fin);
+            if (fecha > fechaMax) fechaMax = fecha;
         }
     });
+    
+    // Asegurar al menos 30 días de diferencia
+    const diferenciaDias = (fechaMax - fechaMin) / (1000 * 60 * 60 * 24);
+    if (diferenciaDias < 30) {
+        fechaMax = new Date(fechaMin);
+        fechaMax.setDate(fechaMax.getDate() + 30);
+    }
+    
+    return { fechaMin, fechaMax };
 }
 
-function aplicarTransformacion() {
-    const sistemaSolar = document.getElementById('sistemaSolar');
-    sistemaSolar.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+function calcularProgresoActividad(actividadId) {
+    const tareasActividad = FLOW_SYSTEM.tareas?.filter(t => t.actividad_id == actividadId) || [];
+    if (tareasActividad.length === 0) return 0;
+    
+    const tareasCompletadas = tareasActividad.filter(t => t.estado === 'completada').length;
+    return Math.round((tareasCompletadas / tareasActividad.length) * 100);
 }
 
-function zoomIn() {
-    scale *= 1.2;
-    scale = Math.min(scale, 5);
-    aplicarTransformacion();
+function determinarEstadoActividad(actividad) {
+    const progreso = calcularProgresoActividad(actividad.id);
+    
+    if (progreso === 100) return 'completado';
+    
+    if (actividad.fecha_fin) {
+        const fechaFin = new Date(actividad.fecha_fin);
+        const hoy = new Date();
+        
+        if (fechaFin < hoy && progreso < 100) {
+            return 'atrasado';
+        }
+    }
+    
+    if (progreso > 0) return 'progreso';
+    
+    return 'pendiente';
 }
 
-function zoomOut() {
-    scale *= 0.8;
-    scale = Math.max(scale, 0.1);
-    aplicarTransformacion();
-}
-
-function moverArriba() {
-    offsetY += 50;
-    aplicarTransformacion();
-}
-
-function moverAbajo() {
-    offsetY -= 50;
-    aplicarTransformacion();
-}
-
-function moverIzquierda() {
-    offsetX += 50;
-    aplicarTransformacion();
-}
-
-function moverDerecha() {
-    offsetX -= 50;
-    aplicarTransformacion();
-}
-
-function centrarVista() {
-    offsetX = 0;
-    offsetY = 0;
-    scale = 1;
-    aplicarTransformacion();
+function getColorEstado(estado) {
+    switch(estado) {
+        case 'pendiente': return '#FF9800';
+        case 'progreso': return '#2196F3';
+        case 'completado': return '#4CAF50';
+        case 'atrasado': return '#F44336';
+        default: return '#9E9E9E';
+    }
 }
 
 // ================================
-// FUNCIONES DE CONTROL
+// FUNCIONES DE INTERFAZ
 // ================================
 
-function toggleFullscreen() {
-    const container = document.getElementById('mapaFullscreen');
+function aplicarFiltrosFlow() {
+    // Actualizar filtros
+    FLOW_SYSTEM.filtros.responsable = document.getElementById('filtroResponsable').value;
+    FLOW_SYSTEM.filtros.estado = document.getElementById('filtroEstadoFlow').value;
+    FLOW_SYSTEM.filtros.fechaDesde = document.getElementById('fechaDesde').value;
+    FLOW_SYSTEM.filtros.fechaHasta = document.getElementById('fechaHasta').value;
+    
+    // Re-renderizar vistas activas
+    renderizarVistas();
+    actualizarEstadisticas();
+}
+
+function toggleFullscreenFlow() {
+    const container = document.getElementById('flowmapFullscreen');
     
     if (!document.fullscreenElement) {
         container.requestFullscreen().catch(err => {
-            console.log(`Error al activar pantalla completa: ${err.message}`);
+            console.error(`Error al activar pantalla completa: ${err.message}`);
         });
     } else {
         document.exitFullscreen();
     }
 }
 
-function resetView() {
-    // Resetear posición y zoom
-    offsetX = 0;
-    offsetY = 0;
-    scale = 1;
-    aplicarTransformacion();
+function zoomGantt(direccion) {
+    const container = document.getElementById('ganttContent');
+    const currentScale = parseFloat(container.style.transform?.replace('scale(', '')?.replace(')', '')) || 1;
     
-    // Resetear ángulos de planetas
-    SISTEMA_SOLAR.ejes.forEach((eje, index) => {
-        const planeta = document.getElementById(`eje-${eje.id}`);
-        if (planeta) {
-            planeta.dataset.angulo = (360 / SISTEMA_SOLAR.ejes.length) * index;
-            const contenedor = document.getElementById(`contenedor-${eje.id}`);
-            if (contenedor) {
-                contenedor.style.setProperty('--angulo-inicial', `${(360 / SISTEMA_SOLAR.ejes.length) * index}deg`);
-            }
-        }
-    });
+    let newScale = direccion === 'in' ? currentScale * 1.2 : currentScale * 0.8;
+    newScale = Math.max(0.5, Math.min(3, newScale));
+    
+    container.style.transform = `scale(${newScale})`;
+    container.style.transformOrigin = 'top left';
 }
 
-function toggleAnimaciones() {
-    SISTEMA_SOLAR.animacionesActivas = !SISTEMA_SOLAR.animacionesActivas;
-    const icon = document.getElementById('animacionIcon');
-    
-    if (SISTEMA_SOLAR.animacionesActivas) {
-        icon.className = 'fas fa-pause';
-        iniciarOrbitasPlanetas();
-    } else {
-        icon.className = 'fas fa-play';
-    }
+function ajustarGantt() {
+    const container = document.getElementById('ganttContent');
+    container.style.transform = 'scale(1)';
 }
 
-function iniciarOrbitas() {
-    SISTEMA_SOLAR.animacionesActivas = true;
-    iniciarOrbitasPlanetas();
-    document.getElementById('animacionIcon').className = 'fas fa-pause';
+function autoOrganizarFlujo() {
+    alert('Funcionalidad de auto-organización activada. Los nodos se reorganizarán automáticamente.');
+    renderizarFlujo();
+}
+
+function actualizarResponsables() {
+    renderizarResponsables();
+    alert('Panel de responsables actualizado');
+}
+
+function expandirTimeline() {
+    const timelineView = document.getElementById('timelineView');
+    timelineView.classList.toggle('expanded');
 }
 
 // ================================
 // FUNCIONES DE DETALLES
 // ================================
 
-function mostrarDetalleObjetivo() {
-    const panel = document.getElementById('panelDetalles');
-    const titulo = document.getElementById('detalleTitulo');
-    const contenido = document.getElementById('detalleContenido');
+function mostrarDetallesActividad(actividadId) {
+    const actividad = FLOW_SYSTEM.actividades.find(a => a.id == actividadId);
+    if (!actividad) return;
     
-    titulo.innerHTML = `<i class="fas fa-sun"></i> Objetivo Estratégico`;
+    const tareasActividad = FLOW_SYSTEM.tareas?.filter(t => t.actividad_id == actividadId) || [];
+    const progreso = calcularProgresoActividad(actividadId);
+    const estado = determinarEstadoActividad(actividad);
+    const colorEstado = getColorEstado(estado);
+    
+    const panel = document.getElementById('panelDetalles');
+    const contenido = document.getElementById('detallesContenido');
     
     contenido.innerHTML = `
-        <div class="detalle-sol">
-            <div class="encabezado-detalle" style="background: linear-gradient(135deg, #FFD700, #FF8C00);">
+        <div class="detalle-actividad">
+            <div class="encabezado-detalle" style="background: ${colorEstado};">
                 <div class="icono-grande">
-                    <i class="fas fa-sun"></i>
+                    <i class="fas fa-project-diagram"></i>
                 </div>
-                <h3>OBJETIVO ESTRATÉGICO</h3>
-                <p>Centro del Sistema Solar</p>
+                <h3>${actividad.nombre}</h3>
+                <p>Actividad - ${estado.charAt(0).toUpperCase() + estado.slice(1)}</p>
             </div>
             
-            <div class="descripcion-objetivo">
-                <p><strong>Consolidar la viabilidad y el respaldo social del Proyecto El Domo</strong> mediante un modelo de gestión integral que garantice la integridad y disponibilidad del recurso hídrico local, asegurando su no afectación por actividades mineras.</p>
+            <div class="info-detalle">
+                <div class="info-item">
+                    <label><i class="fas fa-user"></i> Responsable:</label>
+                    <span>${actividad.responsable || 'No asignado'}</span>
+                </div>
                 
-                <div class="estadisticas-detalle">
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.ejes.length}</div>
-                        <div class="estadistica-label">Ejes</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.estrategias.length}</div>
-                        <div class="estadistica-label">Estrategias</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.actividades.length}</div>
-                        <div class="estadistica-label">Actividades</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.tareas.length}</div>
-                        <div class="estadistica-label">Tareas</div>
+                <div class="info-item">
+                    <label><i class="fas fa-calendar"></i> Fechas:</label>
+                    <span>
+                        ${actividad.fecha_inicio ? new Date(actividad.fecha_inicio).toLocaleDateString() : 'No definido'} 
+                        → 
+                        ${actividad.fecha_fin ? new Date(actividad.fecha_fin).toLocaleDateString() : 'No definido'}
+                    </span>
+                </div>
+                
+                <div class="info-item">
+                    <label><i class="fas fa-chart-line"></i> Progreso:</label>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progreso}%; background: ${colorEstado};"></div>
+                        <span class="progress-text">${progreso}%</span>
                     </div>
                 </div>
+                
+                <div class="info-item">
+                    <label><i class="fas fa-align-left"></i> Descripción:</label>
+                    <p>${actividad.descripcion || 'Sin descripción'}</p>
+                </div>
+                
+                ${tareasActividad.length > 0 ? `
+                    <div class="seccion-detalle">
+                        <h4><i class="fas fa-tasks"></i> Tareas (${tareasActividad.length})</h4>
+                        <div class="lista-tareas">
+                            ${tareasActividad.map(tarea => {
+                                const colorTarea = getColorEstado(tarea.estado);
+                                return `
+                                    <div class="tarea-item" onclick="mostrarDetallesTarea(${tarea.id})">
+                                        <div class="tarea-status" style="background: ${colorTarea};"></div>
+                                        <div class="tarea-info">
+                                            <div class="tarea-nombre">${tarea.nombre}</div>
+                                            <div class="tarea-meta">
+                                                ${tarea.responsable || 'Sin responsable'} | 
+                                                ${tarea.estado.charAt(0).toUpperCase() + tarea.estado.slice(1)}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+            
+            <div class="acciones-detalle">
+                <button class="btn-accion" onclick="editarActividad(${actividad.id})">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+                <button class="btn-accion" onclick="agregarTareaActividad(${actividad.id})">
+                    <i class="fas fa-plus"></i> Agregar Tarea
+                </button>
+                <button class="btn-accion" onclick="compartirActividad(${actividad.id})">
+                    <i class="fas fa-share"></i> Compartir
+                </button>
             </div>
         </div>
         
         <style>
             .encabezado-detalle {
-                padding: 30px;
-                border-radius: 15px;
-                margin-bottom: 20px;
+                padding: 25px;
+                border-radius: 12px 12px 0 0;
+                margin: -20px -20px 20px -20px;
                 text-align: center;
                 color: white;
             }
             
             .icono-grande {
-                width: 80px;
-                height: 80px;
+                width: 70px;
+                height: 70px;
                 background: rgba(255,255,255,0.2);
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 margin: 0 auto 15px;
-                font-size: 32px;
+                font-size: 28px;
             }
             
-            .encabezado-detalle h3 {
-                font-size: 24px;
-                margin-bottom: 10px;
+            .info-detalle {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
             }
             
-            .encabezado-detalle p {
-                opacity: 0.9;
+            .info-item {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            
+            .info-item label {
+                font-size: 12px;
+                color: rgba(255,255,255,0.7);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .info-item span, .info-item p {
                 font-size: 14px;
-            }
-            
-            .descripcion-objetivo {
-                line-height: 1.6;
                 color: rgba(255,255,255,0.9);
             }
             
-            .descripcion-objetivo p {
-                margin-bottom: 20px;
-            }
-            
-            .estadisticas-detalle {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 15px;
-                margin: 20px 0;
-            }
-            
-            .estadistica-item {
-                background: rgba(255,255,255,0.05);
+            .progress-bar {
+                height: 20px;
+                background: rgba(255,255,255,0.1);
                 border-radius: 10px;
-                padding: 15px;
-                text-align: center;
+                overflow: hidden;
+                position: relative;
+                margin-top: 5px;
             }
             
-            .estadistica-valor {
-                font-size: 28px;
-                font-weight: bold;
+            .progress-fill {
+                height: 100%;
+                border-radius: 10px;
+                transition: width 0.3s ease;
+            }
+            
+            .progress-text {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 11px;
+                font-weight: 600;
                 color: white;
-                margin-bottom: 5px;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
             }
             
-            .estadistica-label {
-                font-size: 12px;
-                color: rgba(255,255,255,0.7);
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
+            .seccion-detalle {
+                margin-top: 20px;
+                border-top: 1px solid rgba(255,255,255,0.1);
+                padding-top: 20px;
+            }
+            
+            .seccion-detalle h4 {
+                font-size: 14px;
+                margin-bottom: 15px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                color: #4fc3f7;
+            }
+            
+            .lista-tareas {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .tarea-item {
+                background: rgba(255,255,255,0.05);
+                border-radius: 8px;
+                padding: 12px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border-left: 3px solid #2196F3;
+            }
+            
+            .tarea-item:hover {
+                background: rgba(255,255,255,0.1);
+                transform: translateX(5px);
+            }
+            
+            .tarea-status {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+            }
+            
+            .tarea-info {
+                flex: 1;
+            }
+            
+            .tarea-nombre {
+                font-size: 13px;
+                font-weight: 500;
+                margin-bottom: 3px;
+            }
+            
+            .tarea-meta {
+                font-size: 11px;
+                color: rgba(255,255,255,0.6);
+            }
+            
+            .acciones-detalle {
+                display: flex;
+                gap: 10px;
+                margin-top: 20px;
+                padding-top: 20px;
+                border-top: 1px solid rgba(255,255,255,0.1);
+            }
+            
+            .btn-accion {
+                flex: 1;
+                background: rgba(255,255,255,0.1);
+                border: 1px solid rgba(255,255,255,0.2);
+                color: white;
+                padding: 10px;
+                border-radius: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                font-size: 13px;
+                transition: all 0.3s ease;
+            }
+            
+            .btn-accion:hover {
+                background: rgba(255,255,255,0.2);
+                transform: translateY(-2px);
             }
         </style>
     `;
@@ -2331,84 +2135,76 @@ function mostrarDetalleObjetivo() {
     panel.classList.add('open');
 }
 
-function mostrarDetallesEje(ejeId) {
-    const eje = SISTEMA_SOLAR.ejes.find(e => e.id === ejeId);
-    if (!eje) return;
+function mostrarDetallesTarea(tareaId) {
+    const tarea = FLOW_SYSTEM.tareas?.find(t => t.id == tareaId);
+    if (!tarea) return;
     
-    const estrategiasDelEje = SISTEMA_SOLAR.estrategias.filter(e => e.eje_id === ejeId);
+    const actividad = FLOW_SYSTEM.actividades.find(a => a.id == tarea.actividad_id);
+    const colorEstado = getColorEstado(tarea.estado);
     
     const panel = document.getElementById('panelDetalles');
-    const titulo = document.getElementById('detalleTitulo');
-    const contenido = document.getElementById('detalleContenido');
-    
-    titulo.innerHTML = `<i class="fas fa-${eje.icono}"></i> ${eje.nombre}`;
+    const contenido = document.getElementById('detallesContenido');
     
     contenido.innerHTML = `
-        <div class="detalle-eje">
-            <div class="encabezado-detalle" style="background: linear-gradient(135deg, ${eje.color}, ${oscurecerColor(eje.color, 20)});">
+        <div class="detalle-tarea">
+            <div class="encabezado-detalle" style="background: ${colorEstado};">
                 <div class="icono-grande">
-                    <i class="fas fa-${eje.icono}"></i>
+                    <i class="fas fa-tasks"></i>
                 </div>
-                <h3>${eje.nombre}</h3>
-                <p>Eje Estratégico</p>
+                <h3>${tarea.nombre}</h3>
+                <p>Tarea - ${tarea.estado.charAt(0).toUpperCase() + tarea.estado.slice(1)}</p>
             </div>
             
-            <div class="info-eje">
-                <p><strong>Descripción:</strong> ${eje.descripcion}</p>
+            <div class="info-detalle">
+                <div class="info-item">
+                    <label><i class="fas fa-user"></i> Responsable:</label>
+                    <span>${tarea.responsable || 'No asignado'}</span>
+                </div>
                 
-                <div class="parametros-orbitales">
-                    <h4><i class="fas fa-satellite"></i> Parámetros Orbitales</h4>
-                    <div class="parametros-grid">
-                        <div class="parametro">
-                            <div class="parametro-label">Distancia al Sol</div>
-                            <div class="parametro-valor">${CONFIG_ORBITAS.distanciasEjes[SISTEMA_SOLAR.ejes.findIndex(e => e.id === ejeId)] || 400}px</div>
+                <div class="info-item">
+                    <label><i class="fas fa-calendar"></i> Fechas:</label>
+                    <span>
+                        ${tarea.fecha_inicio ? new Date(tarea.fecha_inicio).toLocaleDateString() : 'No definido'} 
+                        → 
+                        ${tarea.fecha_fin ? new Date(tarea.fecha_fin).toLocaleDateString() : 'No definido'}
+                    </span>
+                </div>
+                
+                <div class="info-item">
+                    <label><i class="fas fa-project-diagram"></i> Actividad:</label>
+                    <span>${actividad ? actividad.nombre : 'Sin actividad asignada'}</span>
+                </div>
+                
+                <div class="info-item">
+                    <label><i class="fas fa-align-left"></i> Descripción:</label>
+                    <p>${tarea.descripcion || 'Sin descripción'}</p>
+                </div>
+                
+                <div class="info-item">
+                    <label><i class="fas fa-history"></i> Historial:</label>
+                    <div class="historial">
+                        <div class="evento-historial">
+                            <div class="evento-fecha">${new Date(tarea.fecha_creacion).toLocaleDateString()}</div>
+                            <div class="evento-desc">Tarea creada</div>
                         </div>
-                        <div class="parametro">
-                            <div class="parametro-label">Velocidad Orbital</div>
-                            <div class="parametro-valor">${CONFIG_ORBITAS.velocidadesEjes[SISTEMA_SOLAR.ejes.findIndex(e => e.id === ejeId)] || 0.5}</div>
-                        </div>
-                        <div class="parametro">
-                            <div class="parametro-label">Tamaño</div>
-                            <div class="parametro-valor">${CONFIG_ORBITAS.tamanoEjes[SISTEMA_SOLAR.ejes.findIndex(e => e.id === ejeId)] || 100}px</div>
-                        </div>
-                        <div class="parametro">
-                            <div class="parametro-label">Estrategias</div>
-                            <div class="parametro-valor">${estrategiasDelEje.length}</div>
+                        <div class="evento-historial">
+                            <div class="evento-fecha">Hoy</div>
+                            <div class="evento-desc">Estado actual: ${tarea.estado}</div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="estadisticas-detalle">
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${estrategiasDelEje.length}</div>
-                        <div class="estadistica-label">Estrategias</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.actividades.filter(a => estrategiasDelEje.find(e => e.id == a.estrategia_id)).length}</div>
-                        <div class="estadistica-label">Actividades</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.tareas.filter(t => SISTEMA_SOLAR.actividades.find(a => a.id == t.actividad_id && estrategiasDelEje.find(e => e.id == a.estrategia_id))).length}</div>
-                        <div class="estadistica-label">Tareas</div>
-                    </div>
-                </div>
-                
-                ${estrategiasDelEje.length > 0 ? `
-                    <h4><i class="fas fa-moon"></i> Estrategias</h4>
-                    <div class="lista-elementos">
-                        ${estrategiasDelEje.map(estrategia => `
-                            <div class="item-elemento" onclick="mostrarDetallesEstrategia(${estrategia.id})">
-                                <div class="item-icono" style="background: ${getColorByTipo(estrategia.tipo_cruce)}">
-                                    <i class="fas fa-moon"></i>
-                                </div>
-                                <div class="item-info">
-                                    <div class="item-titulo">${estrategia.estrategia.substring(0, 30)}...</div>
-                                    <div class="item-subtitulo">Tipo: ${estrategia.tipo_cruce}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
+            </div>
+            
+            <div class="acciones-detalle">
+                <button class="btn-accion" onclick="cambiarEstadoTarea(${tarea.id}, 'en_progreso')">
+                    <i class="fas fa-play"></i> Iniciar
+                </button>
+                <button class="btn-accion" onclick="cambiarEstadoTarea(${tarea.id}, 'completada')">
+                    <i class="fas fa-check"></i> Completar
+                </button>
+                <button class="btn-accion" onclick="editarTarea(${tarea.id})">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
             </div>
         </div>
     `;
@@ -2416,241 +2212,346 @@ function mostrarDetallesEje(ejeId) {
     panel.classList.add('open');
 }
 
-function mostrarDetallesEstrategia(estrategiaId) {
-    const estrategia = SISTEMA_SOLAR.estrategias.find(e => e.id == estrategiaId);
-    if (!estrategia) return;
-    
-    const eje = SISTEMA_SOLAR.ejes.find(e => e.id === estrategia.eje_id);
-    const actividadesDeEstrategia = SISTEMA_SOLAR.actividades.filter(a => a.estrategia_id == estrategiaId);
-    
-    const panel = document.getElementById('panelDetalles');
-    const titulo = document.getElementById('detalleTitulo');
-    const contenido = document.getElementById('detalleContenido');
-    
-    titulo.innerHTML = `<i class="fas fa-moon"></i> Estrategia #${estrategia.id}`;
-    
-    contenido.innerHTML = `
-        <div class="detalle-estrategia">
-            <div class="encabezado-detalle" style="background: linear-gradient(135deg, ${getColorByTipo(estrategia.tipo_cruce)}, ${oscurecerColor(getColorByTipo(estrategia.tipo_cruce), 20)});">
-                <div class="icono-grande">
-                    <i class="fas fa-moon"></i>
-                </div>
-                <h3>Estrategia ${estrategia.tipo_cruce}</h3>
-                <p>${eje ? eje.nombre : 'Sin eje'}</p>
-            </div>
-            
-            <div class="info-estrategia">
-                <p><strong>Elemento Interno:</strong> ${estrategia.elemento_interno_texto}</p>
-                <p><strong>Elemento Externo:</strong> ${estrategia.elemento_externo_texto}</p>
-                <p><strong>Estrategia:</strong> ${estrategia.estrategia}</p>
-                ${estrategia.eje_texto ? `<p><strong>Eje:</strong> ${estrategia.eje_texto}</p>` : ''}
-                <p><strong>Fecha:</strong> ${new Date(estrategia.fecha_creacion).toLocaleDateString()}</p>
-                <p><strong>Creador:</strong> ${estrategia.creador || 'N/A'}</p>
-                
-                <div class="estadisticas-detalle">
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${actividadesDeEstrategia.length}</div>
-                        <div class="estadistica-label">Actividades</div>
-                    </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${SISTEMA_SOLAR.tareas.filter(t => actividadesDeEstrategia.find(a => a.id === t.actividad_id)).length}</div>
-                        <div class="estadistica-label">Tareas</div>
-                    </div>
-                </div>
-                
-                ${actividadesDeEstrategia.length > 0 ? `
-                    <h4><i class="fas fa-satellite"></i> Actividades</h4>
-                    <div class="lista-elementos">
-                        ${actividadesDeEstrategia.map(actividad => `
-                            <div class="item-elemento" onclick="mostrarDetallesActividad(${actividad.id})">
-                                <div class="item-icono" style="background: #e74c3c">
-                                    <i class="fas fa-satellite"></i>
-                                </div>
-                                <div class="item-info">
-                                    <div class="item-titulo">${actividad.nombre}</div>
-                                    <div class="item-subtitulo">Responsable: ${actividad.responsable || 'No asignado'}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                ` : ''}
-            </div>
-        </div>
-    `;
-    
-    panel.classList.add('open');
+function cerrarDetalles() {
+    document.getElementById('panelDetalles').classList.remove('open');
 }
 
-function mostrarDetallesActividad(actividadId) {
-    const actividad = SISTEMA_SOLAR.actividades.find(a => a.id == actividadId);
-    if (!actividad) return;
-    
-    const estrategia = SISTEMA_SOLAR.estrategias.find(e => e.id == actividad.estrategia_id);
-    const tareasDeActividad = SISTEMA_SOLAR.tareas.filter(t => t.actividad_id == actividadId);
-    
+function mostrarDetallesResponsable(responsable, actividades, tareas) {
     const panel = document.getElementById('panelDetalles');
-    const titulo = document.getElementById('detalleTitulo');
-    const contenido = document.getElementById('detalleContenido');
+    const contenido = document.getElementById('detallesContenido');
     
-    titulo.innerHTML = `<i class="fas fa-satellite"></i> ${actividad.nombre}`;
+    const tareasCompletadas = tareas.filter(t => t.estado === 'completada').length;
+    const tareasPendientes = tareas.filter(t => t.estado === 'pendiente').length;
+    const tareasProgreso = tareas.filter(t => t.estado === 'en_progreso').length;
     
     contenido.innerHTML = `
-        <div class="detalle-actividad">
-            <div class="encabezado-detalle" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+        <div class="detalle-responsable">
+            <div class="encabezado-detalle" style="background: linear-gradient(135deg, #9C27B0, #7B1FA2);">
                 <div class="icono-grande">
-                    <i class="fas fa-satellite"></i>
+                    <i class="fas fa-user-tie"></i>
                 </div>
-                <h3>${actividad.nombre}</h3>
-                <p>Actividad</p>
+                <h3>${responsable}</h3>
+                <p>Responsable de Proyecto</p>
             </div>
             
-            <div class="info-actividad">
-                <p><strong>Descripción:</strong> ${actividad.descripcion || 'Sin descripción'}</p>
-                <p><strong>Responsable:</strong> ${actividad.responsable || 'No asignado'}</p>
-                <p><strong>Estrategia:</strong> ${estrategia ? estrategia.estrategia.substring(0, 50) + '...' : 'No asignada'}</p>
-                ${actividad.fecha_inicio ? `<p><strong>Fecha Inicio:</strong> ${new Date(actividad.fecha_inicio).toLocaleDateString()}</p>` : ''}
-                ${actividad.fecha_fin ? `<p><strong>Fecha Fin:</strong> ${new Date(actividad.fecha_fin).toLocaleDateString()}</p>` : ''}
-                <p><strong>Creador:</strong> ${actividad.creador || 'N/A'}</p>
-                
-                <div class="estadisticas-detalle">
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${tareasDeActividad.length}</div>
+            <div class="info-detalle">
+                <div class="estadisticas-resumen">
+                    <div class="estadistica">
+                        <div class="estadistica-valor">${actividades.length}</div>
+                        <div class="estadistica-label">Actividades</div>
+                    </div>
+                    <div class="estadistica">
+                        <div class="estadistica-valor">${tareas.length}</div>
                         <div class="estadistica-label">Tareas</div>
                     </div>
-                    <div class="estadistica-item">
-                        <div class="estadistica-valor">${tareasDeActividad.filter(t => t.estado === 'completada').length}</div>
+                    <div class="estadistica">
+                        <div class="estadistica-valor">${tareasCompletadas}</div>
                         <div class="estadistica-label">Completadas</div>
                     </div>
                 </div>
                 
-                ${tareasDeActividad.length > 0 ? `
-                    <h4><i class="fas fa-meteor"></i> Tareas</h4>
-                    <div class="lista-elementos">
-                        ${tareasDeActividad.map(tarea => {
-                            let colorEstado = getColorByEstado(tarea.estado);
-                            let iconoEstado = getIconoByEstado(tarea.estado);
-                            let textoEstado = 'Pendiente';
-                            
-                            switch(tarea.estado) {
-                                case 'completada':
-                                    textoEstado = 'Completada';
-                                    break;
-                                case 'en_progreso':
-                                    textoEstado = 'En progreso';
-                                    break;
-                            }
-                            
-                            return `
-                                <div class="item-elemento" onclick="mostrarDetallesTarea(${tarea.id})">
-                                    <div class="item-icono" style="background: ${colorEstado}">
-                                        <i class="fas ${iconoEstado}"></i>
-                                    </div>
-                                    <div class="item-info">
-                                        <div class="item-titulo">${tarea.nombre}</div>
-                                        <div class="item-subtitulo">Estado: ${textoEstado}</div>
-                                    </div>
+                <div class="seccion-detalle">
+                    <h4><i class="fas fa-project-diagram"></i> Actividades Asignadas</h4>
+                    <div class="lista-actividades">
+                        ${actividades.map(actividad => `
+                            <div class="actividad-item" onclick="mostrarDetallesActividad(${actividad.id})">
+                                <div class="actividad-nombre">${actividad.nombre}</div>
+                                <div class="actividad-meta">
+                                    ${actividad.fecha_inicio ? new Date(actividad.fecha_inicio).toLocaleDateString() : 'Sin fecha'} |
+                                    ${calcularProgresoActividad(actividad.id)}% Completado
                                 </div>
-                            `;
-                        }).join('')}
+                            </div>
+                        `).join('')}
                     </div>
-                ` : ''}
-            </div>
-        </div>
-    `;
-    
-    panel.classList.add('open');
-}
-
-function mostrarDetallesTarea(tareaId) {
-    const tarea = SISTEMA_SOLAR.tareas.find(t => t.id == tareaId);
-    if (!tarea) return;
-    
-    const actividad = SISTEMA_SOLAR.actividades.find(a => a.id == tarea.actividad_id);
-    const estrategia = actividad ? SISTEMA_SOLAR.estrategias.find(e => e.id == actividad.estrategia_id) : null;
-    const eje = estrategia ? SISTEMA_SOLAR.ejes.find(e => e.id == estrategia.eje_id) : null;
-    
-    const panel = document.getElementById('panelDetalles');
-    const titulo = document.getElementById('detalleTitulo');
-    const contenido = document.getElementById('detalleContenido');
-    
-    let colorEstado = getColorByEstado(tarea.estado);
-    let iconoEstado = getIconoByEstado(tarea.estado);
-    let textoEstado = 'Pendiente';
-    
-    switch(tarea.estado) {
-        case 'completada':
-            textoEstado = 'Completada';
-            break;
-        case 'en_progreso':
-            textoEstado = 'En progreso';
-            break;
-    }
-    
-    titulo.innerHTML = `<i class="fas fa-meteor"></i> ${tarea.nombre}`;
-    
-    contenido.innerHTML = `
-        <div class="detalle-tarea">
-            <div class="encabezado-detalle" style="background: linear-gradient(135deg, ${colorEstado}, ${oscurecerColor(colorEstado, 20)});">
-                <div class="icono-grande">
-                    <i class="fas ${iconoEstado}"></i>
                 </div>
-                <h3>${tarea.nombre}</h3>
-                <p>Tarea - ${textoEstado}</p>
-            </div>
-            
-            <div class="info-tarea">
-                <p><strong>Estado:</strong> ${textoEstado}</p>
-                <p><strong>Descripción:</strong> ${tarea.descripcion || 'Sin descripción'}</p>
-                <p><strong>Responsable:</strong> ${tarea.responsable || 'No asignado'}</p>
-                ${actividad ? `<p><strong>Actividad:</strong> ${actividad.nombre}</p>` : ''}
-                ${estrategia ? `<p><strong>Estrategia:</strong> ${estrategia.estrategia.substring(0, 50)}...</p>` : ''}
-                ${eje ? `<p><strong>Eje:</strong> ${eje.nombre}</p>` : ''}
-                ${tarea.fecha_inicio ? `<p><strong>Fecha Inicio:</strong> ${new Date(tarea.fecha_inicio).toLocaleDateString()}</p>` : ''}
-                ${tarea.fecha_fin ? `<p><strong>Fecha Fin:</strong> ${new Date(tarea.fecha_fin).toLocaleDateString()}</p>` : ''}
-                <p><strong>Creador:</strong> ${tarea.creador || 'N/A'}</p>
+                
+                <div class="seccion-detalle">
+                    <h4><i class="fas fa-chart-pie"></i> Distribución de Tareas</h4>
+                    <div class="distribucion-tareas">
+                        <div class="dist-item completada">
+                            <div class="dist-bar" style="height: ${(tareasCompletadas / tareas.length) * 100 || 0}%"></div>
+                            <div class="dist-label">Completadas</div>
+                        </div>
+                        <div class="dist-item en-progreso">
+                            <div class="dist-bar" style="height: ${(tareasProgreso / tareas.length) * 100 || 0}%"></div>
+                            <div class="dist-label">En Progreso</div>
+                        </div>
+                        <div class="dist-item pendiente">
+                            <div class="dist-bar" style="height: ${(tareasPendientes / tareas.length) * 100 || 0}%"></div>
+                            <div class="dist-label">Pendientes</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
+        
+        <style>
+            .estadisticas-resumen {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+                margin: 20px 0;
+            }
+            
+            .estadistica {
+                background: rgba(255,255,255,0.05);
+                border-radius: 10px;
+                padding: 15px;
+                text-align: center;
+            }
+            
+            .estadistica-valor {
+                font-size: 24px;
+                font-weight: 700;
+                color: #4fc3f7;
+                margin-bottom: 5px;
+            }
+            
+            .estadistica-label {
+                font-size: 11px;
+                color: rgba(255,255,255,0.7);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .lista-actividades {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .actividad-item {
+                background: rgba(255,255,255,0.05);
+                border-radius: 8px;
+                padding: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                border-left: 3px solid #2196F3;
+            }
+            
+            .actividad-item:hover {
+                background: rgba(255,255,255,0.1);
+                transform: translateX(5px);
+            }
+            
+            .actividad-nombre {
+                font-size: 13px;
+                font-weight: 500;
+                margin-bottom: 3px;
+            }
+            
+            .actividad-meta {
+                font-size: 11px;
+                color: rgba(255,255,255,0.6);
+            }
+            
+            .distribucion-tareas {
+                display: flex;
+                height: 150px;
+                align-items: flex-end;
+                gap: 20px;
+                padding: 20px 0;
+            }
+            
+            .dist-item {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            
+            .dist-bar {
+                width: 30px;
+                background: currentColor;
+                border-radius: 15px 15px 0 0;
+                transition: height 1s ease;
+            }
+            
+            .dist-item.completada { color: #4CAF50; }
+            .dist-item.en-progreso { color: #2196F3; }
+            .dist-item.pendiente { color: #FF9800; }
+            
+            .dist-label {
+                font-size: 11px;
+                color: rgba(255,255,255,0.7);
+                text-align: center;
+            }
+        </style>
     `;
     
     panel.classList.add('open');
 }
 
-function cerrarPanel() {
-    document.getElementById('panelDetalles').classList.remove('open');
-}
-
 // ================================
-// FUNCIONES AUXILIARES
+// FUNCIONES DE ACCIÓN
 // ================================
 
-function oscurecerColor(color, percent) {
-    // Convertir color hex a RGB
-    let r = parseInt(color.substr(1, 2), 16);
-    let g = parseInt(color.substr(3, 2), 16);
-    let b = parseInt(color.substr(5, 2), 16);
-    
-    // Oscurecer
-    r = Math.max(0, Math.floor(r * (100 - percent) / 100));
-    g = Math.max(0, Math.floor(g * (100 - percent) / 100));
-    b = Math.max(0, Math.floor(b * (100 - percent) / 100));
-    
-    // Convertir de vuelta a hex
-    return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+function editarActividad(actividadId) {
+    alert(`Editar actividad ${actividadId} - Esta funcionalidad se integrará con el backend`);
+    // Aquí se implementaría la lógica para editar la actividad
 }
 
-function getColorByTipo(tipo) {
-    switch(tipo) {
-        case 'FO': return '#2ecc71';
-        case 'DO': return '#3498db';
-        case 'FA': return '#e74c3c';
-        case 'DA': return '#f39c12';
-        default: return '#95a5a6';
+function agregarTareaActividad(actividadId) {
+    alert(`Agregar tarea a actividad ${actividadId} - Esta funcionalidad se integrará con el backend`);
+    // Aquí se implementaría la lógica para agregar tarea
+}
+
+function compartirActividad(actividadId) {
+    const actividad = FLOW_SYSTEM.actividades.find(a => a.id == actividadId);
+    if (!actividad) return;
+    
+    const shareData = {
+        title: `Actividad: ${actividad.nombre}`,
+        text: `Revisa esta actividad del Proyecto El Domo: ${actividad.nombre}`,
+        url: window.location.href
+    };
+    
+    if (navigator.share) {
+        navigator.share(shareData)
+            .then(() => console.log('Compartido exitosamente'))
+            .catch(error => console.log('Error al compartir:', error));
+    } else {
+        // Fallback para navegadores que no soportan Web Share API
+        prompt('Copie este enlace para compartir:', window.location.href);
     }
 }
 
-// Iniciar animaciones al cargar
+function cambiarEstadoTarea(tareaId, nuevoEstado) {
+    fetch('/api/tareas', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            tarea_id: tareaId,
+            estado: nuevoEstado
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Tarea ${tareaId} actualizada a estado: ${nuevoEstado}`);
+            // Recargar datos
+            cargarDatos();
+        }
+    })
+    .catch(error => {
+        console.error('Error al cambiar estado:', error);
+        alert('Error al cambiar el estado de la tarea');
+    });
+}
+
+function exportarReporte() {
+    // Generar datos para exportar
+    const reporte = {
+        fecha: new Date().toISOString(),
+        actividades: FLOW_SYSTEM.actividades,
+        tareas: FLOW_SYSTEM.tareas,
+        estadisticas: {
+            totalActividades: FLOW_SYSTEM.actividades.length,
+            totalTareas: FLOW_SYSTEM.tareas?.length || 0,
+            responsables: Array.from(FLOW_SYSTEM.responsables)
+        }
+    };
+    
+    // Crear y descargar archivo JSON
+    const dataStr = JSON.stringify(reporte, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `reporte-actividades-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+    
+    alert('Reporte exportado exitosamente');
+}
+
+function imprimirFlujo() {
+    window.print();
+}
+
+// ================================
+// MONITOREO Y UTILIDADES
+// ================================
+
+function monitorearMemoria() {
+    if (performance.memory) {
+        const usedJSHeapSize = performance.memory.usedJSHeapSize;
+        const totalJSHeapSize = performance.memory.totalJSHeapSize;
+        const memoriaMB = Math.round(usedJSHeapSize / 1048576);
+        const totalMB = Math.round(totalJSHeapSize / 1048576);
+        
+        document.getElementById('memoriaUsada').textContent = 
+            `${memoriaMB}MB / ${totalMB}MB`;
+    }
+    
+    // Actualizar cada 10 segundos
+    setTimeout(monitorearMemoria, 10000);
+}
+
+function inicializarEventos() {
+    // Configurar fechas por defecto
+    const hoy = new Date();
+    const haceUnMes = new Date();
+    haceUnMes.setMonth(hoy.getMonth() - 1);
+    
+    document.getElementById('fechaDesde').value = haceUnMes.toISOString().split('T')[0];
+    document.getElementById('fechaHasta').value = hoy.toISOString().split('T')[0];
+    
+    // Actualizar filtros cuando cambian las fechas
+    document.getElementById('fechaDesde').addEventListener('change', aplicarFiltrosFlow);
+    document.getElementById('fechaHasta').addEventListener('change', aplicarFiltrosFlow);
+    
+    // Manejar cambio entre vistas
+    document.querySelectorAll('.toggle-label input').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const vista = this.id.replace('mostrar', '').toLowerCase();
+            toggleVista(vista);
+        });
+    });
+}
+
+function mostrarError(mensaje) {
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #F44336;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        z-index: 9999;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        animation: slideIn 0.3s ease;
+    `;
+    
+    errorDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span>${mensaje}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => {
+        errorDiv.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => errorDiv.remove(), 300);
+    }, 5000);
+}
+
+// Inicializar cuando se carga la página
 window.addEventListener('load', function() {
-    // Las animaciones se inician desde cargarDatosBackend()
+    // Forzar recarga de datos después de 30 segundos
+    setTimeout(() => {
+        if (FLOW_SYSTEM.dataCargada) {
+            cargarDatos();
+        }
+    }, 30000);
 });
 </script>
 {% endblock %}
