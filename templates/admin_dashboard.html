@@ -268,6 +268,22 @@
             box-shadow: 0 4px 12px rgba(108, 117, 125, 0.2);
         }
         
+        .btn-excel {
+            background: linear-gradient(135deg, #217346 0%, #1A5D37 100%);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .btn-excel:hover {
+            background: linear-gradient(135deg, #1A5D37 0%, #13492B 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 115, 70, 0.2);
+        }
+        
         .table-responsive {
             background: white;
             border-radius: 10px;
@@ -422,6 +438,16 @@
             .navbar-top {
                 flex-direction: column;
                 gap: 15px;
+            }
+            
+            .d-flex.justify-content-between {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .btn-excel, .btn-apply, .btn-clear, .btn-success {
+                width: 100%;
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -638,8 +664,8 @@
             
             <div class="row mt-3">
                 <div class="col-md-12">
-                    <div class="d-flex justify-content-between">
-                        <div>
+                    <div class="d-flex justify-content-between flex-wrap">
+                        <div class="mb-2 mb-md-0">
                             <button class="btn-apply" onclick="cargarActividades()">
                                 <i class="fas fa-filter"></i> Aplicar Filtros
                             </button>
@@ -647,9 +673,15 @@
                                 <i class="fas fa-eraser"></i> Limpiar Filtros
                             </button>
                         </div>
-                        <button class="btn btn-success" onclick="exportarDatos()">
-                            <i class="fas fa-file-export"></i> Exportar a CSV
-                        </button>
+                        <div>
+                            <!-- NUEVO BOTÓN DE EXCEL -->
+                            <button class="btn-excel mr-2" onclick="exportarExcelCompleto()" title="Exportar todos los datos a Excel">
+                                <i class="fas fa-file-excel"></i> Exportar a Excel
+                            </button>
+                            <button class="btn btn-success" onclick="exportarDatos()" title="Exportar datos filtrados a CSV">
+                                <i class="fas fa-file-export"></i> Exportar a CSV
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1159,7 +1191,7 @@
             chartTipo.update();
         }
         
-        // Exportar datos
+        // Exportar datos a CSV
         function exportarDatos() {
             mostrarLoading(true);
             
@@ -1199,12 +1231,65 @@
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
                 
-                mostrarAlerta('Datos exportados correctamente', 'success');
+                mostrarAlerta('Datos exportados correctamente a CSV', 'success');
             })
             .catch(error => {
                 mostrarLoading(false);
                 console.error('Error:', error);
-                mostrarAlerta('Error al exportar datos', 'error');
+                mostrarAlerta('Error al exportar datos a CSV', 'error');
+            });
+        }
+        
+        // NUEVA FUNCIÓN: Exportar todos los datos a Excel
+        function exportarExcelCompleto() {
+            if (!confirm('¿Desea exportar TODOS los datos del sistema a Excel?\n\n' +
+                        '⚠️ Esta operación generará un archivo Excel con 6 hojas:\n' +
+                        '1. Dashboard Resumen\n' +
+                        '2. Estrategias FODA\n' +
+                        '3. Actividades y Tareas\n' +
+                        '4. Usuarios del Sistema\n' +
+                        '5. Resumen Ejecutivo\n' +
+                        '6. Datos Crudos\n\n' +
+                        'El archivo contendrá todos los datos actuales del sistema.')) {
+                return;
+            }
+            
+            mostrarLoading(true);
+            
+            fetch('/api/admin/exportar_excel_completo', {
+                method: 'GET'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error en la exportación');
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                mostrarLoading(false);
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // Crear nombre de archivo con fecha
+                const fecha = new Date();
+                const fechaStr = fecha.toISOString().split('T')[0];
+                const horaStr = fecha.getHours().toString().padStart(2, '0') + 
+                              fecha.getMinutes().toString().padStart(2, '0');
+                a.download = `Reporte_CURIMINING_Completo_${fechaStr}_${horaStr}.xlsx`;
+                
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                mostrarAlerta('✅ Reporte Excel generado exitosamente', 'success');
+            })
+            .catch(error => {
+                mostrarLoading(false);
+                console.error('Error:', error);
+                mostrarAlerta('❌ Error al exportar a Excel: ' + error.message, 'error');
             });
         }
         
