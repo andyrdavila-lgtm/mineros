@@ -2875,7 +2875,7 @@ def crear_excel_completo():
 # ==================== RUTA PARA EXPORTAR EXCEL COMPLETO ====================
 
 @app.route('/exportar_excel_completo')
-@login_required
+@admin_required
 def exportar_excel_completo():
     """Exporta todos los datos del sistema a un archivo Excel"""
     try:
@@ -2891,6 +2891,93 @@ def exportar_excel_completo():
         )
     except Exception as e:
         print(f"Error al exportar Excel: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+# ==================== NUEVAS RUTAS DE EXPORTACIÓN EXCEL ====================
+
+@app.route('/api/admin/exportar_excel_completo', methods=['GET'])
+@admin_required
+def api_admin_exportar_excel_completo():
+    """API para exportar todos los datos a Excel (XLSX)"""
+    try:
+        # Crear el archivo Excel
+        filename = crear_excel_completo()
+        
+        if not filename:
+            return jsonify({'success': False, 'message': 'Error al crear el archivo Excel'}), 500
+        
+        # Enviar el archivo
+        return send_file(
+            filename,
+            as_attachment=True,
+            download_name=f"Reporte_CURIMINING_Completo_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        
+    except Exception as e:
+        print(f"Error al exportar Excel: {e}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/exportar_excel_simple', methods=['GET'])
+@admin_required
+def exportar_excel_simple():
+    """Exporta un Excel simple con datos resumidos"""
+    try:
+        from io import BytesIO
+        from openpyxl import Workbook
+        
+        # Crear libro de trabajo en memoria
+        output = BytesIO()
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Resumen CURIMINING"
+        
+        # Obtener estadísticas
+        total_aspectos = AspectoAmbiental.query.count()
+        total_estrategias = EstrategiaFodaCruzado.query.count()
+        total_actividades = ActividadEstrategia.query.count()
+        total_tareas = TareaActividad.query.count()
+        total_usuarios = User.query.count()
+        
+        # Agregar datos
+        ws['A1'] = "REPORTE CURIMINING"
+        ws['A1'].font = Font(bold=True, size=16)
+        
+        ws['A3'] = "Fecha generación:"
+        ws['B3'] = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        
+        ws['A4'] = "Total aspectos ambientales:"
+        ws['B4'] = total_aspectos
+        
+        ws['A5'] = "Total estrategias FODA:"
+        ws['B5'] = total_estrategias
+        
+        ws['A6'] = "Total actividades:"
+        ws['B6'] = total_actividades
+        
+        ws['A7'] = "Total tareas:"
+        ws['B7'] = total_tareas
+        
+        ws['A8'] = "Total usuarios:"
+        ws['B8'] = total_usuarios
+        
+        # Ajustar ancho de columnas
+        ws.column_dimensions['A'].width = 25
+        ws.column_dimensions['B'].width = 15
+        
+        # Guardar en memoria
+        wb.save(output)
+        output.seek(0)
+        
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name=f"Reporte_CURIMINING_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx",
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        
+    except Exception as e:
+        print(f"Error al exportar Excel simple: {e}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
 # ==================== MANEJO DE ERRORES ====================
@@ -3046,6 +3133,7 @@ print("  ✅ Visualización de red interactiva")
 print("  ✅ Responsive total (mobile, tablet, desktop)")
 print("  ✅ Exportación Excel completa con datos reales")
 print("  ✅ 9 usuarios pre-creados")
+print("  ✅ Nueva API de exportación Excel para administradores")
 print("=" * 60)
 
 # Inicializar base de datos
@@ -3058,6 +3146,7 @@ with app.app_context():
             print("✅ Tablas adicionales: actividades_estrategia, tareas_actividad")
             print("✅ Campos de eje añadidos a estrategias_foda_cruzado")
             print("✅ Sistema de exportación Excel integrado")
+            print("✅ Rutas de exportación Excel para administradores configuradas")
         else:
             print("⚠️  Advertencia: Problemas con la inicialización de BD")
         print("✅ Sistema listo para recibir conexiones")
